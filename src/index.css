@@ -36,6 +36,11 @@
 
     --radius: 0.625rem;
 
+    --status-scheduled: 215 15% 65%;
+    --status-confirmed: 152 60% 42%;
+    --status-cancelled: 0 72% 55%;
+    --status-missed: 30 85% 55%;
+
     --sidebar-background: 215 25% 15%;
     --sidebar-foreground: 214 15% 85%;
     --sidebar-primary: 213 70% 55%;
