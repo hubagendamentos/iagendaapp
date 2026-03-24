@@ -1,6 +1,7 @@
 import { Calendar, Users, UserCog, Settings } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
+import { useUser } from "@/contexts/UserContext";
 import {
   Sidebar,
   SidebarContent,
@@ -13,23 +14,26 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
-const menuItems = [
-  { title: "Agenda", url: "/dashboard/agenda", icon: Calendar },
-  { title: "Pacientes", url: "/dashboard/pacientes", icon: Users },
-  { title: "Profissionais", url: "/dashboard/profissionais", icon: UserCog },
-  { title: "Configurações", url: "/dashboard/configuracoes", icon: Settings },
+const allMenuItems = [
+  { title: "Agenda", url: "/dashboard/agenda", icon: Calendar, roles: ["clinic", "professional"] },
+  { title: "Pacientes", url: "/dashboard/pacientes", icon: Users, roles: ["clinic", "professional"] },
+  { title: "Profissionais", url: "/dashboard/profissionais", icon: UserCog, roles: ["clinic"] },
+  { title: "Configurações", url: "/dashboard/configuracoes", icon: Settings, roles: ["clinic", "professional"] },
 ];
 
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
+  const { userType } = useUser();
+
+  const menuItems = allMenuItems.filter((item) => item.roles.includes(userType));
 
   return (
     <Sidebar collapsible="icon">
       <SidebarContent>
         <div className="flex items-center gap-2 px-4 py-5">
-          <Calendar className="h-6 w-6 text-sidebar-primary" />
+          <Calendar className="h-6 w-6 text-sidebar-primary shrink-0" />
           {!collapsed && (
             <span className="text-lg font-bold text-sidebar-primary-foreground tracking-tight">
               ClinicaHub

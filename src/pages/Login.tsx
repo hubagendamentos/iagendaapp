@@ -5,17 +5,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Calendar } from "lucide-react";
-
-type UserType = "clinic" | "professional";
+import { useUser, type UserType } from "@/contexts/UserContext";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [userType, setUserType] = useState<UserType>("clinic");
+  const [selectedType, setSelectedType] = useState<UserType>("clinic");
   const navigate = useNavigate();
+  const { setUserType } = useUser();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setUserType(selectedType);
     navigate("/dashboard");
   };
 
@@ -33,13 +34,12 @@ const Login = () => {
         </CardHeader>
 
         <CardContent className="pt-4">
-          {/* User type toggle */}
           <div className="flex rounded-lg bg-muted p-1 mb-6">
             <button
               type="button"
-              onClick={() => setUserType("clinic")}
+              onClick={() => setSelectedType("clinic")}
               className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${
-                userType === "clinic"
+                selectedType === "clinic"
                   ? "bg-card text-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
               }`}
@@ -48,9 +48,9 @@ const Login = () => {
             </button>
             <button
               type="button"
-              onClick={() => setUserType("professional")}
+              onClick={() => setSelectedType("professional")}
               className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${
-                userType === "professional"
+                selectedType === "professional"
                   ? "bg-card text-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
               }`}
@@ -62,39 +62,15 @@ const Login = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="seu@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
+              <Input id="email" type="email" placeholder="seu@email.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="password">Senha</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
+              <Input id="password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
             </div>
-
-            <Button type="submit" className="w-full">
-              Entrar
-            </Button>
-
+            <Button type="submit" className="w-full">Entrar</Button>
             <div className="text-center">
-              <button
-                type="button"
-                className="text-sm text-primary hover:underline"
-              >
-                Esqueci minha senha
-              </button>
+              <button type="button" className="text-sm text-primary hover:underline">Esqueci minha senha</button>
             </div>
           </form>
         </CardContent>
