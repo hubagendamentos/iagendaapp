@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PhoneMaskInput } from "@/components/PhoneMaskInput";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar } from "lucide-react";
@@ -117,7 +118,8 @@ const Login = () => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="reg-phone">Telefone</Label>
-                  <Input id="reg-phone" type="tel" placeholder="(11) 99999-9999" value={regPhone} onChange={(e) => setRegPhone(e.target.value)} required />
+                  <PhoneMaskInput value={regPhone} onChange={setRegPhone} id="reg-phone" />
+                </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="reg-password">Senha</Label>
