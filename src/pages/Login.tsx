@@ -120,7 +120,6 @@ const Login = () => {
                   <Label htmlFor="reg-phone">Telefone</Label>
                   <PhoneMaskInput value={regPhone} onChange={setRegPhone} id="reg-phone" />
                 </div>
-                </div>
                 <div className="space-y-2">
                   <Label htmlFor="reg-password">Senha</Label>
                   <Input id="reg-password" type="password" placeholder="••••••••" value={regPassword} onChange={(e) => setRegPassword(e.target.value)} required />
