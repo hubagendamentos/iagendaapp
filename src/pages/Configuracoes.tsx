@@ -1,0 +1,408 @@
+import { useState } from "react";
+import { useUser } from "@/contexts/UserContext";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Separator } from "@/components/ui/separator";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { PhoneMaskInput } from "@/components/PhoneMaskInput";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Building2, User, Clock, CreditCard, UserCog, Plus, Pencil, Trash2, Upload } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
+
+const weekDays = [
+  { key: "mon", label: "Segunda" },
+  { key: "tue", label: "Terça" },
+  { key: "wed", label: "Quarta" },
+  { key: "thu", label: "Quinta" },
+  { key: "fri", label: "Sexta" },
+  { key: "sat", label: "Sábado" },
+  { key: "sun", label: "Domingo" },
+];
+
+const specialties = [
+  "Clínico Geral",
+  "Cardiologia",
+  "Dermatologia",
+  "Ortopedia",
+  "Pediatria",
+  "Neurologia",
+  "Ginecologia",
+  "Oftalmologia",
+  "Psiquiatria",
+  "Endocrinologia",
+];
+
+interface Professional {
+  id: string;
+  name: string;
+  crm: string;
+  phone: string;
+  specialty: string;
+  active: boolean;
+}
+
+interface InsurancePlan {
+  id: string;
+  name: string;
+  active: boolean;
+}
+
+const Configuracoes = () => {
+  const { userType } = useUser();
+  const isClinic = userType === "clinic";
+
+  // Clinic data
+  const [clinicName, setClinicName] = useState("Clínica Saúde Total");
+  const [cnpj, setCnpj] = useState("12.345.678/0001-90");
+  const [clinicPhone, setClinicPhone] = useState("11999998888");
+  const [clinicEmail, setClinicEmail] = useState("contato@saudetotal.com");
+  const [clinicAddress, setClinicAddress] = useState("Rua das Flores, 123 - São Paulo/SP");
+
+  // Professional data
+  const [profName, setProfName] = useState("Dr. João Silva");
+  const [profCrm, setProfCrm] = useState("CRM/SP 123456");
+  const [profPhone, setProfPhone] = useState("11988887777");
+  const [profSpecialty, setProfSpecialty] = useState("Cardiologia");
+
+  // Hours
+  const [activeDays, setActiveDays] = useState<Record<string, boolean>>({
+    mon: true, tue: true, wed: true, thu: true, fri: true, sat: false, sun: false,
+  });
+  const [startTime, setStartTime] = useState("08:00");
+  const [endTime, setEndTime] = useState("18:00");
+  const [interval, setInterval] = useState("30");
+
+  // Insurance
+  const [plans, setPlans] = useState<InsurancePlan[]>([
+    { id: "1", name: "Unimed", active: true },
+    { id: "2", name: "Bradesco Saúde", active: true },
+    { id: "3", name: "SulAmérica", active: false },
+  ]);
+  const [newPlan, setNewPlan] = useState("");
+
+  // Professionals (clinic only)
+  const [professionals, setProfessionals] = useState<Professional[]>([
+    { id: "p1", name: "Dr. João Silva", crm: "CRM/SP 123456", phone: "11988887777", specialty: "Cardiologia", active: true },
+    { id: "p2", name: "Dra. Maria Santos", crm: "CRM/SP 654321", phone: "11977776666", specialty: "Dermatologia", active: true },
+    { id: "p3", name: "Dr. Pedro Costa", crm: "CRM/SP 111222", phone: "11966665555", specialty: "Ortopedia", active: false },
+  ]);
+  const [editingProf, setEditingProf] = useState<Professional | null>(null);
+  const [showProfForm, setShowProfForm] = useState(false);
+  const [profFormData, setProfFormData] = useState<Omit<Professional, "id">>({
+    name: "", crm: "", phone: "", specialty: "", active: true,
+  });
+
+  const toggleDay = (key: string) => setActiveDays((prev) => ({ ...prev, [key]: !prev[key] }));
+
+  const addPlan = () => {
+    if (!newPlan.trim()) return;
+    setPlans((prev) => [...prev, { id: Date.now().toString(), name: newPlan.trim(), active: true }]);
+    setNewPlan("");
+    toast.success("Convênio adicionado");
+  };
+
+  const togglePlan = (id: string) =>
+    setPlans((prev) => prev.map((p) => (p.id === id ? { ...p, active: !p.active } : p)));
+
+  const removePlan = (id: string) => {
+    setPlans((prev) => prev.filter((p) => p.id !== id));
+    toast.success("Convênio removido");
+  };
+
+  const openProfForm = (prof?: Professional) => {
+    if (prof) {
+      setEditingProf(prof);
+      setProfFormData({ name: prof.name, crm: prof.crm, phone: prof.phone, specialty: prof.specialty, active: prof.active });
+    } else {
+      setEditingProf(null);
+      setProfFormData({ name: "", crm: "", phone: "", specialty: "", active: true });
+    }
+    setShowProfForm(true);
+  };
+
+  const saveProfessional = () => {
+    if (!profFormData.name.trim() || !profFormData.crm.trim()) {
+      toast.error("Preencha nome e CRM");
+      return;
+    }
+    if (editingProf) {
+      setProfessionals((prev) => prev.map((p) => (p.id === editingProf.id ? { ...p, ...profFormData } : p)));
+      toast.success("Profissional atualizado");
+    } else {
+      setProfessionals((prev) => [...prev, { id: Date.now().toString(), ...profFormData }]);
+      toast.success("Profissional adicionado");
+    }
+    setShowProfForm(false);
+  };
+
+  const toggleProfActive = (id: string) =>
+    setProfessionals((prev) => prev.map((p) => (p.id === id ? { ...p, active: !p.active } : p)));
+
+  const handleSave = () => toast.success("Configurações salvas com sucesso!");
+
+  return (
+    <div className="space-y-6 max-w-4xl mx-auto">
+      <div>
+        <h2 className="text-xl sm:text-2xl font-semibold text-foreground">Configurações</h2>
+        <p className="text-muted-foreground mt-1 text-sm">
+          {isClinic ? "Gerencie os dados da sua clínica" : "Gerencie seus dados profissionais"}
+        </p>
+      </div>
+
+      {/* === CLINIC / PROFESSIONAL DATA === */}
+      <Card>
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-2 text-base">
+            {isClinic ? <Building2 className="h-5 w-5 text-primary" /> : <User className="h-5 w-5 text-primary" />}
+            {isClinic ? "Dados da Clínica" : "Dados do Profissional"}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Photo upload */}
+          <div className="flex items-center gap-4">
+            <Avatar className="h-16 w-16">
+              <AvatarFallback className="bg-accent text-accent-foreground text-lg">
+                {isClinic ? "CS" : "JS"}
+              </AvatarFallback>
+            </Avatar>
+            <Button variant="outline" size="sm" className="gap-2">
+              <Upload className="h-4 w-4" /> Alterar foto
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {isClinic ? (
+              <>
+                <div className="space-y-2">
+                  <Label>Nome da Clínica</Label>
+                  <Input value={clinicName} onChange={(e) => setClinicName(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>CNPJ</Label>
+                  <Input value={cnpj} onChange={(e) => setCnpj(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Telefone</Label>
+                  <PhoneMaskInput value={clinicPhone} onChange={setClinicPhone} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Email</Label>
+                  <Input type="email" value={clinicEmail} onChange={(e) => setClinicEmail(e.target.value)} />
+                </div>
+                <div className="space-y-2 sm:col-span-2">
+                  <Label>Endereço</Label>
+                  <Input value={clinicAddress} onChange={(e) => setClinicAddress(e.target.value)} />
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="space-y-2">
+                  <Label>Nome</Label>
+                  <Input value={profName} onChange={(e) => setProfName(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>CRM</Label>
+                  <Input value={profCrm} onChange={(e) => setProfCrm(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Telefone</Label>
+                  <PhoneMaskInput value={profPhone} onChange={setProfPhone} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Especialidade</Label>
+                  <Select value={profSpecialty} onValueChange={setProfSpecialty}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {specialties.map((s) => (
+                        <SelectItem key={s} value={s}>{s}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* === HOURS === */}
+      <Card>
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Clock className="h-5 w-5 text-primary" />
+            Horário de Atendimento
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex flex-wrap gap-2">
+            {weekDays.map((d) => (
+              <button
+                key={d.key}
+                type="button"
+                onClick={() => toggleDay(d.key)}
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  activeDays[d.key]
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                }`}
+              >
+                {d.label}
+              </button>
+            ))}
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label>Hora Início</Label>
+              <Input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>Hora Fim</Label>
+              <Input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>Intervalo (min)</Label>
+              <Select value={interval} onValueChange={setInterval}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {["15", "20", "30", "45", "60"].map((v) => (
+                    <SelectItem key={v} value={v}>{v} min</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* === INSURANCE PLANS === */}
+      <Card>
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <CreditCard className="h-5 w-5 text-primary" />
+            Convênios / Planos
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex gap-2">
+            <Input
+              placeholder="Nome do convênio"
+              value={newPlan}
+              onChange={(e) => setNewPlan(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && addPlan()}
+            />
+            <Button onClick={addPlan} size="sm" className="gap-1 shrink-0">
+              <Plus className="h-4 w-4" /> Adicionar
+            </Button>
+          </div>
+          <div className="space-y-2">
+            {plans.map((plan) => (
+              <div key={plan.id} className="flex items-center justify-between rounded-md border border-border px-3 py-2">
+                <div className="flex items-center gap-3">
+                  <Switch checked={plan.active} onCheckedChange={() => togglePlan(plan.id)} />
+                  <span className={`text-sm ${plan.active ? "text-foreground" : "text-muted-foreground line-through"}`}>
+                    {plan.name}
+                  </span>
+                </div>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => removePlan(plan.id)}>
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* === PROFESSIONALS (clinic only) === */}
+      {isClinic && (
+        <Card>
+          <CardHeader className="pb-4">
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <UserCog className="h-5 w-5 text-primary" />
+                Profissionais
+              </CardTitle>
+              <Button size="sm" className="gap-1" onClick={() => openProfForm()}>
+                <Plus className="h-4 w-4" /> Novo
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {showProfForm && (
+              <div className="rounded-lg border border-primary/30 bg-accent/30 p-4 space-y-3">
+                <p className="text-sm font-medium text-foreground">
+                  {editingProf ? "Editar Profissional" : "Novo Profissional"}
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-xs">Nome</Label>
+                    <Input value={profFormData.name} onChange={(e) => setProfFormData((p) => ({ ...p, name: e.target.value }))} />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">CRM</Label>
+                    <Input value={profFormData.crm} onChange={(e) => setProfFormData((p) => ({ ...p, crm: e.target.value }))} />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Telefone</Label>
+                    <PhoneMaskInput value={profFormData.phone} onChange={(v) => setProfFormData((p) => ({ ...p, phone: v }))} />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Especialidade</Label>
+                    <Select value={profFormData.specialty} onValueChange={(v) => setProfFormData((p) => ({ ...p, specialty: v }))}>
+                      <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                      <SelectContent>
+                        {specialties.map((s) => (
+                          <SelectItem key={s} value={s}>{s}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="flex gap-2 justify-end">
+                  <Button variant="outline" size="sm" onClick={() => setShowProfForm(false)}>Cancelar</Button>
+                  <Button size="sm" onClick={saveProfessional}>Salvar</Button>
+                </div>
+              </div>
+            )}
+
+            {professionals.map((prof) => (
+              <div key={prof.id} className="flex items-center justify-between rounded-md border border-border px-3 py-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <Avatar className="h-9 w-9 shrink-0">
+                    <AvatarFallback className="bg-accent text-accent-foreground text-xs">
+                      {prof.name.split(" ").map((w) => w[0]).join("").slice(0, 2)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0">
+                    <p className={`text-sm font-medium truncate ${!prof.active ? "text-muted-foreground" : "text-foreground"}`}>
+                      {prof.name}
+                    </p>
+                    <p className="text-xs text-muted-foreground">{prof.specialty} · {prof.crm}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  <Badge variant={prof.active ? "default" : "secondary"} className="text-xs hidden sm:inline-flex">
+                    {prof.active ? "Ativo" : "Inativo"}
+                  </Badge>
+                  <Switch checked={prof.active} onCheckedChange={() => toggleProfActive(prof.id)} />
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openProfForm(prof)}>
+                    <Pencil className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      <div className="flex justify-end pb-6">
+        <Button onClick={handleSave} className="px-8">Salvar Configurações</Button>
+      </div>
+    </div>
+  );
+};
+
+export default Configuracoes;

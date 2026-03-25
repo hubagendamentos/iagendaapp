@@ -10,6 +10,7 @@ import DashboardHome from "./pages/DashboardHome.tsx";
 import Agenda from "./pages/Agenda.tsx";
 import Pacientes from "./pages/Pacientes.tsx";
 import Profissionais from "./pages/Profissionais.tsx";
+import Configuracoes from "./pages/Configuracoes.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => (
               <Route path="agenda" element={<Agenda />} />
               <Route path="pacientes" element={<Pacientes />} />
               <Route path="profissionais" element={<Profissionais />} />
+              <Route path="configuracoes" element={<Configuracoes />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
