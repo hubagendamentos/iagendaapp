@@ -79,10 +79,6 @@ const Login = () => {
 
         <CardContent className="pt-4">
           <Tabs value={tab} onValueChange={setTab}>
-            <TabsList className="w-full mb-6">
-              <TabsTrigger value="login" className="flex-1">Entrar</TabsTrigger>
-              <TabsTrigger value="register" className="flex-1">Criar Conta</TabsTrigger>
-            </TabsList>
 
             <TabsContent value="login" className="space-y-0">
               <form onSubmit={handleLogin} className="space-y-4">
