@@ -58,7 +58,7 @@ export function PacienteModal({ open, onClose, onSave, paciente }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="sm:max-w-lg max-h-[100dvh] sm:max-h-[90vh] overflow-hidden flex flex-col fixed inset-0 sm:inset-auto sm:left-[50%] sm:top-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%] rounded-none sm:rounded-lg w-full sm:w-auto">
+      <DialogContent className="sm:max-w-lg max-h-[100dvh] sm:max-h-[90vh] overflow-hidden flex flex-col !inset-0 !translate-x-0 !translate-y-0 !top-0 !left-0 sm:!inset-auto sm:!left-[50%] sm:!top-[50%] sm:!translate-x-[-50%] sm:!translate-y-[-50%] rounded-none sm:rounded-lg w-full sm:w-auto">
         <DialogHeader className="shrink-0">
           <DialogTitle>{isEdit ? "Editar Paciente" : "Novo Paciente"}</DialogTitle>
         </DialogHeader>
