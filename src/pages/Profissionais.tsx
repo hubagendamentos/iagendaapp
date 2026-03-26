@@ -7,11 +7,13 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { ProfissionalModal, type Profissional } from "@/components/ProfissionalModal";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { applyPhoneMask } from "@/components/PhoneMaskInput";
 
 const initialProfissionais: Profissional[] = [
-  { id: "1", nome: "Dr. João Silva", especialidade: "Clínico Geral", ativo: true },
-  { id: "2", nome: "Dra. Ana Costa", especialidade: "Dermatologia", ativo: true },
-  { id: "3", nome: "Dr. Carlos Lima", especialidade: "Ortopedia", ativo: false },
+  { id: "1", nome: "Dr. João Silva", crm: "CRM/SP 123456", telefone: "11988887777", especialidade: "Clínico Geral", ativo: true },
+  { id: "2", nome: "Dra. Ana Costa", crm: "CRM/SP 654321", telefone: "11977776666", especialidade: "Dermatologia", ativo: true },
+  { id: "3", nome: "Dr. Carlos Lima", crm: "CRM/SP 111222", telefone: "11966665555", especialidade: "Ortopedia", ativo: false },
 ];
 
 const Profissionais = () => {
@@ -51,8 +53,9 @@ const Profissionais = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Nome</TableHead>
-              <TableHead>Especialidade</TableHead>
+              <TableHead>Profissional</TableHead>
+              <TableHead className="hidden sm:table-cell">CRM</TableHead>
+              <TableHead className="hidden sm:table-cell">Telefone</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="w-[80px]">Ações</TableHead>
             </TableRow>
@@ -60,12 +63,29 @@ const Profissionais = () => {
           <TableBody>
             {profissionais.map((p) => (
               <TableRow key={p.id}>
-                <TableCell className="font-medium">{p.nome}</TableCell>
-                <TableCell>{p.especialidade}</TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-9 w-9 shrink-0">
+                      {p.foto ? (
+                        <AvatarImage src={p.foto} alt={p.nome} />
+                      ) : (
+                        <AvatarFallback className="bg-accent text-accent-foreground text-xs">
+                          {p.nome.split(" ").map((w) => w[0]).join("").slice(0, 2)}
+                        </AvatarFallback>
+                      )}
+                    </Avatar>
+                    <div className="min-w-0">
+                      <p className="font-medium truncate">{p.nome}</p>
+                      <p className="text-xs text-muted-foreground">{p.especialidade}</p>
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell className="hidden sm:table-cell text-muted-foreground">{p.crm}</TableCell>
+                <TableCell className="hidden sm:table-cell text-muted-foreground">{applyPhoneMask(p.telefone)}</TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
                     <Switch checked={p.ativo} onCheckedChange={() => toggleAtivo(p.id!)} />
-                    <Badge variant={p.ativo ? "default" : "secondary"}>
+                    <Badge variant={p.ativo ? "default" : "secondary"} className="hidden sm:inline-flex">
                       {p.ativo ? "Ativo" : "Inativo"}
                     </Badge>
                   </div>

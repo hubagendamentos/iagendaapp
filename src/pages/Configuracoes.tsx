@@ -1,16 +1,14 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useUser } from "@/contexts/UserContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PhoneMaskInput } from "@/components/PhoneMaskInput";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Building2, User, Clock, CreditCard, UserCog, Plus, Pencil, Trash2, Upload } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Building2, User, Clock, CreditCard, Plus, Trash2, Upload } from "lucide-react";
 import { toast } from "sonner";
 
 const weekDays = [
@@ -24,26 +22,9 @@ const weekDays = [
 ];
 
 const specialties = [
-  "Clínico Geral",
-  "Cardiologia",
-  "Dermatologia",
-  "Ortopedia",
-  "Pediatria",
-  "Neurologia",
-  "Ginecologia",
-  "Oftalmologia",
-  "Psiquiatria",
-  "Endocrinologia",
+  "Clínico Geral", "Cardiologia", "Dermatologia", "Ortopedia", "Pediatria",
+  "Neurologia", "Ginecologia", "Oftalmologia", "Psiquiatria", "Endocrinologia",
 ];
-
-interface Professional {
-  id: string;
-  name: string;
-  crm: string;
-  phone: string;
-  specialty: string;
-  active: boolean;
-}
 
 interface InsurancePlan {
   id: string;
@@ -54,6 +35,8 @@ interface InsurancePlan {
 const Configuracoes = () => {
   const { userType } = useUser();
   const isClinic = userType === "clinic";
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
   // Clinic data
   const [clinicName, setClinicName] = useState("Clínica Saúde Total");
@@ -84,18 +67,6 @@ const Configuracoes = () => {
   ]);
   const [newPlan, setNewPlan] = useState("");
 
-  // Professionals (clinic only)
-  const [professionals, setProfessionals] = useState<Professional[]>([
-    { id: "p1", name: "Dr. João Silva", crm: "CRM/SP 123456", phone: "11988887777", specialty: "Cardiologia", active: true },
-    { id: "p2", name: "Dra. Maria Santos", crm: "CRM/SP 654321", phone: "11977776666", specialty: "Dermatologia", active: true },
-    { id: "p3", name: "Dr. Pedro Costa", crm: "CRM/SP 111222", phone: "11966665555", specialty: "Ortopedia", active: false },
-  ]);
-  const [editingProf, setEditingProf] = useState<Professional | null>(null);
-  const [showProfForm, setShowProfForm] = useState(false);
-  const [profFormData, setProfFormData] = useState<Omit<Professional, "id">>({
-    name: "", crm: "", phone: "", specialty: "", active: true,
-  });
-
   const toggleDay = (key: string) => setActiveDays((prev) => ({ ...prev, [key]: !prev[key] }));
 
   const addPlan = () => {
@@ -113,34 +84,17 @@ const Configuracoes = () => {
     toast.success("Convênio removido");
   };
 
-  const openProfForm = (prof?: Professional) => {
-    if (prof) {
-      setEditingProf(prof);
-      setProfFormData({ name: prof.name, crm: prof.crm, phone: prof.phone, specialty: prof.specialty, active: prof.active });
-    } else {
-      setEditingProf(null);
-      setProfFormData({ name: "", crm: "", phone: "", specialty: "", active: true });
-    }
-    setShowProfForm(true);
-  };
+  const handlePhotoClick = () => fileInputRef.current?.click();
 
-  const saveProfessional = () => {
-    if (!profFormData.name.trim() || !profFormData.crm.trim()) {
-      toast.error("Preencha nome e CRM");
-      return;
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => setPhotoPreview(reader.result as string);
+      reader.readAsDataURL(file);
+      toast.success("Foto atualizada");
     }
-    if (editingProf) {
-      setProfessionals((prev) => prev.map((p) => (p.id === editingProf.id ? { ...p, ...profFormData } : p)));
-      toast.success("Profissional atualizado");
-    } else {
-      setProfessionals((prev) => [...prev, { id: Date.now().toString(), ...profFormData }]);
-      toast.success("Profissional adicionado");
-    }
-    setShowProfForm(false);
   };
-
-  const toggleProfActive = (id: string) =>
-    setProfessionals((prev) => prev.map((p) => (p.id === id ? { ...p, active: !p.active } : p)));
 
   const handleSave = () => toast.success("Configurações salvas com sucesso!");
 
@@ -163,13 +117,29 @@ const Configuracoes = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Photo upload */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handlePhotoChange}
+          />
           <div className="flex items-center gap-4">
-            <Avatar className="h-16 w-16">
-              <AvatarFallback className="bg-accent text-accent-foreground text-lg">
-                {isClinic ? "CS" : "JS"}
-              </AvatarFallback>
-            </Avatar>
-            <Button variant="outline" size="sm" className="gap-2">
+            <button type="button" onClick={handlePhotoClick} className="relative group cursor-pointer">
+              <Avatar className="h-16 w-16">
+                {photoPreview ? (
+                  <AvatarImage src={photoPreview} alt="Foto" />
+                ) : (
+                  <AvatarFallback className="bg-accent text-accent-foreground text-lg">
+                    {isClinic ? "CS" : "JS"}
+                  </AvatarFallback>
+                )}
+              </Avatar>
+              <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <Upload className="h-5 w-5 text-white" />
+              </div>
+            </button>
+            <Button variant="outline" size="sm" className="gap-2" onClick={handlePhotoClick}>
               <Upload className="h-4 w-4" /> Alterar foto
             </Button>
           </div>
@@ -293,6 +263,7 @@ const Configuracoes = () => {
               value={newPlan}
               onChange={(e) => setNewPlan(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && addPlan()}
+              className="w-full"
             />
             <Button onClick={addPlan} size="sm" className="gap-1 shrink-0">
               <Plus className="h-4 w-4" /> Adicionar
@@ -315,88 +286,6 @@ const Configuracoes = () => {
           </div>
         </CardContent>
       </Card>
-
-      {/* === PROFESSIONALS (clinic only) === */}
-      {isClinic && (
-        <Card>
-          <CardHeader className="pb-4">
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2 text-base">
-                <UserCog className="h-5 w-5 text-primary" />
-                Profissionais
-              </CardTitle>
-              <Button size="sm" className="gap-1" onClick={() => openProfForm()}>
-                <Plus className="h-4 w-4" /> Novo
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {showProfForm && (
-              <div className="rounded-lg border border-primary/30 bg-accent/30 p-4 space-y-3">
-                <p className="text-sm font-medium text-foreground">
-                  {editingProf ? "Editar Profissional" : "Novo Profissional"}
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <Label className="text-xs">Nome</Label>
-                    <Input value={profFormData.name} onChange={(e) => setProfFormData((p) => ({ ...p, name: e.target.value }))} />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs">CRM</Label>
-                    <Input value={profFormData.crm} onChange={(e) => setProfFormData((p) => ({ ...p, crm: e.target.value }))} />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs">Telefone</Label>
-                    <PhoneMaskInput value={profFormData.phone} onChange={(v) => setProfFormData((p) => ({ ...p, phone: v }))} />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs">Especialidade</Label>
-                    <Select value={profFormData.specialty} onValueChange={(v) => setProfFormData((p) => ({ ...p, specialty: v }))}>
-                      <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-                      <SelectContent>
-                        {specialties.map((s) => (
-                          <SelectItem key={s} value={s}>{s}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div className="flex gap-2 justify-end">
-                  <Button variant="outline" size="sm" onClick={() => setShowProfForm(false)}>Cancelar</Button>
-                  <Button size="sm" onClick={saveProfessional}>Salvar</Button>
-                </div>
-              </div>
-            )}
-
-            {professionals.map((prof) => (
-              <div key={prof.id} className="flex items-center justify-between rounded-md border border-border px-3 py-3">
-                <div className="flex items-center gap-3 min-w-0">
-                  <Avatar className="h-9 w-9 shrink-0">
-                    <AvatarFallback className="bg-accent text-accent-foreground text-xs">
-                      {prof.name.split(" ").map((w) => w[0]).join("").slice(0, 2)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0">
-                    <p className={`text-sm font-medium truncate ${!prof.active ? "text-muted-foreground" : "text-foreground"}`}>
-                      {prof.name}
-                    </p>
-                    <p className="text-xs text-muted-foreground">{prof.specialty} · {prof.crm}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-1 shrink-0">
-                  <Badge variant={prof.active ? "default" : "secondary"} className="text-xs hidden sm:inline-flex">
-                    {prof.active ? "Ativo" : "Inativo"}
-                  </Badge>
-                  <Switch checked={prof.active} onCheckedChange={() => toggleProfActive(prof.id)} />
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openProfForm(prof)}>
-                    <Pencil className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      )}
 
       <div className="flex justify-end pb-6">
         <Button onClick={handleSave} className="px-8">Salvar Configurações</Button>

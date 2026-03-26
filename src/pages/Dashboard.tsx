@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Settings, LogOut } from "lucide-react";
+import { Settings, LogOut, CreditCard } from "lucide-react";
 
 const Dashboard = () => {
   const { userName, userType } = useUser();
@@ -45,6 +45,10 @@ const Dashboard = () => {
                 <DropdownMenuItem onClick={() => navigate("/dashboard/configuracoes")} className="gap-2 cursor-pointer">
                   <Settings className="h-4 w-4" />
                   Configurações
+                </DropdownMenuItem>
+                <DropdownMenuItem className="gap-2 cursor-pointer">
+                  <CreditCard className="h-4 w-4" />
+                  Assinatura
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => navigate("/")} className="gap-2 cursor-pointer text-destructive focus:text-destructive">
