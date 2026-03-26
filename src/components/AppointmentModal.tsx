@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { CalendarIcon, Plus, Trash2, X } from "lucide-react";
+import { CalendarIcon, Plus, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -98,7 +98,6 @@ const AppointmentModal = ({
   const [status, setStatus] = useState<AppointmentStatus>("scheduled");
   const [notes, setNotes] = useState("");
 
-  // Autocomplete
   const [patientSearch, setPatientSearch] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -107,7 +106,6 @@ const AppointmentModal = ({
     ? mockPatients.filter((p) => p.toLowerCase().includes(patientSearch.toLowerCase()))
     : [];
 
-  // Reset form when modal opens
   useEffect(() => {
     if (open) {
       if (appointment) {
@@ -163,12 +161,12 @@ const AppointmentModal = ({
 
   return (
     <Dialog open={open} onOpenChange={() => onClose()}>
-      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-lg max-h-[100dvh] sm:max-h-[90vh] overflow-hidden flex flex-col fixed inset-0 sm:inset-auto sm:left-[50%] sm:top-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%] rounded-none sm:rounded-lg w-full sm:w-auto">
+        <DialogHeader className="shrink-0">
           <DialogTitle>{isEditing ? "Editar Agendamento" : "Novo Agendamento"}</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 pt-2">
+        <div className="flex-1 overflow-y-auto space-y-4 pt-2 pb-2 -mx-6 px-6">
           {/* Patient autocomplete */}
           <div className="space-y-1.5 relative">
             <Label>Paciente</Label>
@@ -185,6 +183,7 @@ const AppointmentModal = ({
                   }}
                   onFocus={() => setShowSuggestions(true)}
                   onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+                  className="w-full"
                 />
                 {showSuggestions && filteredPatients.length > 0 && (
                   <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-popover border rounded-md shadow-md max-h-40 overflow-y-auto">
@@ -201,7 +200,7 @@ const AppointmentModal = ({
                   </div>
                 )}
               </div>
-              <Button type="button" variant="outline" size="icon" title="Novo paciente">
+              <Button type="button" variant="outline" size="icon" title="Novo paciente" className="shrink-0">
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
@@ -211,7 +210,7 @@ const AppointmentModal = ({
           <div className="space-y-1.5">
             <Label>Profissional</Label>
             <Select value={professionalId} onValueChange={setProfessionalId}>
-              <SelectTrigger>
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="Selecione..." />
               </SelectTrigger>
               <SelectContent>
@@ -222,8 +221,8 @@ const AppointmentModal = ({
             </Select>
           </div>
 
-          {/* Date + Time row */}
-          <div className="grid grid-cols-2 gap-3">
+          {/* Date + Time */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label>Data</Label>
               <Popover>
@@ -249,7 +248,7 @@ const AppointmentModal = ({
             <div className="space-y-1.5">
               <Label>Hora</Label>
               <Select value={time} onValueChange={setTime}>
-                <SelectTrigger>
+                <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -261,12 +260,12 @@ const AppointmentModal = ({
             </div>
           </div>
 
-          {/* Duration + Type row */}
-          <div className="grid grid-cols-2 gap-3">
+          {/* Duration + Type */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label>Duração</Label>
               <Select value={duration} onValueChange={setDuration}>
-                <SelectTrigger>
+                <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -279,7 +278,7 @@ const AppointmentModal = ({
             <div className="space-y-1.5">
               <Label>Tipo de atendimento</Label>
               <Select value={type} onValueChange={setType}>
-                <SelectTrigger>
+                <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -294,14 +293,14 @@ const AppointmentModal = ({
           {/* Status */}
           <div className="space-y-1.5">
             <Label>Status</Label>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               {statusOptions.map((opt) => (
                 <button
                   key={opt.value}
                   type="button"
                   onClick={() => setStatus(opt.value)}
                   className={cn(
-                    "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border transition-all",
+                    "flex items-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium border transition-all",
                     status === opt.value
                       ? "border-ring bg-accent text-accent-foreground shadow-sm"
                       : "border-border text-muted-foreground hover:bg-muted"
@@ -322,34 +321,37 @@ const AppointmentModal = ({
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
+              className="w-full"
             />
           </div>
+        </div>
 
-          {/* Actions */}
-          <div className="flex items-center gap-2 pt-2">
-            {isEditing && onDelete && appointment && (
-              <Button
-                type="button"
-                variant="destructive"
-                size="sm"
-                onClick={() => { onDelete(appointment.id); onClose(); }}
-              >
-                <Trash2 className="h-4 w-4 mr-1" />
-                Excluir
-              </Button>
-            )}
-            <div className="flex-1" />
-            <Button type="button" variant="outline" onClick={onClose}>
-              Cancelar
-            </Button>
+        {/* Fixed footer buttons */}
+        <div className="flex items-center gap-2 pt-3 border-t shrink-0">
+          {isEditing && onDelete && appointment && (
             <Button
               type="button"
-              onClick={handleSave}
-              disabled={!patientName || !professionalId}
+              variant="destructive"
+              size="sm"
+              onClick={() => { onDelete(appointment.id); onClose(); }}
+              className="h-10"
             >
-              Salvar
+              <Trash2 className="h-4 w-4 mr-1" />
+              Excluir
             </Button>
-          </div>
+          )}
+          <div className="flex-1" />
+          <Button type="button" variant="outline" onClick={onClose} className="h-10">
+            Cancelar
+          </Button>
+          <Button
+            type="button"
+            onClick={handleSave}
+            disabled={!patientName || !professionalId}
+            className="h-10"
+          >
+            Salvar
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
