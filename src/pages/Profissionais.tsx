@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Plus, Edit2 } from "lucide-react";
+import { Plus, Edit2, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
@@ -20,6 +21,14 @@ const Profissionais = () => {
   const [profissionais, setProfissionais] = useState<Profissional[]>(initialProfissionais);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Profissional | null>(null);
+  const [busca, setBusca] = useState("");
+
+  const filtered = profissionais.filter((p) => {
+    const q = busca.toLowerCase();
+    return p.nome.toLowerCase().includes(q) ||
+      p.crm.toLowerCase().includes(q) ||
+      p.especialidade.toLowerCase().includes(q);
+  });
 
   const toggleAtivo = (id: string) => {
     setProfissionais((prev) =>
@@ -49,6 +58,16 @@ const Profissionais = () => {
         </Button>
       </div>
 
+      <div className="relative max-w-sm">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder="Buscar profissional..."
+          value={busca}
+          onChange={(e) => setBusca(e.target.value)}
+          className="pl-9"
+        />
+      </div>
+
       <div className="rounded-lg border bg-card">
         <Table>
           <TableHeader>
@@ -61,7 +80,7 @@ const Profissionais = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {profissionais.map((p) => (
+            {filtered.map((p) => (
               <TableRow key={p.id}>
                 <TableCell>
                   <div className="flex items-center gap-3">
