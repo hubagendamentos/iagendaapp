@@ -7,6 +7,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { PacienteModal, type Paciente } from "@/components/PacienteModal";
+import { applyPhoneMask } from "@/components/PhoneMaskInput";
 
 const initialPacientes: Paciente[] = [
   { id: "1", nome: "Maria Silva", celular: "(11) 99999-0001", nascimento: "1985-03-15", observacoes: "", ultimaConsulta: "20/03/2026" },
@@ -80,7 +81,7 @@ const Pacientes = () => {
                   <TableCell className="font-medium">{p.nome}</TableCell>
                   <TableCell>
                     <span className="flex items-center gap-1 text-muted-foreground">
-                      <Phone className="h-3 w-3" /> {p.celular}
+                      <Phone className="h-3 w-3" /> {applyPhoneMask(p.celular.replace(/\D/g, ""))}
                     </span>
                   </TableCell>
                   <TableCell>
