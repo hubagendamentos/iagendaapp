@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PhoneMaskInput } from "@/components/PhoneMaskInput";
+import { CpfCnpjMaskInput } from "@/components/CpfCnpjMaskInput";
 
 const ufs = [
   "AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA",
@@ -78,8 +79,8 @@ export function PacienteModal({ open, onClose, onSave, paciente }: Props) {
               <Input type="date" value={form.nascimento} onChange={(e) => set("nascimento", e.target.value)} className="w-full" />
             </div>
             <div className="space-y-1.5">
-              <Label>CPF</Label>
-              <Input value={form.cpf || ""} onChange={(e) => set("cpf", e.target.value)} placeholder="000.000.000-00" className="w-full" />
+              <Label>CPF / CNPJ</Label>
+              <CpfCnpjMaskInput value={form.cpf || ""} onChange={(v) => set("cpf", v)} />
             </div>
             <div className="space-y-1.5">
               <Label>Email</Label>
