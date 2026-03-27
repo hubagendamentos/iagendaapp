@@ -71,30 +71,28 @@ export function ProfissionalModal({ open, onClose, onSave, profissional }: Props
     onSave(form);
   };
 
+  const initials = form.nome
+    ? form.nome.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()
+    : "?";
+
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="sm:max-w-[90vw] md:max-w-[700px] lg:max-w-[800px] max-h-[100dvh] sm:max-h-[90vh] overflow-hidden flex flex-col !inset-0 !translate-x-0 !translate-y-0 !top-0 !left-0 sm:!inset-auto sm:!left-[50%] sm:!top-[50%] sm:!translate-x-[-50%] sm:!translate-y-[-50%] rounded-none sm:rounded-lg w-full sm:w-auto">
+      <DialogContent className="w-full max-h-[100dvh] sm:max-h-[90vh] overflow-hidden flex flex-col !inset-0 !translate-x-0 !translate-y-0 !top-0 !left-0 rounded-none sm:!inset-auto sm:!left-[50%] sm:!top-[50%] sm:!translate-x-[-50%] sm:!translate-y-[-50%] sm:rounded-lg sm:w-[90vw] sm:max-w-[800px]">
         <DialogHeader className="shrink-0">
           <DialogTitle>{isEdit ? "Editar Profissional" : "Novo Profissional"}</DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto space-y-4 py-2 -mx-6 px-6">
-          {/* Photo upload */}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handlePhotoChange}
-          />
-          <div className="flex items-center gap-4">
+        <div className="flex-1 overflow-y-auto py-4 -mx-6 px-6 space-y-6">
+          {/* Photo */}
+          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} />
+          <div className="flex flex-col items-center gap-2">
             <button type="button" onClick={() => fileInputRef.current?.click()} className="relative group cursor-pointer">
-              <Avatar className="h-16 w-16">
+              <Avatar className="h-20 w-20 border-2 border-border">
                 {photoPreview ? (
                   <AvatarImage src={photoPreview} alt="Foto" />
                 ) : (
-                  <AvatarFallback className="bg-accent text-accent-foreground text-lg">
-                    {form.nome ? form.nome.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() : "?"}
+                  <AvatarFallback className="bg-accent text-accent-foreground text-xl font-semibold">
+                    {initials}
                   </AvatarFallback>
                 )}
               </Avatar>
@@ -102,37 +100,40 @@ export function ProfissionalModal({ open, onClose, onSave, profissional }: Props
                 <Upload className="h-5 w-5 text-white" />
               </div>
             </button>
-            <Button variant="outline" size="sm" className="gap-2" onClick={() => fileInputRef.current?.click()}>
-              <Upload className="h-4 w-4" /> Foto
+            <Button variant="outline" size="sm" className="gap-2 text-xs" onClick={() => fileInputRef.current?.click()}>
+              <Upload className="h-3.5 w-3.5" /> Alterar foto
             </Button>
           </div>
 
-          <div className="space-y-1.5">
-            <Label>Nome</Label>
-            <Input value={form.nome} onChange={(e) => set("nome", e.target.value)} placeholder="Nome completo" className="w-full" />
-          </div>
-          <div className="space-y-1.5">
-            <Label>CRM</Label>
-            <Input value={form.crm} onChange={(e) => set("crm", e.target.value)} placeholder="CRM/UF 000000" className="w-full" />
-          </div>
-          <div className="space-y-1.5">
-            <Label>Telefone</Label>
-            <PhoneMaskInput value={form.telefone} onChange={(v) => set("telefone", v)} />
-          </div>
-          <div className="space-y-1.5">
-            <Label>Especialidade</Label>
-            <Select value={form.especialidade} onValueChange={(v) => set("especialidade", v)}>
-              <SelectTrigger className="w-full"><SelectValue placeholder="Selecione..." /></SelectTrigger>
-              <SelectContent>
-                {specialties.map((s) => (
-                  <SelectItem key={s} value={s}>{s}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          {/* Fields – 2 columns on sm+ */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5 sm:col-span-1">
+              <Label>Nome</Label>
+              <Input value={form.nome} onChange={(e) => set("nome", e.target.value)} placeholder="Nome completo" />
+            </div>
+            <div className="space-y-1.5 sm:col-span-1">
+              <Label>CRM</Label>
+              <Input value={form.crm} onChange={(e) => set("crm", e.target.value)} placeholder="CRM/UF 000000" />
+            </div>
+            <div className="space-y-1.5 sm:col-span-1">
+              <Label>Telefone</Label>
+              <PhoneMaskInput value={form.telefone} onChange={(v) => set("telefone", v)} />
+            </div>
+            <div className="space-y-1.5 sm:col-span-1">
+              <Label>Especialidade</Label>
+              <Select value={form.especialidade} onValueChange={(v) => set("especialidade", v)}>
+                <SelectTrigger className="w-full"><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                <SelectContent>
+                  {specialties.map((s) => (
+                    <SelectItem key={s} value={s}>{s}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
 
-        <DialogFooter className="shrink-0 border-t pt-3">
+        <DialogFooter className="shrink-0 border-t pt-4 gap-2">
           <Button variant="outline" onClick={onClose} className="h-10">Cancelar</Button>
           <Button onClick={handleSave} className="h-10">Salvar</Button>
         </DialogFooter>
