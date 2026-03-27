@@ -73,7 +73,7 @@ export function ProfissionalModal({ open, onClose, onSave, profissional }: Props
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="sm:max-w-lg md:max-w-2xl max-h-[100dvh] sm:max-h-[90vh] overflow-hidden flex flex-col !inset-0 !translate-x-0 !translate-y-0 !top-0 !left-0 sm:!inset-auto sm:!left-[50%] sm:!top-[50%] sm:!translate-x-[-50%] sm:!translate-y-[-50%] rounded-none sm:rounded-lg w-full sm:w-auto">
+      <DialogContent className="sm:max-w-[600px] lg:max-w-[700px] max-h-[100dvh] sm:max-h-[90vh] overflow-hidden flex flex-col !inset-0 !translate-x-0 !translate-y-0 !top-0 !left-0 sm:!inset-auto sm:!left-[50%] sm:!top-[50%] sm:!translate-x-[-50%] sm:!translate-y-[-50%] rounded-none sm:rounded-lg w-full sm:w-auto">
         <DialogHeader className="shrink-0">
           <DialogTitle>{isEdit ? "Editar Profissional" : "Novo Profissional"}</DialogTitle>
         </DialogHeader>
