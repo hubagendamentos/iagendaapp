@@ -56,17 +56,12 @@ const PlanModal = ({ open, onClose, onSave, plan }: { open: boolean; onClose: ()
   const [name, setName] = useState("");
   const [active, setActive] = useState(true);
 
-  useState(() => {
-    if (plan) { setName(plan.name); setActive(plan.active); }
-    else { setName(""); setActive(true); }
-  });
-
-  // Reset on open
-  const handleOpen = () => {
-    if (plan) { setName(plan.name); setActive(plan.active); }
-    else { setName(""); setActive(true); }
-  };
-  if (open && name === "" && !plan) handleOpen();
+  useEffect(() => {
+    if (open) {
+      if (plan) { setName(plan.name); setActive(plan.active); }
+      else { setName(""); setActive(true); }
+    }
+  }, [open, plan]);
 
   return (
     <Dialog open={open} onOpenChange={() => onClose()}>
@@ -97,11 +92,12 @@ const PreparationModal = ({ open, onClose, onSave, preparation }: { open: boolea
   const [description, setDescription] = useState(preparation?.description || "");
   const [active, setActive] = useState(preparation?.active ?? true);
 
-  // Reset on open change
-  useState(() => {
-    if (preparation) { setName(preparation.name); setDescription(preparation.description); setActive(preparation.active); }
-    else { setName(""); setDescription(""); setActive(true); }
-  });
+  useEffect(() => {
+    if (open) {
+      if (preparation) { setName(preparation.name); setDescription(preparation.description); setActive(preparation.active); }
+      else { setName(""); setDescription(""); setActive(true); }
+    }
+  }, [open, preparation]);
 
   return (
     <Dialog open={open} onOpenChange={() => onClose()}>
@@ -137,10 +133,12 @@ const ExamModal = ({ open, onClose, onSave, exam, preparations }: { open: boolea
   const [preparationId, setPreparationId] = useState<string | null>(exam?.preparationId || null);
   const [active, setActive] = useState(exam?.active ?? true);
 
-  useState(() => {
-    if (exam) { setName(exam.name); setDescription(exam.description); setPreparationId(exam.preparationId); setActive(exam.active); }
-    else { setName(""); setDescription(""); setPreparationId(null); setActive(true); }
-  });
+  useEffect(() => {
+    if (open) {
+      if (exam) { setName(exam.name); setDescription(exam.description); setPreparationId(exam.preparationId); setActive(exam.active); }
+      else { setName(""); setDescription(""); setPreparationId(null); setActive(true); }
+    }
+  }, [open, exam]);
 
   return (
     <Dialog open={open} onOpenChange={() => onClose()}>
