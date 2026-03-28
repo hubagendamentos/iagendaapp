@@ -53,6 +53,8 @@ const Configuracoes = () => {
   const [endTime, setEndTime] = useState("18:00");
   const [interval, setInterval] = useState("30");
 
+  const toggleDay = (key: string) => setActiveDays((prev) => ({ ...prev, [key]: !prev[key] }));
+
   const handlePhotoClick = () => fileInputRef.current?.click();
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
