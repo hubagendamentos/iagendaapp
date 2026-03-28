@@ -1,4 +1,4 @@
-import { Calendar, Users, UserCog, Settings } from "lucide-react";
+import { Calendar, Users, UserCog, Settings, ClipboardList } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { useUser } from "@/contexts/UserContext";
@@ -18,6 +18,7 @@ const allMenuItems = [
   { title: "Agenda", url: "/dashboard/agenda", icon: Calendar, roles: ["clinic", "professional"] },
   { title: "Pacientes", url: "/dashboard/pacientes", icon: Users, roles: ["clinic", "professional"] },
   { title: "Profissionais", url: "/dashboard/profissionais", icon: UserCog, roles: ["clinic"] },
+  { title: "Cadastros", url: "/dashboard/cadastros", icon: ClipboardList, roles: ["clinic", "professional"] },
   { title: "Configurações", url: "/dashboard/configuracoes", icon: Settings, roles: ["clinic", "professional"] },
 ];
 

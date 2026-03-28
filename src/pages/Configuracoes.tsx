@@ -8,7 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PhoneMaskInput } from "@/components/PhoneMaskInput";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Building2, User, Clock, CreditCard, Plus, Trash2, Upload } from "lucide-react";
+import { Building2, User, Clock, Upload } from "lucide-react";
 import { toast } from "sonner";
 
 const weekDays = [
@@ -25,12 +25,6 @@ const specialties = [
   "Clínico Geral", "Cardiologia", "Dermatologia", "Ortopedia", "Pediatria",
   "Neurologia", "Ginecologia", "Oftalmologia", "Psiquiatria", "Endocrinologia",
 ];
-
-interface InsurancePlan {
-  id: string;
-  name: string;
-  active: boolean;
-}
 
 const Configuracoes = () => {
   const { userType } = useUser();
@@ -59,30 +53,7 @@ const Configuracoes = () => {
   const [endTime, setEndTime] = useState("18:00");
   const [interval, setInterval] = useState("30");
 
-  // Insurance
-  const [plans, setPlans] = useState<InsurancePlan[]>([
-    { id: "1", name: "Unimed", active: true },
-    { id: "2", name: "Bradesco Saúde", active: true },
-    { id: "3", name: "SulAmérica", active: false },
-  ]);
-  const [newPlan, setNewPlan] = useState("");
-
   const toggleDay = (key: string) => setActiveDays((prev) => ({ ...prev, [key]: !prev[key] }));
-
-  const addPlan = () => {
-    if (!newPlan.trim()) return;
-    setPlans((prev) => [...prev, { id: Date.now().toString(), name: newPlan.trim(), active: true }]);
-    setNewPlan("");
-    toast.success("Convênio adicionado");
-  };
-
-  const togglePlan = (id: string) =>
-    setPlans((prev) => prev.map((p) => (p.id === id ? { ...p, active: !p.active } : p)));
-
-  const removePlan = (id: string) => {
-    setPlans((prev) => prev.filter((p) => p.id !== id));
-    toast.success("Convênio removido");
-  };
 
   const handlePhotoClick = () => fileInputRef.current?.click();
 
@@ -248,44 +219,6 @@ const Configuracoes = () => {
         </CardContent>
       </Card>
 
-      {/* === INSURANCE PLANS === */}
-      <Card>
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <CreditCard className="h-5 w-5 text-primary" />
-            Convênios / Planos
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex gap-2">
-            <Input
-              placeholder="Nome do convênio"
-              value={newPlan}
-              onChange={(e) => setNewPlan(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && addPlan()}
-              className="w-full"
-            />
-            <Button onClick={addPlan} size="sm" className="gap-1 shrink-0">
-              <Plus className="h-4 w-4" /> Adicionar
-            </Button>
-          </div>
-          <div className="space-y-2">
-            {plans.map((plan) => (
-              <div key={plan.id} className="flex items-center justify-between rounded-md border border-border px-3 py-2">
-                <div className="flex items-center gap-3">
-                  <Switch checked={plan.active} onCheckedChange={() => togglePlan(plan.id)} />
-                  <span className={`text-sm ${plan.active ? "text-foreground" : "text-muted-foreground line-through"}`}>
-                    {plan.name}
-                  </span>
-                </div>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => removePlan(plan.id)}>
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
 
       <div className="flex justify-end pb-6">
         <Button onClick={handleSave} className="px-8">Salvar Configurações</Button>

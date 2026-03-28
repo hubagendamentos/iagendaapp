@@ -48,6 +48,14 @@ const Agenda = () => {
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
   const [defaultSlot, setDefaultSlot] = useState<{ time: string; professionalId: string } | null>(null);
   const [filters, setFilters] = useState<AgendaFilters>({ professionalId: null, startTime: null, endTime: null, date: null });
+
+  // When filter date changes, update currentDate
+  const handleApplyFilters = (newFilters: AgendaFilters) => {
+    setFilters(newFilters);
+    if (newFilters.date) {
+      setCurrentDate(newFilters.date);
+    }
+  };
   // Mobile: which professional column to show (index)
   const [mobileProfIdx, setMobileProfIdx] = useState(0);
 
@@ -259,7 +267,7 @@ const Agenda = () => {
       <AgendaFilterModal
         open={filterOpen}
         onClose={() => setFilterOpen(false)}
-        onApply={setFilters}
+        onApply={handleApplyFilters}
         currentFilters={filters}
         professionals={professionals}
         showProfessionalFilter={isClinic}
