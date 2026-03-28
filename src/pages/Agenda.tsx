@@ -304,6 +304,9 @@ const Agenda = () => {
         defaultProfessionalId={defaultSlot?.professionalId}
         defaultDate={currentDate}
         professionals={isClinic ? professionals : professionals.filter((p) => p.id === userProfId)}
+        exams={mockExams}
+        preparations={mockPreparations}
+        plans={mockPlans}
       />
     </div>
   );
