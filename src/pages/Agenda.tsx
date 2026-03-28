@@ -13,6 +13,26 @@ const professionals = [
   { id: "p3", name: "Dr. Pedro Lima" },
 ];
 
+// Shared data (same as Cadastros mock data)
+const mockExams = [
+  { id: "1", name: "Hemograma Completo", description: "Exame de sangue completo", preparationId: "1", active: true },
+  { id: "2", name: "Raio-X Tórax", description: "", preparationId: null, active: true },
+  { id: "3", name: "Sangue Completo", description: "Análise completa de sangue", preparationId: "1", active: true },
+  { id: "4", name: "Ultrassonografia", description: "Ultrassom abdominal", preparationId: "1", active: true },
+  { id: "5", name: "Eletrocardiograma", description: "ECG de repouso", preparationId: null, active: true },
+];
+
+const mockPreparations = [
+  { id: "1", name: "Jejum 12h", description: "Jejum absoluto de 12 horas antes do exame", active: true },
+  { id: "2", name: "Sem preparo", description: "Nenhum preparo necessário", active: true },
+];
+
+const mockPlans = [
+  { id: "1", name: "Unimed", active: true },
+  { id: "2", name: "Bradesco Saúde", active: true },
+  { id: "3", name: "SulAmérica", active: false },
+];
+
 const allHours = Array.from({ length: 21 }, (_, i) => {
   const h = Math.floor(i / 2) + 8;
   const m = i % 2 === 0 ? "00" : "30";
