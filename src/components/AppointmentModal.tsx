@@ -37,7 +37,35 @@ export interface Appointment {
   professionalId: string;
   status: AppointmentStatus;
   type?: string;
+  examId?: string | null;
+  examName?: string | null;
+  preparationName?: string | null;
+  paymentType?: "particular" | "plan";
+  planId?: string | null;
+  planName?: string | null;
   notes?: string;
+}
+
+// Data types from Cadastros
+interface ExamOption {
+  id: string;
+  name: string;
+  description: string;
+  preparationId: string | null;
+  active: boolean;
+}
+
+interface PreparationOption {
+  id: string;
+  name: string;
+  description: string;
+  active: boolean;
+}
+
+interface PlanOption {
+  id: string;
+  name: string;
+  active: boolean;
 }
 
 interface AppointmentModalProps {
@@ -50,6 +78,9 @@ interface AppointmentModalProps {
   defaultProfessionalId?: string;
   defaultDate?: Date;
   professionals: { id: string; name: string }[];
+  exams?: ExamOption[];
+  preparations?: PreparationOption[];
+  plans?: PlanOption[];
 }
 
 const mockPatients = [
@@ -86,6 +117,9 @@ const AppointmentModal = ({
   defaultProfessionalId,
   defaultDate,
   professionals,
+  exams = [],
+  preparations = [],
+  plans = [],
 }: AppointmentModalProps) => {
   const isEditing = !!appointment;
 
@@ -98,13 +132,44 @@ const AppointmentModal = ({
   const [status, setStatus] = useState<AppointmentStatus>("scheduled");
   const [notes, setNotes] = useState("");
 
+  // New fields
+  const [examId, setExamId] = useState<string | null>(null);
+  const [examSearch, setExamSearch] = useState("");
+  const [showExamSuggestions, setShowExamSuggestions] = useState(false);
+  const [preparationName, setPreparationName] = useState<string | null>(null);
+  const [paymentType, setPaymentType] = useState<"particular" | "plan">("particular");
+  const [planId, setPlanId] = useState<string | null>(null);
+
   const [patientSearch, setPatientSearch] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const examInputRef = useRef<HTMLInputElement>(null);
+
+  const activeExams = exams.filter((e) => e.active);
+  const activePlans = plans.filter((p) => p.active);
 
   const filteredPatients = patientSearch.length > 0
     ? mockPatients.filter((p) => p.toLowerCase().includes(patientSearch.toLowerCase()))
     : [];
+
+  const filteredExams = examSearch.length > 0
+    ? activeExams.filter((e) => e.name.toLowerCase().includes(examSearch.toLowerCase()))
+    : activeExams;
+
+  // Auto-fill preparation when exam changes
+  useEffect(() => {
+    if (examId) {
+      const exam = exams.find((e) => e.id === examId);
+      if (exam?.preparationId) {
+        const prep = preparations.find((p) => p.id === exam.preparationId);
+        setPreparationName(prep?.name || "Sem preparo");
+      } else {
+        setPreparationName("Sem preparo");
+      }
+    } else {
+      setPreparationName(null);
+    }
+  }, [examId, exams, preparations]);
 
   useEffect(() => {
     if (open) {
@@ -117,6 +182,10 @@ const AppointmentModal = ({
         setType(appointment.type || "Consulta");
         setStatus(appointment.status);
         setNotes(appointment.notes || "");
+        setExamId(appointment.examId || null);
+        setExamSearch(appointment.examName || "");
+        setPaymentType(appointment.paymentType || "particular");
+        setPlanId(appointment.planId || null);
         if (defaultDate) setDate(defaultDate);
       } else {
         setPatientName("");
@@ -127,6 +196,10 @@ const AppointmentModal = ({
         setType("Consulta");
         setStatus("scheduled");
         setNotes("");
+        setExamId(null);
+        setExamSearch("");
+        setPaymentType("particular");
+        setPlanId(null);
         if (defaultDate) setDate(defaultDate);
       }
     }
@@ -134,6 +207,8 @@ const AppointmentModal = ({
 
   const handleSave = () => {
     if (!patientName || !professionalId) return;
+    const selectedExam = exams.find((e) => e.id === examId);
+    const selectedPlan = plans.find((p) => p.id === planId);
     onSave({
       ...(appointment ? { id: appointment.id } : {}),
       patientName,
@@ -142,6 +217,12 @@ const AppointmentModal = ({
       professionalId,
       status,
       type,
+      examId: type === "Exame" ? examId : null,
+      examName: type === "Exame" ? selectedExam?.name || null : null,
+      preparationName: type === "Exame" ? preparationName : null,
+      paymentType,
+      planId: paymentType === "plan" ? planId : null,
+      planName: paymentType === "plan" ? selectedPlan?.name || null : null,
       notes,
     });
     onClose();
@@ -153,11 +234,20 @@ const AppointmentModal = ({
     setShowSuggestions(false);
   };
 
+  const handleSelectExam = (exam: ExamOption) => {
+    setExamId(exam.id);
+    setExamSearch(exam.name);
+    setShowExamSuggestions(false);
+  };
+
   const timeSlots = Array.from({ length: 21 }, (_, i) => {
     const h = Math.floor(i / 2) + 8;
     const m = i % 2 === 0 ? "00" : "30";
     return `${String(h).padStart(2, "0")}:${m}`;
   });
+
+  const isExam = type === "Exame";
+  const isPlan = paymentType === "plan";
 
   return (
     <Dialog open={open} onOpenChange={() => onClose()}>
@@ -167,7 +257,7 @@ const AppointmentModal = ({
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto space-y-4 pt-2 pb-2 -mx-6 px-6">
-          {/* Patient autocomplete */}
+          {/* 1. Patient autocomplete */}
           <div className="space-y-1.5 relative">
             <Label>Paciente</Label>
             <div className="flex gap-2">
@@ -205,6 +295,80 @@ const AppointmentModal = ({
               </Button>
             </div>
           </div>
+
+          {/* 2. Tipo de atendimento */}
+          <div className="space-y-1.5">
+            <Label>Tipo de atendimento</Label>
+            <Select value={type} onValueChange={(v) => {
+              setType(v);
+              if (v !== "Exame") {
+                setExamId(null);
+                setExamSearch("");
+                setPreparationName(null);
+              }
+            }}>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {appointmentTypes.map((t) => (
+                  <SelectItem key={t} value={t}>{t}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* 3. Exam selection (only if type === "Exame") */}
+          {isExam && (
+            <>
+              <div className="space-y-1.5 relative">
+                <Label>Exame</Label>
+                <div className="relative">
+                  <Input
+                    ref={examInputRef}
+                    placeholder="Buscar exame..."
+                    value={examSearch}
+                    onChange={(e) => {
+                      setExamSearch(e.target.value);
+                      setExamId(null);
+                      setPreparationName(null);
+                      setShowExamSuggestions(true);
+                    }}
+                    onFocus={() => setShowExamSuggestions(true)}
+                    onBlur={() => setTimeout(() => setShowExamSuggestions(false), 150)}
+                    className="w-full"
+                  />
+                  {showExamSuggestions && filteredExams.length > 0 && (
+                    <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-popover border rounded-md shadow-md max-h-40 overflow-y-auto">
+                      {filteredExams.map((e) => (
+                        <button
+                          key={e.id}
+                          type="button"
+                          className="w-full text-left px-3 py-2 text-sm hover:bg-accent transition-colors"
+                          onMouseDown={() => handleSelectExam(e)}
+                        >
+                          <span className="font-medium">{e.name}</span>
+                          {e.description && (
+                            <span className="text-muted-foreground ml-2 text-xs">— {e.description}</span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Preparation (read-only, auto-filled) */}
+              <div className="space-y-1.5">
+                <Label>Preparo</Label>
+                <Input
+                  value={preparationName || "Selecione um exame"}
+                  readOnly
+                  className="w-full bg-muted cursor-default"
+                />
+              </div>
+            </>
+          )}
 
           {/* Professional */}
           <div className="space-y-1.5">
@@ -260,35 +424,54 @@ const AppointmentModal = ({
             </div>
           </div>
 
-          {/* Duration + Type */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label>Duração</Label>
-              <Select value={duration} onValueChange={setDuration}>
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="30">30 minutos</SelectItem>
-                  <SelectItem value="60">60 minutos</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          {/* Duration */}
+          <div className="space-y-1.5">
+            <Label>Duração</Label>
+            <Select value={duration} onValueChange={setDuration}>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="30">30 minutos</SelectItem>
+                <SelectItem value="60">60 minutos</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
+          {/* 4. Payment type */}
+          <div className="space-y-1.5">
+            <Label>Tipo de pagamento</Label>
+            <Select value={paymentType} onValueChange={(v: "particular" | "plan") => {
+              setPaymentType(v);
+              if (v === "particular") setPlanId(null);
+            }}>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="particular">Particular</SelectItem>
+                <SelectItem value="plan">Plano</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Plan selection (only if paymentType === "plan") */}
+          {isPlan && (
             <div className="space-y-1.5">
-              <Label>Tipo de atendimento</Label>
-              <Select value={type} onValueChange={setType}>
+              <Label>Plano</Label>
+              <Select value={planId || "__none__"} onValueChange={(v) => setPlanId(v === "__none__" ? null : v)}>
                 <SelectTrigger className="w-full">
-                  <SelectValue />
+                  <SelectValue placeholder="Selecione o plano..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {appointmentTypes.map((t) => (
-                    <SelectItem key={t} value={t}>{t}</SelectItem>
+                  <SelectItem value="__none__" disabled>Selecione...</SelectItem>
+                  {activePlans.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-          </div>
+          )}
 
           {/* Status */}
           <div className="space-y-1.5">
