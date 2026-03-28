@@ -8,7 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PhoneMaskInput } from "@/components/PhoneMaskInput";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Building2, User, Clock } from "lucide-react";
+import { Building2, User, Clock, Upload } from "lucide-react";
 import { toast } from "sonner";
 
 const weekDays = [
