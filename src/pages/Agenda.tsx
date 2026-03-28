@@ -267,7 +267,7 @@ const Agenda = () => {
       <AgendaFilterModal
         open={filterOpen}
         onClose={() => setFilterOpen(false)}
-        onApply={setFilters}
+        onApply={handleApplyFilters}
         currentFilters={filters}
         professionals={professionals}
         showProfessionalFilter={isClinic}
