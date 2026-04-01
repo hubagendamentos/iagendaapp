@@ -29,6 +29,7 @@ const specialties = [
 
 const Configuracoes = () => {
   const { userType } = useUser();
+  const { theme, toggleTheme } = useTheme();
   const isClinic = userType === "clinic";
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
