@@ -1,6 +1,6 @@
-import { Calendar, Users, UserCog, Settings, ClipboardList } from "lucide-react";
+import { Calendar, Users, UserCog, Settings, ClipboardList, LayoutDashboard } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useUser } from "@/contexts/UserContext";
 import {
   Sidebar,
