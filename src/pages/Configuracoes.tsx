@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import { useUser } from "@/contexts/UserContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,7 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PhoneMaskInput } from "@/components/PhoneMaskInput";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Building2, User, Clock, Upload } from "lucide-react";
+import { Building2, User, Clock, Upload, Moon } from "lucide-react";
 import { toast } from "sonner";
 
 const weekDays = [
@@ -28,6 +29,7 @@ const specialties = [
 
 const Configuracoes = () => {
   const { userType } = useUser();
+  const { theme, toggleTheme } = useTheme();
   const isClinic = userType === "clinic";
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
@@ -215,6 +217,25 @@ const Configuracoes = () => {
                 </SelectContent>
               </Select>
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* === THEME === */}
+      <Card>
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Moon className="h-5 w-5 text-primary" />
+            Aparência
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-medium text-sm">Modo escuro</p>
+              <p className="text-xs text-muted-foreground">Alternar entre tema claro e escuro</p>
+            </div>
+            <Switch checked={theme === "dark"} onCheckedChange={toggleTheme} />
           </div>
         </CardContent>
       </Card>
