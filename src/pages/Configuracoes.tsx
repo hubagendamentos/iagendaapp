@@ -221,6 +221,25 @@ const Configuracoes = () => {
         </CardContent>
       </Card>
 
+      {/* === THEME === */}
+      <Card>
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Moon className="h-5 w-5 text-primary" />
+            Aparência
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-medium text-sm">Modo escuro</p>
+              <p className="text-xs text-muted-foreground">Alternar entre tema claro e escuro</p>
+            </div>
+            <Switch checked={theme === "dark"} onCheckedChange={toggleTheme} />
+          </div>
+        </CardContent>
+      </Card>
+
 
       <div className="flex justify-end pb-6">
         <Button onClick={handleSave} className="px-8">Salvar Configurações</Button>
