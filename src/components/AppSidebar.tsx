@@ -1,6 +1,6 @@
-import { Calendar, Users, UserCog, Settings, ClipboardList } from "lucide-react";
+import { Calendar, Users, UserCog, Settings, ClipboardList, LayoutDashboard } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useUser } from "@/contexts/UserContext";
 import {
   Sidebar,
@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/sidebar";
 
 const allMenuItems = [
+  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard, roles: ["clinic", "professional"] },
   { title: "Agenda", url: "/dashboard/agenda", icon: Calendar, roles: ["clinic", "professional"] },
   { title: "Pacientes", url: "/dashboard/pacientes", icon: Users, roles: ["clinic", "professional"] },
   { title: "Profissionais", url: "/dashboard/profissionais", icon: UserCog, roles: ["clinic"] },
@@ -26,6 +27,7 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
+  const navigate = useNavigate();
   const { userType } = useUser();
 
   const menuItems = allMenuItems.filter((item) => item.roles.includes(userType));
@@ -33,14 +35,14 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarContent>
-        <div className="flex items-center gap-2 px-4 py-5">
+        <button onClick={() => navigate("/dashboard")} className="flex items-center gap-2 px-4 py-5 hover:opacity-80 transition-opacity">
           <Calendar className="h-6 w-6 text-sidebar-primary shrink-0" />
           {!collapsed && (
             <span className="text-lg font-bold text-sidebar-primary-foreground tracking-tight">
               ClinicaHub
             </span>
           )}
-        </div>
+        </button>
 
         <SidebarGroup>
           <SidebarGroupLabel>Menu</SidebarGroupLabel>
