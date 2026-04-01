@@ -27,6 +27,7 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
+  const navigate = useNavigate();
   const { userType } = useUser();
 
   const menuItems = allMenuItems.filter((item) => item.roles.includes(userType));
