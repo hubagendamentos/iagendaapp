@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/sidebar";
 
 const allMenuItems = [
+  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard, roles: ["clinic", "professional"] },
   { title: "Agenda", url: "/dashboard/agenda", icon: Calendar, roles: ["clinic", "professional"] },
   { title: "Pacientes", url: "/dashboard/pacientes", icon: Users, roles: ["clinic", "professional"] },
   { title: "Profissionais", url: "/dashboard/profissionais", icon: UserCog, roles: ["clinic"] },
