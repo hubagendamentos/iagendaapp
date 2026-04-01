@@ -34,14 +34,14 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarContent>
-        <div className="flex items-center gap-2 px-4 py-5">
+        <button onClick={() => navigate("/dashboard")} className="flex items-center gap-2 px-4 py-5 hover:opacity-80 transition-opacity">
           <Calendar className="h-6 w-6 text-sidebar-primary shrink-0" />
           {!collapsed && (
             <span className="text-lg font-bold text-sidebar-primary-foreground tracking-tight">
               ClinicaHub
             </span>
           )}
-        </div>
+        </button>
 
         <SidebarGroup>
           <SidebarGroupLabel>Menu</SidebarGroupLabel>
