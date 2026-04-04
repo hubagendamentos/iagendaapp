@@ -209,11 +209,11 @@ const Agenda = () => {
           {hours.map((time) => (
             <div
               key={time}
-              className="grid border-b"
+              className="grid border-b border-border/60"
               style={{ gridTemplateColumns: `72px repeat(${visibleProfessionals.length}, 1fr)` }}
             >
-              <div className="border-r px-2 py-1 flex items-start justify-end">
-                <span className="text-xs text-muted-foreground font-medium -mt-0.5">{time}</span>
+              <div className="border-r border-border/60 px-2 py-1 flex items-start justify-end">
+                <span className="text-xs text-foreground/60 font-semibold -mt-0.5">{time}</span>
               </div>
               {visibleProfessionals.map((prof) => {
                 const appt = getAppointment(time, prof.id);
