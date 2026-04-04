@@ -217,19 +217,27 @@ const Agenda = () => {
               </div>
               {visibleProfessionals.map((prof) => {
                 const appt = getAppointment(time, prof.id);
+                const profName = professionals.find(p => p.id === appt?.professionalId)?.name;
                 return (
                   <div
                     key={prof.id}
-                    className={`border-r last:border-r-0 h-12 px-1 py-0.5 transition-colors ${
+                    className={`border-r last:border-r-0 min-h-[3.5rem] px-1 py-0.5 transition-colors ${
                       !appt ? "hover:bg-accent/50 cursor-pointer" : "cursor-pointer"
                     }`}
                     onClick={() => handleSlotClick(time, prof.id)}
                   >
                     {appt && (
-                      <div className={`h-full rounded-md border border-l-[4px] ${statusConfig[appt.status].borderColor} ${statusConfig[appt.status].cardClass} px-2 py-1 flex items-center gap-2 text-xs hover:shadow-sm transition-shadow cursor-pointer`}>
-                        <span className={`h-2 w-2 rounded-full shrink-0 ${statusConfig[appt.status].dotClass}`} />
-                        <span className={`font-medium truncate ${statusConfig[appt.status].cancelled ? "line-through" : ""}`}>{appt.patientName}</span>
-                        <span className="text-muted-foreground ml-auto shrink-0">{appt.time}</span>
+                      <div className={`h-full rounded-md border border-l-[4px] ${statusConfig[appt.status].borderColor} ${statusConfig[appt.status].cardClass} px-2 py-1 flex items-start gap-2 text-xs hover:shadow-sm transition-shadow cursor-pointer`}>
+                        <span className={`h-2 w-2 rounded-full shrink-0 mt-1 ${statusConfig[appt.status].dotClass}`} />
+                        <div className="min-w-0 flex-1">
+                          <p className={`font-semibold truncate text-foreground ${statusConfig[appt.status].cancelled ? "line-through" : ""}`}>{appt.patientName}</p>
+                          <p className="text-muted-foreground truncate">
+                            {appt.type}{appt.time ? ` · ${appt.time}` : ""}
+                          </p>
+                          {appt.type === "Exame" && appt.preparationName && (
+                            <p className="text-muted-foreground/70 truncate">Preparo: {appt.preparationName}</p>
+                          )}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -255,11 +263,17 @@ const Agenda = () => {
               >
                 <span className="text-sm text-muted-foreground font-medium w-12 shrink-0">{time}</span>
                 {appt ? (
-                  <div className={`flex-1 rounded-lg border border-l-[4px] ${statusConfig[appt.status].borderColor} ${statusConfig[appt.status].cardClass} px-3 py-2 flex items-center gap-2 hover:shadow-sm transition-shadow`}>
-                    <span className={`h-2.5 w-2.5 rounded-full shrink-0 ${statusConfig[appt.status].dotClass}`} />
-                    <div className="min-w-0 flex-1">
-                      <p className={`text-sm font-medium truncate ${statusConfig[appt.status].cancelled ? "line-through" : ""}`}>{appt.patientName}</p>
-                      <p className="text-xs text-muted-foreground">{appt.type}</p>
+                  <div className={`flex-1 rounded-lg border border-l-[4px] ${statusConfig[appt.status].borderColor} ${statusConfig[appt.status].cardClass} px-3 py-2 hover:shadow-sm transition-shadow`}>
+                    <div className="flex items-start gap-2">
+                      <span className={`h-2.5 w-2.5 rounded-full shrink-0 mt-1 ${statusConfig[appt.status].dotClass}`} />
+                      <div className="min-w-0 flex-1">
+                        <p className={`text-sm font-semibold truncate text-foreground ${statusConfig[appt.status].cancelled ? "line-through" : ""}`}>{appt.patientName}</p>
+                        <p className="text-xs text-muted-foreground truncate">{appt.type} · {appt.time}</p>
+                        {isClinic && (() => { const pName = professionals.find(p => p.id === appt.professionalId)?.name; return pName ? <p className="text-xs text-muted-foreground/70 truncate">{pName}</p> : null; })()}
+                        {appt.type === "Exame" && appt.preparationName && (
+                          <p className="text-xs text-muted-foreground/70 truncate">Preparo: {appt.preparationName}</p>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ) : (
