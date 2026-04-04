@@ -3,6 +3,7 @@ import { format, addDays, subDays, isToday } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, CalendarDays, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useUser } from "@/contexts/UserContext";
 import AppointmentModal, { type Appointment, type AppointmentStatus } from "@/components/AppointmentModal";
 import AgendaFilterModal, { type AgendaFilters } from "@/components/AgendaFilterModal";
