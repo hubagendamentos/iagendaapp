@@ -50,11 +50,11 @@ const initialAppointments: Appointment[] = [
   { id: "8", patientName: "Marcos Vieira", time: "13:00", duration: 30, professionalId: "p2", status: "confirmed", type: "Consulta" },
 ];
 
-const statusConfig: Record<AppointmentStatus, { label: string; className: string; dotClass: string }> = {
-  scheduled: { label: "Agendado", className: "bg-status-scheduled/15 border-status-scheduled/30 text-foreground", dotClass: "bg-status-scheduled" },
-  confirmed: { label: "Confirmado", className: "bg-status-confirmed/15 border-status-confirmed/30 text-foreground", dotClass: "bg-status-confirmed" },
-  cancelled: { label: "Cancelado", className: "bg-status-cancelled/15 border-status-cancelled/30 text-foreground line-through opacity-60", dotClass: "bg-status-cancelled" },
-  missed: { label: "Faltou", className: "bg-status-missed/15 border-status-missed/30 text-foreground", dotClass: "bg-status-missed" },
+const statusConfig: Record<AppointmentStatus, { label: string; cardClass: string; dotClass: string; borderColor: string; cancelled?: boolean }> = {
+  scheduled: { label: "Agendado", cardClass: "bg-card border-border", dotClass: "bg-status-scheduled", borderColor: "border-l-status-scheduled" },
+  confirmed: { label: "Confirmado", cardClass: "bg-card border-border", dotClass: "bg-status-confirmed", borderColor: "border-l-status-confirmed" },
+  cancelled: { label: "Cancelado", cardClass: "bg-card border-border opacity-60", dotClass: "bg-status-cancelled", borderColor: "border-l-status-cancelled", cancelled: true },
+  missed: { label: "Faltou", cardClass: "bg-card border-border", dotClass: "bg-status-missed", borderColor: "border-l-status-missed" },
 };
 
 const Agenda = () => {
@@ -209,11 +209,11 @@ const Agenda = () => {
           {hours.map((time) => (
             <div
               key={time}
-              className="grid border-b"
+              className="grid border-b border-border/60"
               style={{ gridTemplateColumns: `72px repeat(${visibleProfessionals.length}, 1fr)` }}
             >
-              <div className="border-r px-2 py-1 flex items-start justify-end">
-                <span className="text-xs text-muted-foreground font-medium -mt-0.5">{time}</span>
+              <div className="border-r border-border/60 px-2 py-1 flex items-start justify-end">
+                <span className="text-xs text-foreground/60 font-semibold -mt-0.5">{time}</span>
               </div>
               {visibleProfessionals.map((prof) => {
                 const appt = getAppointment(time, prof.id);
@@ -226,9 +226,9 @@ const Agenda = () => {
                     onClick={() => handleSlotClick(time, prof.id)}
                   >
                     {appt && (
-                      <div className={`h-full rounded-md border px-2 py-1 flex items-center gap-2 text-xs ${statusConfig[appt.status].className}`}>
+                      <div className={`h-full rounded-md border border-l-[4px] ${statusConfig[appt.status].borderColor} ${statusConfig[appt.status].cardClass} px-2 py-1 flex items-center gap-2 text-xs hover:shadow-sm transition-shadow cursor-pointer`}>
                         <span className={`h-2 w-2 rounded-full shrink-0 ${statusConfig[appt.status].dotClass}`} />
-                        <span className="font-medium truncate">{appt.patientName}</span>
+                        <span className={`font-medium truncate ${statusConfig[appt.status].cancelled ? "line-through" : ""}`}>{appt.patientName}</span>
                         <span className="text-muted-foreground ml-auto shrink-0">{appt.time}</span>
                       </div>
                     )}
@@ -255,10 +255,10 @@ const Agenda = () => {
               >
                 <span className="text-sm text-muted-foreground font-medium w-12 shrink-0">{time}</span>
                 {appt ? (
-                  <div className={`flex-1 rounded-lg border px-3 py-2 flex items-center gap-2 ${statusConfig[appt.status].className}`}>
+                  <div className={`flex-1 rounded-lg border border-l-[4px] ${statusConfig[appt.status].borderColor} ${statusConfig[appt.status].cardClass} px-3 py-2 flex items-center gap-2 hover:shadow-sm transition-shadow`}>
                     <span className={`h-2.5 w-2.5 rounded-full shrink-0 ${statusConfig[appt.status].dotClass}`} />
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium truncate">{appt.patientName}</p>
+                      <p className={`text-sm font-medium truncate ${statusConfig[appt.status].cancelled ? "line-through" : ""}`}>{appt.patientName}</p>
                       <p className="text-xs text-muted-foreground">{appt.type}</p>
                     </div>
                   </div>
@@ -273,11 +273,11 @@ const Agenda = () => {
         </div>
       </div>
 
-      {/* Status legend mobile */}
-      <div className="flex md:hidden items-center justify-center gap-3 px-4 py-2 border-t bg-card">
+      {/* Status legend mobile - fixed bottom */}
+      <div className="flex md:hidden items-center justify-center gap-4 px-4 py-2.5 border-t bg-card sticky bottom-0 z-10 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
         {Object.entries(statusConfig).map(([key, cfg]) => (
-          <div key={key} className="flex items-center gap-1 text-[10px] text-muted-foreground">
-            <span className={`h-2 w-2 rounded-full ${cfg.dotClass}`} />
+          <div key={key} className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+            <span className={`h-2.5 w-2.5 rounded-full ${cfg.dotClass}`} />
             {cfg.label}
           </div>
         ))}
