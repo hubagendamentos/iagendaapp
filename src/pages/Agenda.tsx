@@ -50,11 +50,11 @@ const initialAppointments: Appointment[] = [
   { id: "8", patientName: "Marcos Vieira", time: "13:00", duration: 30, professionalId: "p2", status: "confirmed", type: "Consulta" },
 ];
 
-const statusConfig: Record<AppointmentStatus, { label: string; cardClass: string; dotClass: string; borderColor: string; cancelled?: boolean }> = {
-  scheduled: { label: "Agendado", cardClass: "bg-card border-border", dotClass: "bg-status-scheduled", borderColor: "border-l-status-scheduled" },
-  confirmed: { label: "Confirmado", cardClass: "bg-card border-border", dotClass: "bg-status-confirmed", borderColor: "border-l-status-confirmed" },
-  cancelled: { label: "Cancelado", cardClass: "bg-card border-border opacity-60", dotClass: "bg-status-cancelled", borderColor: "border-l-status-cancelled", cancelled: true },
-  missed: { label: "Faltou", cardClass: "bg-card border-border", dotClass: "bg-status-missed", borderColor: "border-l-status-missed" },
+const statusConfig: Record<AppointmentStatus, { label: string; cardClass: string; dotClass: string; borderColor: string; badgeBg: string; badgeText: string; cancelled?: boolean }> = {
+  scheduled: { label: "Agendado", cardClass: "bg-card border-border", dotClass: "bg-status-scheduled", borderColor: "border-l-status-scheduled", badgeBg: "bg-muted", badgeText: "text-muted-foreground" },
+  confirmed: { label: "Confirmado", cardClass: "bg-card border-border", dotClass: "bg-status-confirmed", borderColor: "border-l-status-confirmed", badgeBg: "bg-[hsl(var(--status-confirmed)/0.15)]", badgeText: "text-[hsl(var(--status-confirmed))]" },
+  cancelled: { label: "Cancelado", cardClass: "bg-card border-border opacity-60", dotClass: "bg-status-cancelled", borderColor: "border-l-status-cancelled", badgeBg: "bg-[hsl(var(--status-cancelled)/0.15)]", badgeText: "text-[hsl(var(--status-cancelled))]", cancelled: true },
+  missed: { label: "Faltou", cardClass: "bg-card border-border", dotClass: "bg-status-missed", borderColor: "border-l-status-missed", badgeBg: "bg-[hsl(var(--status-missed)/0.15)]", badgeText: "text-[hsl(var(--status-missed))]" },
 };
 
 const Agenda = () => {
@@ -226,20 +226,24 @@ const Agenda = () => {
                     }`}
                     onClick={() => handleSlotClick(time, prof.id)}
                   >
-                    {appt && (
-                      <div className={`h-full rounded-md border border-l-[4px] ${statusConfig[appt.status].borderColor} ${statusConfig[appt.status].cardClass} px-2 py-1 flex items-start gap-2 text-xs hover:shadow-sm transition-shadow cursor-pointer`}>
-                        <span className={`h-2 w-2 rounded-full shrink-0 mt-1 ${statusConfig[appt.status].dotClass}`} />
-                        <div className="min-w-0 flex-1">
-                          <p className={`font-semibold truncate text-foreground ${statusConfig[appt.status].cancelled ? "line-through" : ""}`}>{appt.patientName}</p>
-                          <p className="text-muted-foreground truncate">
-                            {appt.type}{appt.time ? ` · ${appt.time}` : ""}
+                    {appt && (() => {
+                      const cfg = statusConfig[appt.status];
+                      const profLabel = isClinic ? professionals.find(p => p.id === appt.professionalId)?.name : null;
+                      return (
+                        <div className={`h-full rounded-md border border-l-[4px] ${cfg.borderColor} ${cfg.cardClass} px-2 py-1.5 text-xs hover:shadow-md transition-shadow cursor-pointer`}>
+                          <div className="flex items-center justify-between gap-1 mb-0.5">
+                            <p className={`font-semibold truncate text-foreground leading-tight ${cfg.cancelled ? "line-through" : ""}`}>{appt.patientName}</p>
+                            <span className={`shrink-0 px-1.5 py-0.5 rounded-full text-[10px] font-medium leading-none ${cfg.badgeBg} ${cfg.badgeText}`}>{cfg.label}</span>
+                          </div>
+                          <p className="text-muted-foreground truncate leading-tight">
+                            {appt.time} · {appt.type}{profLabel ? ` · ${profLabel}` : ""}
                           </p>
                           {appt.type === "Exame" && appt.preparationName && (
-                            <p className="text-muted-foreground/70 truncate">Preparo: {appt.preparationName}</p>
+                            <p className="text-muted-foreground/70 truncate leading-tight mt-0.5">Preparo: {appt.preparationName}</p>
                           )}
                         </div>
-                      </div>
-                    )}
+                      );
+                    })()}
                   </div>
                 );
               })}
@@ -263,18 +267,17 @@ const Agenda = () => {
               >
                 <span className="text-sm text-muted-foreground font-medium w-12 shrink-0">{time}</span>
                 {appt ? (
-                  <div className={`flex-1 rounded-lg border border-l-[4px] ${statusConfig[appt.status].borderColor} ${statusConfig[appt.status].cardClass} px-3 py-2 hover:shadow-sm transition-shadow`}>
-                    <div className="flex items-start gap-2">
-                      <span className={`h-2.5 w-2.5 rounded-full shrink-0 mt-1 ${statusConfig[appt.status].dotClass}`} />
-                      <div className="min-w-0 flex-1">
-                        <p className={`text-sm font-semibold truncate text-foreground ${statusConfig[appt.status].cancelled ? "line-through" : ""}`}>{appt.patientName}</p>
-                        <p className="text-xs text-muted-foreground truncate">{appt.type} · {appt.time}</p>
-                        {isClinic && (() => { const pName = professionals.find(p => p.id === appt.professionalId)?.name; return pName ? <p className="text-xs text-muted-foreground/70 truncate">{pName}</p> : null; })()}
-                        {appt.type === "Exame" && appt.preparationName && (
-                          <p className="text-xs text-muted-foreground/70 truncate">Preparo: {appt.preparationName}</p>
-                        )}
-                      </div>
+                  <div className={`flex-1 rounded-lg border border-l-[4px] ${statusConfig[appt.status].borderColor} ${statusConfig[appt.status].cardClass} px-3 py-2.5 hover:shadow-md transition-shadow`}>
+                    <div className="flex items-center justify-between gap-2 mb-0.5">
+                      <p className={`text-sm font-semibold truncate text-foreground ${statusConfig[appt.status].cancelled ? "line-through" : ""}`}>{appt.patientName}</p>
+                      <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-medium leading-none ${statusConfig[appt.status].badgeBg} ${statusConfig[appt.status].badgeText}`}>{statusConfig[appt.status].label}</span>
                     </div>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {appt.time} · {appt.type}{isClinic ? (() => { const pName = professionals.find(p => p.id === appt.professionalId)?.name; return pName ? ` · ${pName}` : ""; })() : ""}
+                    </p>
+                    {appt.type === "Exame" && appt.preparationName && (
+                      <p className="text-xs text-muted-foreground/70 truncate mt-0.5">Preparo: {appt.preparationName}</p>
+                    )}
                   </div>
                 ) : (
                   <div className="flex-1 h-10 rounded-lg border border-dashed border-border/50 flex items-center justify-center">
