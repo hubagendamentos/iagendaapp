@@ -50,11 +50,11 @@ const initialAppointments: Appointment[] = [
   { id: "8", patientName: "Marcos Vieira", time: "13:00", duration: 30, professionalId: "p2", status: "confirmed", type: "Consulta" },
 ];
 
-const statusConfig: Record<AppointmentStatus, { label: string; className: string; dotClass: string }> = {
-  scheduled: { label: "Agendado", className: "bg-status-scheduled/15 border-status-scheduled/30 text-foreground", dotClass: "bg-status-scheduled" },
-  confirmed: { label: "Confirmado", className: "bg-status-confirmed/15 border-status-confirmed/30 text-foreground", dotClass: "bg-status-confirmed" },
-  cancelled: { label: "Cancelado", className: "bg-status-cancelled/15 border-status-cancelled/30 text-foreground line-through opacity-60", dotClass: "bg-status-cancelled" },
-  missed: { label: "Faltou", className: "bg-status-missed/15 border-status-missed/30 text-foreground", dotClass: "bg-status-missed" },
+const statusConfig: Record<AppointmentStatus, { label: string; cardClass: string; dotClass: string; borderColor: string; cancelled?: boolean }> = {
+  scheduled: { label: "Agendado", cardClass: "bg-card border-border", dotClass: "bg-status-scheduled", borderColor: "border-l-status-scheduled" },
+  confirmed: { label: "Confirmado", cardClass: "bg-card border-border", dotClass: "bg-status-confirmed", borderColor: "border-l-status-confirmed" },
+  cancelled: { label: "Cancelado", cardClass: "bg-card border-border opacity-60", dotClass: "bg-status-cancelled", borderColor: "border-l-status-cancelled", cancelled: true },
+  missed: { label: "Faltou", cardClass: "bg-card border-border", dotClass: "bg-status-missed", borderColor: "border-l-status-missed" },
 };
 
 const Agenda = () => {
