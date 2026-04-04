@@ -267,18 +267,17 @@ const Agenda = () => {
               >
                 <span className="text-sm text-muted-foreground font-medium w-12 shrink-0">{time}</span>
                 {appt ? (
-                  <div className={`flex-1 rounded-lg border border-l-[4px] ${statusConfig[appt.status].borderColor} ${statusConfig[appt.status].cardClass} px-3 py-2 hover:shadow-sm transition-shadow`}>
-                    <div className="flex items-start gap-2">
-                      <span className={`h-2.5 w-2.5 rounded-full shrink-0 mt-1 ${statusConfig[appt.status].dotClass}`} />
-                      <div className="min-w-0 flex-1">
-                        <p className={`text-sm font-semibold truncate text-foreground ${statusConfig[appt.status].cancelled ? "line-through" : ""}`}>{appt.patientName}</p>
-                        <p className="text-xs text-muted-foreground truncate">{appt.type} · {appt.time}</p>
-                        {isClinic && (() => { const pName = professionals.find(p => p.id === appt.professionalId)?.name; return pName ? <p className="text-xs text-muted-foreground/70 truncate">{pName}</p> : null; })()}
-                        {appt.type === "Exame" && appt.preparationName && (
-                          <p className="text-xs text-muted-foreground/70 truncate">Preparo: {appt.preparationName}</p>
-                        )}
-                      </div>
+                  <div className={`flex-1 rounded-lg border border-l-[4px] ${statusConfig[appt.status].borderColor} ${statusConfig[appt.status].cardClass} px-3 py-2.5 hover:shadow-md transition-shadow`}>
+                    <div className="flex items-center justify-between gap-2 mb-0.5">
+                      <p className={`text-sm font-semibold truncate text-foreground ${statusConfig[appt.status].cancelled ? "line-through" : ""}`}>{appt.patientName}</p>
+                      <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-medium leading-none ${statusConfig[appt.status].badgeBg} ${statusConfig[appt.status].badgeText}`}>{statusConfig[appt.status].label}</span>
                     </div>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {appt.time} · {appt.type}{isClinic ? (() => { const pName = professionals.find(p => p.id === appt.professionalId)?.name; return pName ? ` · ${pName}` : ""; })() : ""}
+                    </p>
+                    {appt.type === "Exame" && appt.preparationName && (
+                      <p className="text-xs text-muted-foreground/70 truncate mt-0.5">Preparo: {appt.preparationName}</p>
+                    )}
                   </div>
                 ) : (
                   <div className="flex-1 h-10 rounded-lg border border-dashed border-border/50 flex items-center justify-center">
