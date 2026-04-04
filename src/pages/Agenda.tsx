@@ -230,19 +230,29 @@ const Agenda = () => {
                     {appt && (() => {
                       const cfg = statusConfig[appt.status];
                       const profLabel = isClinic ? professionals.find(p => p.id === appt.professionalId)?.name : null;
+                      const tooltipText = `${appt.patientName} — ${appt.time} · ${appt.type}${profLabel ? ` · ${profLabel}` : ""}${appt.type === "Exame" && appt.preparationName ? ` · Preparo: ${appt.preparationName}` : ""}`;
                       return (
-                        <div className={`h-full rounded-md border border-l-[4px] ${cfg.borderColor} ${cfg.cardClass} px-2 py-1.5 text-xs hover:shadow-md transition-shadow cursor-pointer`}>
-                          <div className="flex items-center justify-between gap-1 mb-0.5">
-                            <p className={`font-semibold truncate text-foreground leading-tight ${cfg.cancelled ? "line-through" : ""}`}>{appt.patientName}</p>
-                            <span className={`shrink-0 px-1.5 py-0.5 rounded-full text-[10px] font-medium leading-none ${cfg.badgeBg} ${cfg.badgeText}`}>{cfg.label}</span>
-                          </div>
-                          <p className="text-muted-foreground truncate leading-tight">
-                            {appt.time} · {appt.type}{profLabel ? ` · ${profLabel}` : ""}
-                          </p>
-                          {appt.type === "Exame" && appt.preparationName && (
-                            <p className="text-muted-foreground/70 truncate leading-tight mt-0.5">Preparo: {appt.preparationName}</p>
-                          )}
-                        </div>
+                        <TooltipProvider delayDuration={300}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className={`h-[3.25rem] rounded-md border border-l-[4px] ${cfg.borderColor} ${cfg.cardClass} px-2 py-1 text-xs hover:shadow-md transition-shadow cursor-pointer overflow-hidden`}>
+                                <div className="flex items-center justify-between gap-1">
+                                  <p className={`font-semibold truncate text-foreground leading-tight ${cfg.cancelled ? "line-through" : ""}`}>{appt.patientName}</p>
+                                  <span className={`shrink-0 px-1.5 py-0.5 rounded-full text-[10px] font-medium leading-none ${cfg.badgeBg} ${cfg.badgeText}`}>{cfg.label}</span>
+                                </div>
+                                <p className="text-muted-foreground truncate leading-tight">
+                                  {appt.time} · {appt.type}
+                                </p>
+                                <p className="text-muted-foreground/70 truncate leading-tight">
+                                  {profLabel || (appt.type === "Exame" && appt.preparationName ? `Preparo: ${appt.preparationName}` : "\u00A0")}
+                                </p>
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="max-w-[250px] text-xs">
+                              {tooltipText}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       );
                     })()}
                   </div>
