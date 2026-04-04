@@ -273,11 +273,11 @@ const Agenda = () => {
         </div>
       </div>
 
-      {/* Status legend mobile */}
-      <div className="flex md:hidden items-center justify-center gap-3 px-4 py-2 border-t bg-card">
+      {/* Status legend mobile - fixed bottom */}
+      <div className="flex md:hidden items-center justify-center gap-4 px-4 py-2.5 border-t bg-card sticky bottom-0 z-10 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
         {Object.entries(statusConfig).map(([key, cfg]) => (
-          <div key={key} className="flex items-center gap-1 text-[10px] text-muted-foreground">
-            <span className={`h-2 w-2 rounded-full ${cfg.dotClass}`} />
+          <div key={key} className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+            <span className={`h-2.5 w-2.5 rounded-full ${cfg.dotClass}`} />
             {cfg.label}
           </div>
         ))}
