@@ -294,8 +294,7 @@ const Agenda = () => {
                       </p>
                     </div>
                   );
-                })()
-                ) : (
+                }) : (
                   <div className="flex-1 h-10 rounded-lg border border-dashed border-border/50 flex items-center justify-center">
                     <span className="text-xs text-muted-foreground">Disponível</span>
                   </div>
