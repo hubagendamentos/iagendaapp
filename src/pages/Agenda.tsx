@@ -255,10 +255,10 @@ const Agenda = () => {
               >
                 <span className="text-sm text-muted-foreground font-medium w-12 shrink-0">{time}</span>
                 {appt ? (
-                  <div className={`flex-1 rounded-lg border px-3 py-2 flex items-center gap-2 ${statusConfig[appt.status].className}`}>
+                  <div className={`flex-1 rounded-lg border border-l-[4px] ${statusConfig[appt.status].borderColor} ${statusConfig[appt.status].cardClass} px-3 py-2 flex items-center gap-2 hover:shadow-sm transition-shadow`}>
                     <span className={`h-2.5 w-2.5 rounded-full shrink-0 ${statusConfig[appt.status].dotClass}`} />
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium truncate">{appt.patientName}</p>
+                      <p className={`text-sm font-medium truncate ${statusConfig[appt.status].cancelled ? "line-through" : ""}`}>{appt.patientName}</p>
                       <p className="text-xs text-muted-foreground">{appt.type}</p>
                     </div>
                   </div>
