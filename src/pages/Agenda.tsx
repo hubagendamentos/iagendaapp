@@ -226,9 +226,9 @@ const Agenda = () => {
                     onClick={() => handleSlotClick(time, prof.id)}
                   >
                     {appt && (
-                      <div className={`h-full rounded-md border px-2 py-1 flex items-center gap-2 text-xs ${statusConfig[appt.status].className}`}>
+                      <div className={`h-full rounded-md border border-l-[4px] ${statusConfig[appt.status].borderColor} ${statusConfig[appt.status].cardClass} px-2 py-1 flex items-center gap-2 text-xs hover:shadow-sm transition-shadow cursor-pointer`}>
                         <span className={`h-2 w-2 rounded-full shrink-0 ${statusConfig[appt.status].dotClass}`} />
-                        <span className="font-medium truncate">{appt.patientName}</span>
+                        <span className={`font-medium truncate ${statusConfig[appt.status].cancelled ? "line-through" : ""}`}>{appt.patientName}</span>
                         <span className="text-muted-foreground ml-auto shrink-0">{appt.time}</span>
                       </div>
                     )}
