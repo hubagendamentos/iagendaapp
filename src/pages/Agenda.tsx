@@ -102,8 +102,10 @@ const Agenda = () => {
 
   const hasActiveFilters = filters.professionalId || filters.startTime || filters.endTime || filters.date;
 
+  const currentDateStr = format(currentDate, "yyyy-MM-dd");
+
   const getAppointment = (time: string, profId: string) =>
-    appointments.find((a) => a.time === time && a.professionalId === profId);
+    appointments.find((a) => a.time === time && a.professionalId === profId && a.date === currentDateStr);
 
   const handleSlotClick = (time: string, professionalId: string) => {
     const existing = getAppointment(time, professionalId);
