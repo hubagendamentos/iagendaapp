@@ -159,7 +159,6 @@ const AppointmentModal = ({
   const activeTypes = appointmentTypes.length > 0
     ? appointmentTypes.filter((t) => t.active).map((t) => t.name)
     : fallbackTypes;
-  const activePlans = plans.filter((p) => p.active);
 
   const filteredPatients = patientSearch.length > 0
     ? mockPatients.filter((p) => p.toLowerCase().includes(patientSearch.toLowerCase()))
