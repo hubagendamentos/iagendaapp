@@ -72,12 +72,17 @@ const Agenda = () => {
   const [defaultSlot, setDefaultSlot] = useState<{ time: string; professionalId: string } | null>(null);
   const [filters, setFilters] = useState<AgendaFilters>({ professionalId: null, startTime: null, endTime: null, date: null });
 
-  // When filter date changes, update currentDate
+  // Single source of truth: currentDate drives the agenda
   const handleApplyFilters = (newFilters: AgendaFilters) => {
-    setFilters(newFilters);
     if (newFilters.date) {
       setCurrentDate(newFilters.date);
     }
+    // Store filters but clear date from filters (currentDate is the source of truth)
+    setFilters({ ...newFilters, date: null });
+  };
+
+  const goToDate = (date: Date) => {
+    setCurrentDate(date);
   };
   // Mobile: which professional column to show (index)
   const [mobileProfIdx, setMobileProfIdx] = useState(0);
