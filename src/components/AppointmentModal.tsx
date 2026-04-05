@@ -323,7 +323,7 @@ const AppointmentModal = ({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {appointmentTypes.map((t) => (
+                {activeTypes.map((t) => (
                   <SelectItem key={t} value={t}>{t}</SelectItem>
                 ))}
               </SelectContent>
