@@ -194,11 +194,47 @@ const ExamModal = ({ open, onClose, onSave, exam, preparations }: { open: boolea
   );
 };
 
+// ============ Appointment Type Modal ============
+const AppointmentTypeModal = ({ open, onClose, onSave, appointmentType }: { open: boolean; onClose: () => void; onSave: (t: Omit<AppointmentType, "id"> & { id?: string }) => void; appointmentType: AppointmentType | null }) => {
+  const [name, setName] = useState("");
+  const [active, setActive] = useState(true);
+
+  useEffect(() => {
+    if (open) {
+      if (appointmentType) { setName(appointmentType.name); setActive(appointmentType.active); }
+      else { setName(""); setActive(true); }
+    }
+  }, [open, appointmentType]);
+
+  return (
+    <Dialog open={open} onOpenChange={() => onClose()}>
+      <DialogContent className="sm:max-w-md !inset-0 !translate-x-0 !translate-y-0 !top-0 !left-0 sm:!inset-auto sm:!left-[50%] sm:!top-[50%] sm:!translate-x-[-50%] sm:!translate-y-[-50%] rounded-none sm:rounded-lg w-full sm:w-auto max-h-[100dvh] sm:max-h-[90vh] overflow-y-auto">
+        <DialogHeader><DialogTitle>{appointmentType ? "Editar Tipo de Atendimento" : "Novo Tipo de Atendimento"}</DialogTitle></DialogHeader>
+        <div className="space-y-4 pt-2">
+          <div className="space-y-2">
+            <Label>Nome do tipo</Label>
+            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex: Consulta" />
+          </div>
+          <div className="flex items-center gap-3">
+            <Switch checked={active} onCheckedChange={setActive} />
+            <Label>{active ? "Ativo" : "Inativo"}</Label>
+          </div>
+          <div className="flex gap-2 justify-end pt-2">
+            <Button variant="outline" onClick={onClose}>Cancelar</Button>
+            <Button disabled={!name.trim()} onClick={() => { onSave({ id: appointmentType?.id, name: name.trim(), active }); onClose(); }}>Salvar</Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 // ============ Main Page ============
 const Cadastros = () => {
   const [plans, setPlans] = useState<Plan[]>(initialPlans);
   const [exams, setExams] = useState<Exam[]>(initialExams);
   const [preparations, setPreparations] = useState<Preparation[]>(initialPreparations);
+  const [appointmentTypes, setAppointmentTypes] = useState<AppointmentType[]>(initialAppointmentTypes);
 
   const [planModal, setPlanModal] = useState(false);
   const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
@@ -209,9 +245,13 @@ const Cadastros = () => {
   const [prepModal, setPrepModal] = useState(false);
   const [editingPrep, setEditingPrep] = useState<Preparation | null>(null);
 
+  const [typeModal, setTypeModal] = useState(false);
+  const [editingType, setEditingType] = useState<AppointmentType | null>(null);
+
   const [searchPlans, setSearchPlans] = useState("");
   const [searchExams, setSearchExams] = useState("");
   const [searchPreps, setSearchPreps] = useState("");
+  const [searchTypes, setSearchTypes] = useState("");
 
   // Plan CRUD
   const savePlan = (data: Omit<Plan, "id"> & { id?: string }) => {
