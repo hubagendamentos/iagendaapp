@@ -69,6 +69,12 @@ interface PlanOption {
   active: boolean;
 }
 
+interface AppointmentTypeOption {
+  id: string;
+  name: string;
+  active: boolean;
+}
+
 interface AppointmentModalProps {
   open: boolean;
   onClose: () => void;
@@ -82,6 +88,7 @@ interface AppointmentModalProps {
   exams?: ExamOption[];
   preparations?: PreparationOption[];
   plans?: PlanOption[];
+  appointmentTypes?: AppointmentTypeOption[];
 }
 
 const mockPatients = [
@@ -90,7 +97,7 @@ const mockPatients = [
   "Beatriz Rocha", "Rafael Martins", "Camila Ferreira", "Diego Nascimento",
 ];
 
-const appointmentTypes = [
+const fallbackTypes = [
   "Consulta", "Retorno", "Exame", "Procedimento", "Avaliação", "Urgência",
 ];
 
