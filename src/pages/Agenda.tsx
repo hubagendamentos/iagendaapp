@@ -329,7 +329,7 @@ const Agenda = () => {
         open={filterOpen}
         onClose={() => setFilterOpen(false)}
         onApply={handleApplyFilters}
-        currentFilters={filters}
+        currentFilters={{ ...filters, date: currentDate }}
         professionals={professionals}
         showProfessionalFilter={isClinic}
       />
