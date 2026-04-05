@@ -143,16 +143,16 @@ const Agenda = () => {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setCurrentDate(new Date())}
+            onClick={() => goToDate(new Date())}
             className={isToday(currentDate) ? "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground" : ""}
           >
             Hoje
           </Button>
           <div className="flex items-center gap-0.5">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setCurrentDate((d) => subDays(d, 1))}>
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => goToDate(subDays(currentDate, 1))}>
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setCurrentDate((d) => addDays(d, 1))}>
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => goToDate(addDays(currentDate, 1))}>
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
