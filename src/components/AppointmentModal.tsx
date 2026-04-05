@@ -69,6 +69,12 @@ interface PlanOption {
   active: boolean;
 }
 
+interface AppointmentTypeOption {
+  id: string;
+  name: string;
+  active: boolean;
+}
+
 interface AppointmentModalProps {
   open: boolean;
   onClose: () => void;
@@ -82,6 +88,7 @@ interface AppointmentModalProps {
   exams?: ExamOption[];
   preparations?: PreparationOption[];
   plans?: PlanOption[];
+  appointmentTypes?: AppointmentTypeOption[];
 }
 
 const mockPatients = [
@@ -90,7 +97,7 @@ const mockPatients = [
   "Beatriz Rocha", "Rafael Martins", "Camila Ferreira", "Diego Nascimento",
 ];
 
-const appointmentTypes = [
+const fallbackTypes = [
   "Consulta", "Retorno", "Exame", "Procedimento", "Avaliação", "Urgência",
 ];
 
@@ -121,6 +128,7 @@ const AppointmentModal = ({
   exams = [],
   preparations = [],
   plans = [],
+  appointmentTypes = [],
 }: AppointmentModalProps) => {
   const isEditing = !!appointment;
 
@@ -148,6 +156,9 @@ const AppointmentModal = ({
 
   const activeExams = exams.filter((e) => e.active);
   const activePlans = plans.filter((p) => p.active);
+  const activeTypes = appointmentTypes.length > 0
+    ? appointmentTypes.filter((t) => t.active).map((t) => t.name)
+    : fallbackTypes;
 
   const filteredPatients = patientSearch.length > 0
     ? mockPatients.filter((p) => p.toLowerCase().includes(patientSearch.toLowerCase()))
@@ -312,7 +323,7 @@ const AppointmentModal = ({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {appointmentTypes.map((t) => (
+                {activeTypes.map((t) => (
                   <SelectItem key={t} value={t}>{t}</SelectItem>
                 ))}
               </SelectContent>

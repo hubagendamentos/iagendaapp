@@ -34,6 +34,15 @@ const mockPlans = [
   { id: "3", name: "SulAmérica", active: false },
 ];
 
+const mockAppointmentTypes = [
+  { id: "1", name: "Consulta", active: true },
+  { id: "2", name: "Retorno", active: true },
+  { id: "3", name: "Exame", active: true },
+  { id: "4", name: "Procedimento", active: true },
+  { id: "5", name: "Avaliação", active: true },
+  { id: "6", name: "Urgência", active: true },
+];
+
 const allHours = Array.from({ length: 21 }, (_, i) => {
   const h = Math.floor(i / 2) + 8;
   const m = i % 2 === 0 ? "00" : "30";
@@ -348,6 +357,7 @@ const Agenda = () => {
         exams={mockExams}
         preparations={mockPreparations}
         plans={mockPlans}
+        appointmentTypes={mockAppointmentTypes}
       />
     </div>
   );
