@@ -40,15 +40,17 @@ const allHours = Array.from({ length: 21 }, (_, i) => {
   return `${String(h).padStart(2, "0")}:${m}`;
 });
 
+const todayStr = format(new Date(), "yyyy-MM-dd");
+
 const initialAppointments: Appointment[] = [
-  { id: "1", patientName: "Ana Oliveira", time: "09:00", duration: 30, professionalId: "p1", status: "confirmed", type: "Consulta" },
-  { id: "2", patientName: "Carlos Mendes", time: "10:00", duration: 30, professionalId: "p1", status: "scheduled", type: "Retorno" },
-  { id: "3", patientName: "Juliana Costa", time: "09:30", duration: 30, professionalId: "p2", status: "cancelled", type: "Consulta" },
-  { id: "4", patientName: "Roberto Alves", time: "11:00", duration: 30, professionalId: "p2", status: "confirmed", type: "Exame" },
-  { id: "5", patientName: "Fernanda Lima", time: "14:00", duration: 30, professionalId: "p3", status: "missed", type: "Consulta" },
-  { id: "6", patientName: "Lucas Barbosa", time: "08:00", duration: 30, professionalId: "p1", status: "confirmed", type: "Avaliação" },
-  { id: "7", patientName: "Patrícia Souza", time: "15:30", duration: 30, professionalId: "p3", status: "scheduled", type: "Procedimento" },
-  { id: "8", patientName: "Marcos Vieira", time: "13:00", duration: 30, professionalId: "p2", status: "confirmed", type: "Consulta" },
+  { id: "1", patientName: "Ana Oliveira", time: "09:00", duration: 30, professionalId: "p1", status: "confirmed", type: "Consulta", date: todayStr },
+  { id: "2", patientName: "Carlos Mendes", time: "10:00", duration: 30, professionalId: "p1", status: "scheduled", type: "Retorno", date: todayStr },
+  { id: "3", patientName: "Juliana Costa", time: "09:30", duration: 30, professionalId: "p2", status: "cancelled", type: "Consulta", date: todayStr },
+  { id: "4", patientName: "Roberto Alves", time: "11:00", duration: 30, professionalId: "p2", status: "confirmed", type: "Exame", date: todayStr },
+  { id: "5", patientName: "Fernanda Lima", time: "14:00", duration: 30, professionalId: "p3", status: "missed", type: "Consulta", date: todayStr },
+  { id: "6", patientName: "Lucas Barbosa", time: "08:00", duration: 30, professionalId: "p1", status: "confirmed", type: "Avaliação", date: todayStr },
+  { id: "7", patientName: "Patrícia Souza", time: "15:30", duration: 30, professionalId: "p3", status: "scheduled", type: "Procedimento", date: todayStr },
+  { id: "8", patientName: "Marcos Vieira", time: "13:00", duration: 30, professionalId: "p2", status: "confirmed", type: "Consulta", date: todayStr },
 ];
 
 const statusConfig: Record<AppointmentStatus, { label: string; cardClass: string; dotClass: string; borderColor: string; badgeBg: string; badgeText: string; cancelled?: boolean }> = {
@@ -70,12 +72,17 @@ const Agenda = () => {
   const [defaultSlot, setDefaultSlot] = useState<{ time: string; professionalId: string } | null>(null);
   const [filters, setFilters] = useState<AgendaFilters>({ professionalId: null, startTime: null, endTime: null, date: null });
 
-  // When filter date changes, update currentDate
+  // Single source of truth: currentDate drives the agenda
   const handleApplyFilters = (newFilters: AgendaFilters) => {
-    setFilters(newFilters);
     if (newFilters.date) {
       setCurrentDate(newFilters.date);
     }
+    // Store filters but clear date from filters (currentDate is the source of truth)
+    setFilters({ ...newFilters, date: null });
+  };
+
+  const goToDate = (date: Date) => {
+    setCurrentDate(date);
   };
   // Mobile: which professional column to show (index)
   const [mobileProfIdx, setMobileProfIdx] = useState(0);
@@ -95,8 +102,10 @@ const Agenda = () => {
 
   const hasActiveFilters = filters.professionalId || filters.startTime || filters.endTime || filters.date;
 
+  const currentDateStr = format(currentDate, "yyyy-MM-dd");
+
   const getAppointment = (time: string, profId: string) =>
-    appointments.find((a) => a.time === time && a.professionalId === profId);
+    appointments.find((a) => a.time === time && a.professionalId === profId && a.date === currentDateStr);
 
   const handleSlotClick = (time: string, professionalId: string) => {
     const existing = getAppointment(time, professionalId);
@@ -113,9 +122,9 @@ const Agenda = () => {
   const handleSave = useCallback((data: Omit<Appointment, "id"> & { id?: string }) => {
     setAppointments((prev) => {
       if (data.id) return prev.map((a) => (a.id === data.id ? { ...a, ...data } as Appointment : a));
-      return [...prev, { ...data, id: crypto.randomUUID() } as Appointment];
+      return [...prev, { ...data, id: crypto.randomUUID(), date: data.date || format(currentDate, "yyyy-MM-dd") } as Appointment];
     });
-  }, []);
+  }, [currentDate]);
 
   const handleDelete = useCallback((id: string) => {
     setAppointments((prev) => prev.filter((a) => a.id !== id));
@@ -134,16 +143,16 @@ const Agenda = () => {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setCurrentDate(new Date())}
+            onClick={() => goToDate(new Date())}
             className={isToday(currentDate) ? "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground" : ""}
           >
             Hoje
           </Button>
           <div className="flex items-center gap-0.5">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setCurrentDate((d) => subDays(d, 1))}>
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => goToDate(subDays(currentDate, 1))}>
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setCurrentDate((d) => addDays(d, 1))}>
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => goToDate(addDays(currentDate, 1))}>
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
@@ -320,7 +329,7 @@ const Agenda = () => {
         open={filterOpen}
         onClose={() => setFilterOpen(false)}
         onApply={handleApplyFilters}
-        currentFilters={filters}
+        currentFilters={{ ...filters, date: currentDate }}
         professionals={professionals}
         showProfessionalFilter={isClinic}
       />

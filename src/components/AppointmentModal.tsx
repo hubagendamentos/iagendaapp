@@ -44,6 +44,7 @@ export interface Appointment {
   planId?: string | null;
   planName?: string | null;
   notes?: string;
+  date?: string;
 }
 
 // Data types from Cadastros
