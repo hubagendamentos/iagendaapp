@@ -128,6 +128,7 @@ const AppointmentModal = ({
   exams = [],
   preparations = [],
   plans = [],
+  appointmentTypes = [],
 }: AppointmentModalProps) => {
   const isEditing = !!appointment;
 
