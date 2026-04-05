@@ -122,9 +122,9 @@ const Agenda = () => {
   const handleSave = useCallback((data: Omit<Appointment, "id"> & { id?: string }) => {
     setAppointments((prev) => {
       if (data.id) return prev.map((a) => (a.id === data.id ? { ...a, ...data } as Appointment : a));
-      return [...prev, { ...data, id: crypto.randomUUID() } as Appointment];
+      return [...prev, { ...data, id: crypto.randomUUID(), date: data.date || format(currentDate, "yyyy-MM-dd") } as Appointment];
     });
-  }, []);
+  }, [currentDate]);
 
   const handleDelete = useCallback((id: string) => {
     setAppointments((prev) => prev.filter((a) => a.id !== id));
