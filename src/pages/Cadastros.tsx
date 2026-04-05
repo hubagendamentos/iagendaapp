@@ -57,6 +57,15 @@ const initialPreparations: Preparation[] = [
   { id: "2", name: "Sem preparo", description: "Nenhum preparo necessário", active: true },
 ];
 
+const initialAppointmentTypes: AppointmentType[] = [
+  { id: "1", name: "Consulta", active: true },
+  { id: "2", name: "Retorno", active: true },
+  { id: "3", name: "Exame", active: true },
+  { id: "4", name: "Procedimento", active: true },
+  { id: "5", name: "Avaliação", active: true },
+  { id: "6", name: "Urgência", active: true },
+];
+
 // ============ Plan Modal ============
 const PlanModal = ({ open, onClose, onSave, plan }: { open: boolean; onClose: () => void; onSave: (p: Omit<Plan, "id"> & { id?: string }) => void; plan: Plan | null }) => {
   const [name, setName] = useState("");
