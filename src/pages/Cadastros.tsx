@@ -474,12 +474,61 @@ const Cadastros = () => {
             </CardContent>
           </Card>
         </TabsContent>
+
+        {/* ---- APPOINTMENT TYPES TAB ---- */}
+        <TabsContent value="types" className="mt-4">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex flex-col sm:flex-row gap-3 mb-4">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input placeholder="Buscar tipo de atendimento..." value={searchTypes} onChange={(e) => setSearchTypes(e.target.value)} className="pl-9" />
+                </div>
+                <Button className="gap-2 shrink-0" onClick={() => { setEditingType(null); setTypeModal(true); }}>
+                  <Plus className="h-4 w-4" /> Novo Tipo
+                </Button>
+              </div>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nome</TableHead>
+                      <TableHead className="w-24 text-center">Status</TableHead>
+                      <TableHead className="w-20 text-center">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredTypes.length === 0 && (
+                      <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground py-8">Nenhum tipo encontrado</TableCell></TableRow>
+                    )}
+                    {filteredTypes.map((t) => (
+                      <TableRow key={t.id}>
+                        <TableCell className="font-medium">{t.name}</TableCell>
+                        <TableCell className="text-center">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${t.active ? "bg-status-confirmed/15 text-status-confirmed" : "bg-muted text-muted-foreground"}`}>
+                            {t.active ? "Ativo" : "Inativo"}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingType(t); setTypeModal(true); }}>
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
 
       {/* Modals */}
       <PlanModal open={planModal} onClose={() => { setPlanModal(false); setEditingPlan(null); }} onSave={savePlan} plan={editingPlan} />
       <ExamModal open={examModal} onClose={() => { setExamModal(false); setEditingExam(null); }} onSave={saveExam} exam={editingExam} preparations={preparations} />
       <PreparationModal open={prepModal} onClose={() => { setPrepModal(false); setEditingPrep(null); }} onSave={savePrep} preparation={editingPrep} />
+      <AppointmentTypeModal open={typeModal} onClose={() => { setTypeModal(false); setEditingType(null); }} onSave={saveType} appointmentType={editingType} />
     </div>
   );
 };
