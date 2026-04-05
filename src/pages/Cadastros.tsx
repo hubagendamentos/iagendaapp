@@ -34,6 +34,12 @@ interface Preparation {
   active: boolean;
 }
 
+export interface AppointmentType {
+  id: string;
+  name: string;
+  active: boolean;
+}
+
 // ---- Initial Data ----
 const initialPlans: Plan[] = [
   { id: "1", name: "Unimed", active: true },
