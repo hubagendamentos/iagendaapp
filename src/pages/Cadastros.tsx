@@ -286,9 +286,21 @@ const Cadastros = () => {
     }
   };
 
+  // AppointmentType CRUD
+  const saveType = (data: Omit<AppointmentType, "id"> & { id?: string }) => {
+    if (data.id) {
+      setAppointmentTypes((prev) => prev.map((t) => (t.id === data.id ? { ...t, ...data } as AppointmentType : t)));
+      toast.success("Tipo de atendimento atualizado");
+    } else {
+      setAppointmentTypes((prev) => [...prev, { ...data, id: crypto.randomUUID() } as AppointmentType]);
+      toast.success("Tipo de atendimento adicionado");
+    }
+  };
+
   const filteredPlans = plans.filter((p) => p.name.toLowerCase().includes(searchPlans.toLowerCase()));
   const filteredExams = exams.filter((e) => e.name.toLowerCase().includes(searchExams.toLowerCase()));
   const filteredPreps = preparations.filter((p) => p.name.toLowerCase().includes(searchPreps.toLowerCase()));
+  const filteredTypes = appointmentTypes.filter((t) => t.name.toLowerCase().includes(searchTypes.toLowerCase()));
 
   const getPreparationName = (id: string | null) => {
     if (!id) return "—";
