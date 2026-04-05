@@ -357,6 +357,7 @@ const Agenda = () => {
         exams={mockExams}
         preparations={mockPreparations}
         plans={mockPlans}
+        appointmentTypes={mockAppointmentTypes}
       />
     </div>
   );
