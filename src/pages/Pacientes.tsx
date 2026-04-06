@@ -1,11 +1,9 @@
 import { useState } from "react";
-import { Search, Plus, Phone, Edit2 } from "lucide-react";
+import { Search, Plus, Phone, Mail, Edit2, UserCheck, UserX, MessageCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from "@/components/ui/table";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { PacienteModal, type Paciente } from "@/components/PacienteModal";
 import { applyPhoneMask } from "@/components/PhoneMaskInput";
 import { applyCpfCnpjMask } from "@/components/CpfCnpjMaskInput";
@@ -18,6 +16,10 @@ function calcIdade(nascimento: string): number | null {
   const m = today.getMonth() - birth.getMonth();
   if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
   return age;
+}
+
+function getInitials(name: string) {
+  return name.split(" ").filter(Boolean).slice(0, 2).map(n => n[0]).join("").toUpperCase();
 }
 
 const initialPacientes: Paciente[] = [
@@ -43,12 +45,10 @@ const Pacientes = () => {
     const cpfDigits = (p.cpf || "").replace(/\D/g, "");
     const matchCpf = buscaLower.length > 0 ? cpfDigits.includes(buscaLower) : false;
     const matchBusca = busca === "" || matchNome || matchCelular || matchCpf;
-
     const matchStatus =
       statusFilter === "todos" ||
       (statusFilter === "ativos" && p.ativo !== false) ||
       (statusFilter === "inativos" && p.ativo === false);
-
     return matchBusca && matchStatus;
   });
 
@@ -60,6 +60,12 @@ const Pacientes = () => {
     }
     setModalOpen(false);
     setEditing(null);
+  };
+
+  const toggleAtivo = (paciente: Paciente) => {
+    setPacientes((prev) =>
+      prev.map((p) => (p.id === paciente.id ? { ...p, ativo: !p.ativo } : p))
+    );
   };
 
   const openNew = () => { setEditing(null); setModalOpen(true); };
@@ -104,66 +110,158 @@ const Pacientes = () => {
         </div>
       </div>
 
-      <div className="rounded-lg border bg-card">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Nome</TableHead>
-              <TableHead className="hidden md:table-cell">CPF</TableHead>
-              <TableHead>Celular</TableHead>
-              <TableHead className="hidden lg:table-cell">Email</TableHead>
-              <TableHead className="hidden sm:table-cell">Idade</TableHead>
-              <TableHead className="hidden lg:table-cell">Gênero</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="w-[80px]">Ações</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filtered.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
-                  Nenhum paciente encontrado.
-                </TableCell>
-              </TableRow>
-            ) : (
-              filtered.map((p) => {
-                const idade = calcIdade(p.nascimento);
-                return (
-                  <TableRow key={p.id} className="cursor-pointer" onClick={() => openEdit(p)}>
-                    <TableCell className="font-medium">{p.nome}</TableCell>
-                    <TableCell className="hidden md:table-cell text-muted-foreground">
-                      {p.cpf ? applyCpfCnpjMask(p.cpf) : "—"}
-                    </TableCell>
-                    <TableCell>
-                      <span className="flex items-center gap-1 text-muted-foreground">
-                        <Phone className="h-3 w-3" /> {applyPhoneMask(p.celular.replace(/\D/g, ""))}
-                      </span>
-                    </TableCell>
-                    <TableCell className="hidden lg:table-cell text-muted-foreground">
-                      {p.email || "—"}
-                    </TableCell>
-                    <TableCell className="hidden sm:table-cell text-muted-foreground">
-                      {idade !== null ? `${idade} anos` : "—"}
-                    </TableCell>
-                    <TableCell className="hidden lg:table-cell text-muted-foreground">
-                      {p.genero || "—"}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={p.ativo !== false ? "default" : "secondary"}>
+      <div className="space-y-3">
+        {filtered.length === 0 ? (
+          <div className="rounded-lg border bg-card p-8 text-center text-muted-foreground">
+            Nenhum paciente encontrado.
+          </div>
+        ) : (
+          filtered.map((p) => {
+            const idade = calcIdade(p.nascimento);
+            const phoneDigits = p.celular.replace(/\D/g, "");
+            const whatsappLink = `https://wa.me/55${phoneDigits}`;
+
+            return (
+              <div
+                key={p.id}
+                className="rounded-lg border bg-card p-4 hover:shadow-md transition-shadow cursor-pointer"
+                onClick={() => openEdit(p)}
+              >
+                {/* Desktop: 4 columns */}
+                <div className="hidden md:grid md:grid-cols-[1fr_1fr_1fr_auto] gap-4 items-center">
+                  {/* Col 1 - Paciente */}
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-10 w-10">
+                      <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">
+                        {getInitials(p.nome)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-foreground truncate">{p.nome}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {p.cpf ? applyCpfCnpjMask(p.cpf) : "CPF não informado"}
+                      </p>
+                      <Badge variant={p.ativo !== false ? "default" : "secondary"} className="mt-1 text-[10px] px-1.5 py-0">
                         {p.ativo !== false ? "Ativo" : "Inativo"}
                       </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); openEdit(p); }}>
+                    </div>
+                  </div>
+
+                  {/* Col 2 - Contato */}
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Phone className="h-3.5 w-3.5 shrink-0" />
+                      <span>{applyPhoneMask(phoneDigits)}</span>
+                      <a
+                        href={whatsappLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-green-600 hover:text-green-700"
+                      >
+                        <MessageCircle className="h-3.5 w-3.5" />
+                      </a>
+                    </div>
+                    {p.email && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Mail className="h-3.5 w-3.5 shrink-0" />
+                        <span className="truncate">{p.email}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Col 3 - Perfil */}
+                  <div className="space-y-1 text-sm text-muted-foreground">
+                    {idade !== null && <p>{idade} anos</p>}
+                    {p.genero && <p>{p.genero}</p>}
+                    {idade === null && !p.genero && <p>—</p>}
+                  </div>
+
+                  {/* Col 4 - Ações */}
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={(e) => { e.stopPropagation(); openEdit(p); }}
+                      title="Editar"
+                    >
+                      <Edit2 className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={(e) => { e.stopPropagation(); toggleAtivo(p); }}
+                      title={p.ativo !== false ? "Inativar" : "Ativar"}
+                    >
+                      {p.ativo !== false ? <UserX className="h-4 w-4 text-destructive" /> : <UserCheck className="h-4 w-4 text-green-600" />}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Mobile: stacked */}
+                <div className="md:hidden space-y-3">
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-10 w-10">
+                      <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">
+                        {getInitials(p.nome)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold text-foreground truncate">{p.nome}</p>
+                        <Badge variant={p.ativo !== false ? "default" : "secondary"} className="text-[10px] px-1.5 py-0 shrink-0">
+                          {p.ativo !== false ? "Ativo" : "Inativo"}
+                        </Badge>
+                      </div>
+                      {p.cpf && (
+                        <p className="text-xs text-muted-foreground">{applyCpfCnpjMask(p.cpf)}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                    <span className="flex items-center gap-1.5">
+                      <Phone className="h-3.5 w-3.5" />
+                      {applyPhoneMask(phoneDigits)}
+                      <a
+                        href={whatsappLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-green-600"
+                      >
+                        <MessageCircle className="h-3.5 w-3.5" />
+                      </a>
+                    </span>
+                    {p.email && (
+                      <span className="flex items-center gap-1.5">
+                        <Mail className="h-3.5 w-3.5" />
+                        <span className="truncate max-w-[180px]">{p.email}</span>
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex gap-3 text-xs text-muted-foreground">
+                      {idade !== null && <span>{idade} anos</span>}
+                      {p.genero && <span>{p.genero}</span>}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); openEdit(p); }}>
                         <Edit2 className="h-4 w-4" />
                       </Button>
-                    </TableCell>
-                  </TableRow>
-                );
-              })
-            )}
-          </TableBody>
-        </Table>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); toggleAtivo(p); }}>
+                        {p.ativo !== false ? <UserX className="h-4 w-4 text-destructive" /> : <UserCheck className="h-4 w-4 text-green-600" />}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })
+        )}
       </div>
 
       <PacienteModal
