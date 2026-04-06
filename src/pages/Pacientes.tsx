@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Search, Plus, Phone, Mail, Edit2, UserCheck, UserX, MessageCircle } from "lucide-react";
+import { Search, Plus, Phone, Mail, Edit2, MessageCircle } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -110,7 +111,15 @@ const Pacientes = () => {
         </div>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-0">
+        {/* Column headers - desktop only */}
+        <div className="hidden md:grid md:grid-cols-[1fr_1fr_1fr_auto] gap-4 px-4 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+          <span>Paciente</span>
+          <span>Contato</span>
+          <span>Perfil</span>
+          <span>Ações</span>
+        </div>
+
         {filtered.length === 0 ? (
           <div className="rounded-lg border bg-card p-8 text-center text-muted-foreground">
             Nenhum paciente encontrado.
@@ -124,7 +133,7 @@ const Pacientes = () => {
             return (
               <div
                 key={p.id}
-                className="rounded-lg border bg-card p-4 hover:shadow-md transition-shadow cursor-pointer"
+                className="rounded-lg border bg-card p-4 hover:shadow-md transition-shadow cursor-pointer mb-2"
                 onClick={() => openEdit(p)}
               >
                 {/* Desktop: 4 columns */}
@@ -178,7 +187,7 @@ const Pacientes = () => {
                   </div>
 
                   {/* Col 4 - Ações */}
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-3">
                     <Button
                       variant="ghost"
                       size="icon"
@@ -188,15 +197,12 @@ const Pacientes = () => {
                     >
                       <Edit2 className="h-4 w-4" />
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={(e) => { e.stopPropagation(); toggleAtivo(p); }}
-                      title={p.ativo !== false ? "Inativar" : "Ativar"}
-                    >
-                      {p.ativo !== false ? <UserX className="h-4 w-4 text-destructive" /> : <UserCheck className="h-4 w-4 text-green-600" />}
-                    </Button>
+                    <Switch
+                      checked={p.ativo !== false}
+                      onCheckedChange={() => toggleAtivo(p)}
+                      onClick={(e) => e.stopPropagation()}
+                      className="scale-75"
+                    />
                   </div>
                 </div>
 
@@ -248,13 +254,16 @@ const Pacientes = () => {
                       {idade !== null && <span>{idade} anos</span>}
                       {p.genero && <span>{p.genero}</span>}
                     </div>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-3">
                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); openEdit(p); }}>
                         <Edit2 className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); toggleAtivo(p); }}>
-                        {p.ativo !== false ? <UserX className="h-4 w-4 text-destructive" /> : <UserCheck className="h-4 w-4 text-green-600" />}
-                      </Button>
+                      <Switch
+                        checked={p.ativo !== false}
+                        onCheckedChange={() => toggleAtivo(p)}
+                        onClick={(e) => e.stopPropagation()}
+                        className="scale-75"
+                      />
                     </div>
                   </div>
                 </div>
