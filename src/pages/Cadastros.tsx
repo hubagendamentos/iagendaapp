@@ -40,6 +40,12 @@ export interface AppointmentType {
   active: boolean;
 }
 
+export interface Specialty {
+  id: string;
+  name: string;
+  active: boolean;
+}
+
 // ---- Initial Data ----
 const initialPlans: Plan[] = [
   { id: "1", name: "Unimed", active: true },
@@ -64,6 +70,19 @@ const initialAppointmentTypes: AppointmentType[] = [
   { id: "4", name: "Procedimento", active: true },
   { id: "5", name: "Avaliação", active: true },
   { id: "6", name: "Urgência", active: true },
+];
+
+export const initialSpecialties: Specialty[] = [
+  { id: "1", name: "Clínico Geral", active: true },
+  { id: "2", name: "Cardiologia", active: true },
+  { id: "3", name: "Dermatologia", active: true },
+  { id: "4", name: "Ortopedia", active: true },
+  { id: "5", name: "Pediatria", active: true },
+  { id: "6", name: "Neurologia", active: true },
+  { id: "7", name: "Ginecologia", active: true },
+  { id: "8", name: "Oftalmologia", active: true },
+  { id: "9", name: "Psiquiatria", active: true },
+  { id: "10", name: "Endocrinologia", active: true },
 ];
 
 // ============ Plan Modal ============
