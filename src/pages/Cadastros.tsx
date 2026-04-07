@@ -248,6 +248,41 @@ const AppointmentTypeModal = ({ open, onClose, onSave, appointmentType }: { open
   );
 };
 
+// ============ Specialty Modal ============
+const SpecialtyModal = ({ open, onClose, onSave, specialty }: { open: boolean; onClose: () => void; onSave: (s: Omit<Specialty, "id"> & { id?: string }) => void; specialty: Specialty | null }) => {
+  const [name, setName] = useState("");
+  const [active, setActive] = useState(true);
+
+  useEffect(() => {
+    if (open) {
+      if (specialty) { setName(specialty.name); setActive(specialty.active); }
+      else { setName(""); setActive(true); }
+    }
+  }, [open, specialty]);
+
+  return (
+    <Dialog open={open} onOpenChange={() => onClose()}>
+      <DialogContent className="sm:max-w-md !inset-0 !translate-x-0 !translate-y-0 !top-0 !left-0 sm:!inset-auto sm:!left-[50%] sm:!top-[50%] sm:!translate-x-[-50%] sm:!translate-y-[-50%] rounded-none sm:rounded-lg w-full sm:w-auto max-h-[100dvh] sm:max-h-[90vh] overflow-y-auto">
+        <DialogHeader><DialogTitle>{specialty ? "Editar Especialidade" : "Nova Especialidade"}</DialogTitle></DialogHeader>
+        <div className="space-y-4 pt-2">
+          <div className="space-y-2">
+            <Label>Nome da especialidade</Label>
+            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex: Cardiologia" />
+          </div>
+          <div className="flex items-center gap-3">
+            <Switch checked={active} onCheckedChange={setActive} />
+            <Label>{active ? "Ativo" : "Inativo"}</Label>
+          </div>
+          <div className="flex gap-2 justify-end pt-2">
+            <Button variant="outline" onClick={onClose}>Cancelar</Button>
+            <Button disabled={!name.trim()} onClick={() => { onSave({ id: specialty?.id, name: name.trim(), active }); onClose(); }}>Salvar</Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 // ============ Main Page ============
 const Cadastros = () => {
   const [plans, setPlans] = useState<Plan[]>(initialPlans);
