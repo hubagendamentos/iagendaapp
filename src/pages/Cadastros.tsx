@@ -289,6 +289,7 @@ const Cadastros = () => {
   const [exams, setExams] = useState<Exam[]>(initialExams);
   const [preparations, setPreparations] = useState<Preparation[]>(initialPreparations);
   const [appointmentTypes, setAppointmentTypes] = useState<AppointmentType[]>(initialAppointmentTypes);
+  const [specialties, setSpecialties] = useState<Specialty[]>(initialSpecialties);
 
   const [planModal, setPlanModal] = useState(false);
   const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
@@ -302,10 +303,14 @@ const Cadastros = () => {
   const [typeModal, setTypeModal] = useState(false);
   const [editingType, setEditingType] = useState<AppointmentType | null>(null);
 
+  const [specModal, setSpecModal] = useState(false);
+  const [editingSpec, setEditingSpec] = useState<Specialty | null>(null);
+
   const [searchPlans, setSearchPlans] = useState("");
   const [searchExams, setSearchExams] = useState("");
   const [searchPreps, setSearchPreps] = useState("");
   const [searchTypes, setSearchTypes] = useState("");
+  const [searchSpecs, setSearchSpecs] = useState("");
 
   // Plan CRUD
   const savePlan = (data: Omit<Plan, "id"> & { id?: string }) => {
@@ -351,10 +356,22 @@ const Cadastros = () => {
     }
   };
 
+  // Specialty CRUD
+  const saveSpecialty = (data: Omit<Specialty, "id"> & { id?: string }) => {
+    if (data.id) {
+      setSpecialties((prev) => prev.map((s) => (s.id === data.id ? { ...s, ...data } as Specialty : s)));
+      toast.success("Especialidade atualizada");
+    } else {
+      setSpecialties((prev) => [...prev, { ...data, id: crypto.randomUUID() } as Specialty]);
+      toast.success("Especialidade adicionada");
+    }
+  };
+
   const filteredPlans = plans.filter((p) => p.name.toLowerCase().includes(searchPlans.toLowerCase()));
   const filteredExams = exams.filter((e) => e.name.toLowerCase().includes(searchExams.toLowerCase()));
   const filteredPreps = preparations.filter((p) => p.name.toLowerCase().includes(searchPreps.toLowerCase()));
   const filteredTypes = appointmentTypes.filter((t) => t.name.toLowerCase().includes(searchTypes.toLowerCase()));
+  const filteredSpecs = specialties.filter((s) => s.name.toLowerCase().includes(searchSpecs.toLowerCase()));
 
   const getPreparationName = (id: string | null) => {
     if (!id) return "—";
