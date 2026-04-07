@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, Plus, Phone, Mail, Edit2, MessageCircle } from "lucide-react";
+import { Search, Plus, Mail, Pencil, MessageCircle } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -111,13 +111,13 @@ const Pacientes = () => {
         </div>
       </div>
 
-      <div className="space-y-0">
+      <div className="space-y-2">
         {/* Column headers - desktop only */}
-        <div className="hidden md:grid md:grid-cols-[1fr_1fr_1fr_auto] gap-4 px-4 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+        <div className="hidden md:grid md:grid-cols-[2fr_1.5fr_1fr_100px] gap-6 px-5 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wider border-b">
           <span>Paciente</span>
           <span>Contato</span>
           <span>Perfil</span>
-          <span>Ações</span>
+          <span className="text-center">Ações</span>
         </div>
 
         {filtered.length === 0 ? (
@@ -133,19 +133,19 @@ const Pacientes = () => {
             return (
               <div
                 key={p.id}
-                className="rounded-lg border bg-card p-4 hover:shadow-md transition-shadow cursor-pointer mb-2"
+                className="rounded-lg border bg-card p-4 md:px-5 md:py-3.5 hover:shadow-md transition-shadow cursor-pointer"
                 onClick={() => openEdit(p)}
               >
-                {/* Desktop: 4 columns */}
-                <div className="hidden md:grid md:grid-cols-[1fr_1fr_1fr_auto] gap-4 items-center">
+                {/* Desktop: 4 columns - matching header grid */}
+                <div className="hidden md:grid md:grid-cols-[2fr_1.5fr_1fr_100px] gap-6 items-center">
                   {/* Col 1 - Paciente */}
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-10 w-10">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <Avatar className="h-10 w-10 shrink-0">
                       <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">
                         {getInitials(p.nome)}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <p className="font-semibold text-foreground truncate">{p.nome}</p>
                       <p className="text-xs text-muted-foreground">
                         {p.cpf ? applyCpfCnpjMask(p.cpf) : "CPF não informado"}
@@ -157,22 +157,21 @@ const Pacientes = () => {
                   </div>
 
                   {/* Col 2 - Contato */}
-                  <div className="space-y-1">
+                  <div className="space-y-1.5 min-w-0">
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Phone className="h-3.5 w-3.5 shrink-0" />
                       <span>{applyPhoneMask(phoneDigits)}</span>
                       <a
                         href={whatsappLink}
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
-                        className="text-green-600 hover:text-green-700"
+                        className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-green-100 text-green-600 hover:bg-green-200 transition-colors dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-900/50"
                       >
                         <MessageCircle className="h-3.5 w-3.5" />
                       </a>
                     </div>
                     {p.email && (
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground min-w-0">
                         <Mail className="h-3.5 w-3.5 shrink-0" />
                         <span className="truncate">{p.email}</span>
                       </div>
@@ -180,22 +179,22 @@ const Pacientes = () => {
                   </div>
 
                   {/* Col 3 - Perfil */}
-                  <div className="space-y-1 text-sm text-muted-foreground">
+                  <div className="space-y-0.5 text-sm text-muted-foreground">
                     {idade !== null && <p>{idade} anos</p>}
                     {p.genero && <p>{p.genero}</p>}
                     {idade === null && !p.genero && <p>—</p>}
                   </div>
 
                   {/* Col 4 - Ações */}
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center gap-2">
                     <Button
-                      variant="ghost"
+                      variant="outline"
                       size="icon"
-                      className="h-8 w-8"
+                      className="h-8 w-8 rounded-full"
                       onClick={(e) => { e.stopPropagation(); openEdit(p); }}
                       title="Editar"
                     >
-                      <Edit2 className="h-4 w-4" />
+                      <Pencil className="h-3.5 w-3.5" />
                     </Button>
                     <Switch
                       checked={p.ativo !== false}
@@ -206,10 +205,11 @@ const Pacientes = () => {
                   </div>
                 </div>
 
-                {/* Mobile: stacked */}
+                {/* Mobile: stacked blocks */}
                 <div className="md:hidden space-y-3">
+                  {/* Row 1: Avatar + Name + Status */}
                   <div className="flex items-center gap-3">
-                    <Avatar className="h-10 w-10">
+                    <Avatar className="h-10 w-10 shrink-0">
                       <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">
                         {getInitials(p.nome)}
                       </AvatarFallback>
@@ -227,36 +227,42 @@ const Pacientes = () => {
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
-                    <span className="flex items-center gap-1.5">
-                      <Phone className="h-3.5 w-3.5" />
-                      {applyPhoneMask(phoneDigits)}
+                  {/* Row 2: Contact */}
+                  <div className="space-y-1.5 pl-[52px]">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <span>{applyPhoneMask(phoneDigits)}</span>
                       <a
                         href={whatsappLink}
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
-                        className="text-green-600"
+                        className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-green-100 text-green-600 hover:bg-green-200 transition-colors dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-900/50"
                       >
                         <MessageCircle className="h-3.5 w-3.5" />
                       </a>
-                    </span>
+                    </div>
                     {p.email && (
-                      <span className="flex items-center gap-1.5">
-                        <Mail className="h-3.5 w-3.5" />
-                        <span className="truncate max-w-[180px]">{p.email}</span>
-                      </span>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Mail className="h-3.5 w-3.5 shrink-0" />
+                        <span className="truncate">{p.email}</span>
+                      </div>
                     )}
                   </div>
 
-                  <div className="flex items-center justify-between">
+                  {/* Row 3: Profile + Actions */}
+                  <div className="flex items-center justify-between pl-[52px]">
                     <div className="flex gap-3 text-xs text-muted-foreground">
                       {idade !== null && <span>{idade} anos</span>}
                       {p.genero && <span>{p.genero}</span>}
                     </div>
-                    <div className="flex items-center gap-3">
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); openEdit(p); }}>
-                        <Edit2 className="h-4 w-4" />
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8 rounded-full"
+                        onClick={(e) => { e.stopPropagation(); openEdit(p); }}
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
                       </Button>
                       <Switch
                         checked={p.ativo !== false}
