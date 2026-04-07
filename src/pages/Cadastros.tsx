@@ -40,6 +40,12 @@ export interface AppointmentType {
   active: boolean;
 }
 
+export interface Specialty {
+  id: string;
+  name: string;
+  active: boolean;
+}
+
 // ---- Initial Data ----
 const initialPlans: Plan[] = [
   { id: "1", name: "Unimed", active: true },
@@ -64,6 +70,19 @@ const initialAppointmentTypes: AppointmentType[] = [
   { id: "4", name: "Procedimento", active: true },
   { id: "5", name: "Avaliação", active: true },
   { id: "6", name: "Urgência", active: true },
+];
+
+export const initialSpecialties: Specialty[] = [
+  { id: "1", name: "Clínico Geral", active: true },
+  { id: "2", name: "Cardiologia", active: true },
+  { id: "3", name: "Dermatologia", active: true },
+  { id: "4", name: "Ortopedia", active: true },
+  { id: "5", name: "Pediatria", active: true },
+  { id: "6", name: "Neurologia", active: true },
+  { id: "7", name: "Ginecologia", active: true },
+  { id: "8", name: "Oftalmologia", active: true },
+  { id: "9", name: "Psiquiatria", active: true },
+  { id: "10", name: "Endocrinologia", active: true },
 ];
 
 // ============ Plan Modal ============
@@ -229,12 +248,48 @@ const AppointmentTypeModal = ({ open, onClose, onSave, appointmentType }: { open
   );
 };
 
+// ============ Specialty Modal ============
+const SpecialtyModal = ({ open, onClose, onSave, specialty }: { open: boolean; onClose: () => void; onSave: (s: Omit<Specialty, "id"> & { id?: string }) => void; specialty: Specialty | null }) => {
+  const [name, setName] = useState("");
+  const [active, setActive] = useState(true);
+
+  useEffect(() => {
+    if (open) {
+      if (specialty) { setName(specialty.name); setActive(specialty.active); }
+      else { setName(""); setActive(true); }
+    }
+  }, [open, specialty]);
+
+  return (
+    <Dialog open={open} onOpenChange={() => onClose()}>
+      <DialogContent className="sm:max-w-md !inset-0 !translate-x-0 !translate-y-0 !top-0 !left-0 sm:!inset-auto sm:!left-[50%] sm:!top-[50%] sm:!translate-x-[-50%] sm:!translate-y-[-50%] rounded-none sm:rounded-lg w-full sm:w-auto max-h-[100dvh] sm:max-h-[90vh] overflow-y-auto">
+        <DialogHeader><DialogTitle>{specialty ? "Editar Especialidade" : "Nova Especialidade"}</DialogTitle></DialogHeader>
+        <div className="space-y-4 pt-2">
+          <div className="space-y-2">
+            <Label>Nome da especialidade</Label>
+            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex: Cardiologia" />
+          </div>
+          <div className="flex items-center gap-3">
+            <Switch checked={active} onCheckedChange={setActive} />
+            <Label>{active ? "Ativo" : "Inativo"}</Label>
+          </div>
+          <div className="flex gap-2 justify-end pt-2">
+            <Button variant="outline" onClick={onClose}>Cancelar</Button>
+            <Button disabled={!name.trim()} onClick={() => { onSave({ id: specialty?.id, name: name.trim(), active }); onClose(); }}>Salvar</Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 // ============ Main Page ============
 const Cadastros = () => {
   const [plans, setPlans] = useState<Plan[]>(initialPlans);
   const [exams, setExams] = useState<Exam[]>(initialExams);
   const [preparations, setPreparations] = useState<Preparation[]>(initialPreparations);
   const [appointmentTypes, setAppointmentTypes] = useState<AppointmentType[]>(initialAppointmentTypes);
+  const [specialties, setSpecialties] = useState<Specialty[]>(initialSpecialties);
 
   const [planModal, setPlanModal] = useState(false);
   const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
@@ -248,10 +303,14 @@ const Cadastros = () => {
   const [typeModal, setTypeModal] = useState(false);
   const [editingType, setEditingType] = useState<AppointmentType | null>(null);
 
+  const [specModal, setSpecModal] = useState(false);
+  const [editingSpec, setEditingSpec] = useState<Specialty | null>(null);
+
   const [searchPlans, setSearchPlans] = useState("");
   const [searchExams, setSearchExams] = useState("");
   const [searchPreps, setSearchPreps] = useState("");
   const [searchTypes, setSearchTypes] = useState("");
+  const [searchSpecs, setSearchSpecs] = useState("");
 
   // Plan CRUD
   const savePlan = (data: Omit<Plan, "id"> & { id?: string }) => {
@@ -297,10 +356,22 @@ const Cadastros = () => {
     }
   };
 
+  // Specialty CRUD
+  const saveSpecialty = (data: Omit<Specialty, "id"> & { id?: string }) => {
+    if (data.id) {
+      setSpecialties((prev) => prev.map((s) => (s.id === data.id ? { ...s, ...data } as Specialty : s)));
+      toast.success("Especialidade atualizada");
+    } else {
+      setSpecialties((prev) => [...prev, { ...data, id: crypto.randomUUID() } as Specialty]);
+      toast.success("Especialidade adicionada");
+    }
+  };
+
   const filteredPlans = plans.filter((p) => p.name.toLowerCase().includes(searchPlans.toLowerCase()));
   const filteredExams = exams.filter((e) => e.name.toLowerCase().includes(searchExams.toLowerCase()));
   const filteredPreps = preparations.filter((p) => p.name.toLowerCase().includes(searchPreps.toLowerCase()));
   const filteredTypes = appointmentTypes.filter((t) => t.name.toLowerCase().includes(searchTypes.toLowerCase()));
+  const filteredSpecs = specialties.filter((s) => s.name.toLowerCase().includes(searchSpecs.toLowerCase()));
 
   const getPreparationName = (id: string | null) => {
     if (!id) return "—";
@@ -311,15 +382,16 @@ const Cadastros = () => {
     <div className="space-y-6 max-w-5xl mx-auto">
       <div>
         <h2 className="text-xl sm:text-2xl font-semibold text-foreground">Cadastros</h2>
-        <p className="text-muted-foreground mt-1 text-sm">Gerencie planos, exames, preparos e tipos de atendimento</p>
+        <p className="text-muted-foreground mt-1 text-sm">Gerencie planos, exames, preparos, tipos de atendimento e especialidades</p>
       </div>
 
       <Tabs defaultValue="plans" className="w-full">
-        <TabsList className="w-full sm:w-auto grid grid-cols-4 sm:inline-flex">
+        <TabsList className="w-full sm:w-auto grid grid-cols-5 sm:inline-flex">
           <TabsTrigger value="plans">Planos</TabsTrigger>
           <TabsTrigger value="exams">Exames</TabsTrigger>
           <TabsTrigger value="preparations">Preparos</TabsTrigger>
           <TabsTrigger value="types">Atendimentos</TabsTrigger>
+          <TabsTrigger value="specialties">Especialidades</TabsTrigger>
         </TabsList>
 
         {/* ---- PLANS TAB ---- */}
@@ -522,6 +594,53 @@ const Cadastros = () => {
             </CardContent>
           </Card>
         </TabsContent>
+        {/* ---- SPECIALTIES TAB ---- */}
+        <TabsContent value="specialties" className="mt-4">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex flex-col sm:flex-row gap-3 mb-4">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input placeholder="Buscar especialidade..." value={searchSpecs} onChange={(e) => setSearchSpecs(e.target.value)} className="pl-9" />
+                </div>
+                <Button className="gap-2 shrink-0" onClick={() => { setEditingSpec(null); setSpecModal(true); }}>
+                  <Plus className="h-4 w-4" /> Nova Especialidade
+                </Button>
+              </div>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nome</TableHead>
+                      <TableHead className="w-24 text-center">Status</TableHead>
+                      <TableHead className="w-20 text-center">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredSpecs.length === 0 && (
+                      <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground py-8">Nenhuma especialidade encontrada</TableCell></TableRow>
+                    )}
+                    {filteredSpecs.map((s) => (
+                      <TableRow key={s.id}>
+                        <TableCell className="font-medium">{s.name}</TableCell>
+                        <TableCell className="text-center">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${s.active ? "bg-status-confirmed/15 text-status-confirmed" : "bg-muted text-muted-foreground"}`}>
+                            {s.active ? "Ativo" : "Inativo"}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingSpec(s); setSpecModal(true); }}>
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
 
       {/* Modals */}
@@ -529,6 +648,7 @@ const Cadastros = () => {
       <ExamModal open={examModal} onClose={() => { setExamModal(false); setEditingExam(null); }} onSave={saveExam} exam={editingExam} preparations={preparations} />
       <PreparationModal open={prepModal} onClose={() => { setPrepModal(false); setEditingPrep(null); }} onSave={savePrep} preparation={editingPrep} />
       <AppointmentTypeModal open={typeModal} onClose={() => { setTypeModal(false); setEditingType(null); }} onSave={saveType} appointmentType={editingType} />
+      <SpecialtyModal open={specModal} onClose={() => { setSpecModal(false); setEditingSpec(null); }} onSave={saveSpecialty} specialty={editingSpec} />
     </div>
   );
 };

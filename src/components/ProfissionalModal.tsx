@@ -9,11 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { PhoneMaskInput } from "@/components/PhoneMaskInput";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Upload } from "lucide-react";
-
-const specialties = [
-  "Clínico Geral", "Cardiologia", "Dermatologia", "Ortopedia", "Pediatria",
-  "Neurologia", "Ginecologia", "Oftalmologia", "Psiquiatria", "Endocrinologia",
-];
+import { initialSpecialties, type Specialty } from "@/pages/Cadastros";
 
 export interface Profissional {
   id?: string;
@@ -30,11 +26,13 @@ interface Props {
   onClose: () => void;
   onSave: (data: Profissional) => void;
   profissional: Profissional | null;
+  specialties?: Specialty[];
 }
 
 const empty: Profissional = { nome: "", crm: "", telefone: "", especialidade: "", ativo: true };
 
-export function ProfissionalModal({ open, onClose, onSave, profissional }: Props) {
+export function ProfissionalModal({ open, onClose, onSave, profissional, specialties: specProp }: Props) {
+  const activeSpecialties = (specProp || initialSpecialties).filter(s => s.active);
   const [form, setForm] = useState<Profissional>(empty);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -124,8 +122,8 @@ export function ProfissionalModal({ open, onClose, onSave, profissional }: Props
               <Select value={form.especialidade} onValueChange={(v) => set("especialidade", v)}>
                 <SelectTrigger className="w-full"><SelectValue placeholder="Selecione..." /></SelectTrigger>
                 <SelectContent>
-                  {specialties.map((s) => (
-                    <SelectItem key={s} value={s}>{s}</SelectItem>
+                  {activeSpecialties.map((s) => (
+                    <SelectItem key={s.id} value={s.name}>{s.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
