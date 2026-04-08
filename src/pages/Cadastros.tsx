@@ -4,7 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { ScrollableChips } from "@/components/ScrollableChips";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -290,6 +291,7 @@ const Cadastros = () => {
   const [preparations, setPreparations] = useState<Preparation[]>(initialPreparations);
   const [appointmentTypes, setAppointmentTypes] = useState<AppointmentType[]>(initialAppointmentTypes);
   const [specialties, setSpecialties] = useState<Specialty[]>(initialSpecialties);
+  const [activeTab, setActiveTab] = useState("plans");
 
   const [planModal, setPlanModal] = useState(false);
   const [editingPlan, setEditingPlan] = useState<Plan | null>(null);

@@ -7,6 +7,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { useUser } from "@/contexts/UserContext";
 import AppointmentModal, { type Appointment, type AppointmentStatus } from "@/components/AppointmentModal";
 import AgendaFilterModal, { type AgendaFilters } from "@/components/AgendaFilterModal";
+import { ScrollableChips } from "@/components/ScrollableChips";
 
 const professionals = [
   { id: "p1", name: "Dr. João Silva" },
