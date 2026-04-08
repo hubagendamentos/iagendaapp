@@ -386,13 +386,15 @@ const Cadastros = () => {
       </div>
 
       <Tabs defaultValue="plans" className="w-full">
-        <TabsList className="w-full sm:w-auto grid grid-cols-5 sm:inline-flex">
-          <TabsTrigger value="plans">Planos</TabsTrigger>
-          <TabsTrigger value="exams">Exames</TabsTrigger>
-          <TabsTrigger value="preparations">Preparos</TabsTrigger>
-          <TabsTrigger value="types">Atendimentos</TabsTrigger>
-          <TabsTrigger value="specialties">Especialidades</TabsTrigger>
-        </TabsList>
+        <div className="w-full overflow-x-auto -mx-1 px-1">
+          <TabsList className="w-max sm:w-auto inline-flex gap-1">
+            <TabsTrigger value="plans" className="text-xs sm:text-sm px-3">Planos</TabsTrigger>
+            <TabsTrigger value="exams" className="text-xs sm:text-sm px-3">Exames</TabsTrigger>
+            <TabsTrigger value="preparations" className="text-xs sm:text-sm px-3">Preparos</TabsTrigger>
+            <TabsTrigger value="types" className="text-xs sm:text-sm px-3">Atendimentos</TabsTrigger>
+            <TabsTrigger value="specialties" className="text-xs sm:text-sm px-3">Especialidades</TabsTrigger>
+          </TabsList>
+        </div>
 
         {/* ---- PLANS TAB ---- */}
         <TabsContent value="plans" className="mt-4">
