@@ -385,16 +385,18 @@ const Cadastros = () => {
         <p className="text-muted-foreground mt-1 text-sm">Gerencie planos, exames, preparos, tipos de atendimento e especialidades</p>
       </div>
 
-      <Tabs defaultValue="plans" className="w-full">
-        <div className="w-full overflow-x-auto -mx-1 px-1">
-          <TabsList className="w-max sm:w-auto inline-flex gap-1">
-            <TabsTrigger value="plans" className="text-xs sm:text-sm px-3">Planos</TabsTrigger>
-            <TabsTrigger value="exams" className="text-xs sm:text-sm px-3">Exames</TabsTrigger>
-            <TabsTrigger value="preparations" className="text-xs sm:text-sm px-3">Preparos</TabsTrigger>
-            <TabsTrigger value="types" className="text-xs sm:text-sm px-3">Atendimentos</TabsTrigger>
-            <TabsTrigger value="specialties" className="text-xs sm:text-sm px-3">Especialidades</TabsTrigger>
-          </TabsList>
-        </div>
+      <Tabs defaultValue="plans" className="w-full" value={activeTab} onValueChange={setActiveTab}>
+        <ScrollableChips
+          items={[
+            { id: "plans", label: "Planos" },
+            { id: "exams", label: "Exames" },
+            { id: "preparations", label: "Preparos" },
+            { id: "types", label: "Atendimentos" },
+            { id: "specialties", label: "Especialidades" },
+          ]}
+          selectedId={activeTab}
+          onSelect={setActiveTab}
+        />
 
         {/* ---- PLANS TAB ---- */}
         <TabsContent value="plans" className="mt-4">

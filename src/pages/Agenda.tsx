@@ -195,18 +195,12 @@ const Agenda = () => {
 
       {/* Mobile professional switcher */}
       {visibleProfessionals.length > 1 && (
-        <div className="flex md:hidden items-center gap-2 px-4 py-2 border-b bg-card overflow-x-auto">
-          {visibleProfessionals.map((p, idx) => (
-            <Button
-              key={p.id}
-              variant={mobileProfIdx === idx ? "default" : "outline"}
-              size="sm"
-              className="text-xs shrink-0"
-              onClick={() => setMobileProfIdx(idx)}
-            >
-              {p.name}
-            </Button>
-          ))}
+        <div className="md:hidden border-b bg-card px-3 py-2">
+          <ScrollableChips
+            items={visibleProfessionals.map((p, idx) => ({ id: String(idx), label: p.name }))}
+            selectedId={String(mobileProfIdx)}
+            onSelect={(id) => setMobileProfIdx(Number(id))}
+          />
         </div>
       )}
 
