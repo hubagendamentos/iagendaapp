@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Search, Plus, Mail, Pencil, MessageCircle } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
@@ -32,6 +33,7 @@ const initialPacientes: Paciente[] = [
 type StatusFilter = "todos" | "ativos" | "inativos";
 
 const Pacientes = () => {
+  const navigate = useNavigate();
   const [pacientes, setPacientes] = useState<Paciente[]>(initialPacientes);
   const [busca, setBusca] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("todos");
@@ -134,7 +136,7 @@ const Pacientes = () => {
               <div
                 key={p.id}
                 className="rounded-lg border bg-card p-4 md:px-5 md:py-3.5 hover:shadow-md transition-shadow cursor-pointer"
-                onClick={() => openEdit(p)}
+                onClick={() => navigate(`/dashboard/pacientes/${p.id}`)}
               >
                 {/* Desktop: 4 columns - matching header grid */}
                 <div className="hidden md:grid md:grid-cols-[2fr_1.5fr_1fr_100px] gap-6 items-center">
