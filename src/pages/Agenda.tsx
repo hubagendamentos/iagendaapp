@@ -7,6 +7,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { useUser } from "@/contexts/UserContext";
 import AppointmentModal, { type Appointment, type AppointmentStatus } from "@/components/AppointmentModal";
 import AgendaFilterModal, { type AgendaFilters } from "@/components/AgendaFilterModal";
+import { ScrollableChips } from "@/components/ScrollableChips";
 
 const professionals = [
   { id: "p1", name: "Dr. João Silva" },
@@ -195,18 +196,12 @@ const Agenda = () => {
 
       {/* Mobile professional switcher */}
       {visibleProfessionals.length > 1 && (
-        <div className="flex md:hidden items-center gap-2 px-4 py-2 border-b bg-card overflow-x-auto">
-          {visibleProfessionals.map((p, idx) => (
-            <Button
-              key={p.id}
-              variant={mobileProfIdx === idx ? "default" : "outline"}
-              size="sm"
-              className="text-xs shrink-0"
-              onClick={() => setMobileProfIdx(idx)}
-            >
-              {p.name}
-            </Button>
-          ))}
+        <div className="md:hidden border-b bg-card px-3 py-2">
+          <ScrollableChips
+            items={visibleProfessionals.map((p, idx) => ({ id: String(idx), label: p.name }))}
+            selectedId={String(mobileProfIdx)}
+            onSelect={(id) => setMobileProfIdx(Number(id))}
+          />
         </div>
       )}
 

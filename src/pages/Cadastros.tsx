@@ -4,7 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { ScrollableChips } from "@/components/ScrollableChips";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -290,6 +291,7 @@ const Cadastros = () => {
   const [preparations, setPreparations] = useState<Preparation[]>(initialPreparations);
   const [appointmentTypes, setAppointmentTypes] = useState<AppointmentType[]>(initialAppointmentTypes);
   const [specialties, setSpecialties] = useState<Specialty[]>(initialSpecialties);
+  const [activeTab, setActiveTab] = useState("plans");
 
   const [planModal, setPlanModal] = useState(false);
   const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
@@ -385,16 +387,18 @@ const Cadastros = () => {
         <p className="text-muted-foreground mt-1 text-sm">Gerencie planos, exames, preparos, tipos de atendimento e especialidades</p>
       </div>
 
-      <Tabs defaultValue="plans" className="w-full">
-        <div className="w-full overflow-x-auto -mx-1 px-1">
-          <TabsList className="w-max sm:w-auto inline-flex gap-1">
-            <TabsTrigger value="plans" className="text-xs sm:text-sm px-3">Planos</TabsTrigger>
-            <TabsTrigger value="exams" className="text-xs sm:text-sm px-3">Exames</TabsTrigger>
-            <TabsTrigger value="preparations" className="text-xs sm:text-sm px-3">Preparos</TabsTrigger>
-            <TabsTrigger value="types" className="text-xs sm:text-sm px-3">Atendimentos</TabsTrigger>
-            <TabsTrigger value="specialties" className="text-xs sm:text-sm px-3">Especialidades</TabsTrigger>
-          </TabsList>
-        </div>
+      <Tabs defaultValue="plans" className="w-full" value={activeTab} onValueChange={setActiveTab}>
+        <ScrollableChips
+          items={[
+            { id: "plans", label: "Planos" },
+            { id: "exams", label: "Exames" },
+            { id: "preparations", label: "Preparos" },
+            { id: "types", label: "Atendimentos" },
+            { id: "specialties", label: "Especialidades" },
+          ]}
+          selectedId={activeTab}
+          onSelect={setActiveTab}
+        />
 
         {/* ---- PLANS TAB ---- */}
         <TabsContent value="plans" className="mt-4">
