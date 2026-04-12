@@ -71,7 +71,7 @@ const Login = () => {
         <CardHeader className="text-center space-y-3 pb-2">
           <div className="flex items-center justify-center gap-2 text-primary">
             <Calendar className="h-8 w-8" />
-            <span className="text-2xl font-bold tracking-tight">ClinicaHub</span>
+            <span className="text-2xl font-bold tracking-tight">Hub Agendamentos</span>
           </div>
           <p className="text-muted-foreground text-sm">
             Sistema de agendamento para clínicas e profissionais

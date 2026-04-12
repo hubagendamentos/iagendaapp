@@ -39,7 +39,7 @@ export function AppSidebar() {
           <Calendar className="h-6 w-6 text-sidebar-primary shrink-0" />
           {!collapsed && (
             <span className="text-lg font-bold text-sidebar-primary-foreground tracking-tight">
-              ClinicaHub
+              Hub Agendamentos
             </span>
           )}
         </button>
