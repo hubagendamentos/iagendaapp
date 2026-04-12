@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Pencil, Phone, Mail, MessageCircle, Calendar, Clock, User, FileText, Plus } from "lucide-react";
+import { ArrowLeft, Pencil, Phone, Mail, MessageCircle, Calendar, Clock, User, FileText, Plus, MapPin } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
@@ -252,6 +252,18 @@ function TabDados({
             </div>
             <InfoRow label="Email" value={paciente.email || "Não informado"} />
           </div>
+        </div>
+      </div>
+
+      {/* Address Info */}
+      <div className="rounded-lg border bg-card p-4 space-y-3">
+        <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+          <MapPin className="h-4 w-4 text-primary" /> Endereço
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm">
+          <InfoRow label="Rua/Av" value={paciente.endereco ? `${paciente.endereco}${paciente.numero ? `, ${paciente.numero}` : ""}` : "Não informado"} />
+          <InfoRow label="Bairro" value={paciente.bairro || "Não informado"} />
+          <InfoRow label="Cidade/UF" value={paciente.cidade ? `${paciente.cidade}${paciente.uf ? ` - ${paciente.uf}` : ""}` : "Não informado"} />
         </div>
       </div>
     </div>
