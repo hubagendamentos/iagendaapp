@@ -47,6 +47,15 @@ export interface Specialty {
   active: boolean;
 }
 
+export interface Service {
+  id: string;
+  name: string;
+  appointmentTypeId: string;
+  specialtyId: string | null;
+  price: number;
+  active: boolean;
+}
+
 // ---- Initial Data ----
 const initialPlans: Plan[] = [
   { id: "1", name: "Unimed", active: true },
@@ -85,6 +94,20 @@ export const initialSpecialties: Specialty[] = [
   { id: "9", name: "Psiquiatria", active: true },
   { id: "10", name: "Endocrinologia", active: true },
 ];
+
+export const initialServices: Service[] = [
+  { id: "1", name: "Consulta Clínica", appointmentTypeId: "1", specialtyId: "1", price: 150.00, active: true },
+  { id: "2", name: "Sessão de Fisioterapia", appointmentTypeId: "4", specialtyId: "4", price: 120.00, active: true },
+];
+
+export const formatCurrency = (value: number) => {
+  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
+};
+
+export const parseCurrency = (value: string) => {
+  const digits = value.replace(/\D/g, "");
+  return Number(digits) / 100;
+};
 
 // ============ Plan Modal ============
 const PlanModal = ({ open, onClose, onSave, plan }: { open: boolean; onClose: () => void; onSave: (p: Omit<Plan, "id"> & { id?: string }) => void; plan: Plan | null }) => {
@@ -284,6 +307,97 @@ const SpecialtyModal = ({ open, onClose, onSave, specialty }: { open: boolean; o
   );
 };
 
+// ============ Service Modal ============
+const ServiceModal = ({ open, onClose, onSave, service, appointmentTypes, specialties }: { open: boolean; onClose: () => void; onSave: (s: Omit<Service, "id"> & { id?: string }) => void; service: Service | null; appointmentTypes: AppointmentType[]; specialties: Specialty[] }) => {
+  const [name, setName] = useState("");
+  const [appointmentTypeId, setAppointmentTypeId] = useState<string>("");
+  const [specialtyId, setSpecialtyId] = useState<string | null>(null);
+  const [priceStr, setPriceStr] = useState("R$ 0,00");
+  const [price, setPrice] = useState<number>(0);
+  const [active, setActive] = useState(true);
+
+  useEffect(() => {
+    if (open) {
+      if (service) { 
+        setName(service.name); 
+        setAppointmentTypeId(service.appointmentTypeId);
+        setSpecialtyId(service.specialtyId);
+        setPrice(service.price);
+        setPriceStr(formatCurrency(service.price));
+        setActive(service.active); 
+      }
+      else { 
+        setName(""); 
+        setAppointmentTypeId("");
+        setSpecialtyId(null);
+        setPrice(0);
+        setPriceStr("R$ 0,00");
+        setActive(true); 
+      }
+    }
+  }, [open, service]);
+
+  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = parseCurrency(e.target.value);
+    setPrice(val);
+    setPriceStr(formatCurrency(val));
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={() => onClose()}>
+      <DialogContent className="sm:max-w-md !inset-0 !translate-x-0 !translate-y-0 !top-0 !left-0 sm:!inset-auto sm:!left-[50%] sm:!top-[50%] sm:!translate-x-[-50%] sm:!translate-y-[-50%] rounded-none sm:rounded-lg w-full sm:w-auto max-h-[100dvh] sm:max-h-[90vh] overflow-y-auto">
+        <DialogHeader><DialogTitle>{service ? "Editar Serviço" : "Novo Serviço"}</DialogTitle></DialogHeader>
+        <div className="space-y-4 pt-2">
+          <div className="space-y-2">
+            <Label>Nome do serviço</Label>
+            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex: Consulta Médica" />
+          </div>
+          
+          <div className="space-y-2">
+             <Label>Tipo de atendimento</Label>
+             <Select value={appointmentTypeId || "__none__"} onValueChange={(v) => setAppointmentTypeId(v === "__none__" ? "" : v)}>
+               <SelectTrigger className="w-full"><SelectValue placeholder="Selecione um tipo" /></SelectTrigger>
+               <SelectContent>
+                 <SelectItem value="__none__" disabled>Selecione um tipo</SelectItem>
+                 {appointmentTypes.filter((t) => t.active).map((t) => (
+                   <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                 ))}
+               </SelectContent>
+             </Select>
+          </div>
+
+          <div className="space-y-2">
+             <Label>Especialidade (Opcional)</Label>
+             <Select value={specialtyId || "__none__"} onValueChange={(v) => setSpecialtyId(v === "__none__" ? null : v)}>
+               <SelectTrigger className="w-full"><SelectValue placeholder="Nenhuma" /></SelectTrigger>
+               <SelectContent>
+                 <SelectItem value="__none__">Nenhuma</SelectItem>
+                 {specialties.filter((s) => s.active).map((s) => (
+                   <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                 ))}
+               </SelectContent>
+             </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Valor</Label>
+            <Input value={priceStr} onChange={handlePriceChange} placeholder="R$ 0,00" />
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Switch checked={active} onCheckedChange={setActive} />
+            <Label>{active ? "Ativo" : "Inativo"}</Label>
+          </div>
+          <div className="flex gap-2 justify-end pt-2">
+            <Button variant="outline" onClick={onClose}>Cancelar</Button>
+            <Button disabled={!name.trim() || !appointmentTypeId || price <= 0} onClick={() => { onSave({ id: service?.id, name: name.trim(), appointmentTypeId, specialtyId, price, active }); onClose(); }}>Salvar</Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 // ============ Main Page ============
 const Cadastros = () => {
   const [plans, setPlans] = useState<Plan[]>(initialPlans);
@@ -291,6 +405,7 @@ const Cadastros = () => {
   const [preparations, setPreparations] = useState<Preparation[]>(initialPreparations);
   const [appointmentTypes, setAppointmentTypes] = useState<AppointmentType[]>(initialAppointmentTypes);
   const [specialties, setSpecialties] = useState<Specialty[]>(initialSpecialties);
+  const [services, setServices] = useState<Service[]>(initialServices);
   const [activeTab, setActiveTab] = useState("plans");
 
   const [planModal, setPlanModal] = useState(false);
@@ -308,11 +423,15 @@ const Cadastros = () => {
   const [specModal, setSpecModal] = useState(false);
   const [editingSpec, setEditingSpec] = useState<Specialty | null>(null);
 
+  const [serviceModal, setServiceModal] = useState(false);
+  const [editingService, setEditingService] = useState<Service | null>(null);
+
   const [searchPlans, setSearchPlans] = useState("");
   const [searchExams, setSearchExams] = useState("");
   const [searchPreps, setSearchPreps] = useState("");
   const [searchTypes, setSearchTypes] = useState("");
   const [searchSpecs, setSearchSpecs] = useState("");
+  const [searchServices, setSearchServices] = useState("");
 
   // Plan CRUD
   const savePlan = (data: Omit<Plan, "id"> & { id?: string }) => {
@@ -369,15 +488,36 @@ const Cadastros = () => {
     }
   };
 
+  // Service CRUD
+  const saveService = (data: Omit<Service, "id"> & { id?: string }) => {
+    if (data.id) {
+      setServices((prev) => prev.map((s) => (s.id === data.id ? { ...s, ...data } as Service : s)));
+      toast.success("Serviço atualizado");
+    } else {
+      setServices((prev) => [...prev, { ...data, id: crypto.randomUUID() } as Service]);
+      toast.success("Serviço adicionado");
+    }
+  };
+
   const filteredPlans = plans.filter((p) => p.name.toLowerCase().includes(searchPlans.toLowerCase()));
   const filteredExams = exams.filter((e) => e.name.toLowerCase().includes(searchExams.toLowerCase()));
   const filteredPreps = preparations.filter((p) => p.name.toLowerCase().includes(searchPreps.toLowerCase()));
   const filteredTypes = appointmentTypes.filter((t) => t.name.toLowerCase().includes(searchTypes.toLowerCase()));
   const filteredSpecs = specialties.filter((s) => s.name.toLowerCase().includes(searchSpecs.toLowerCase()));
+  const filteredServices = services.filter((s) => s.name.toLowerCase().includes(searchServices.toLowerCase()));
 
   const getPreparationName = (id: string | null) => {
     if (!id) return "—";
     return preparations.find((p) => p.id === id)?.name || "—";
+  };
+
+  const getAppointmentTypeName = (id: string) => {
+    return appointmentTypes.find((t) => t.id === id)?.name || "—";
+  };
+
+  const getSpecialtyName = (id: string | null) => {
+    if (!id) return "—";
+    return specialties.find((s) => s.id === id)?.name || "—";
   };
 
   return (
@@ -395,6 +535,7 @@ const Cadastros = () => {
             { id: "preparations", label: "Preparos" },
             { id: "types", label: "Atendimentos" },
             { id: "specialties", label: "Especialidades" },
+            { id: "services", label: "Serviços" },
           ]}
           selectedId={activeTab}
           onSelect={setActiveTab}
@@ -647,6 +788,63 @@ const Cadastros = () => {
             </CardContent>
           </Card>
         </TabsContent>
+
+        {/* ---- SERVICES TAB ---- */}
+        <TabsContent value="services" className="mt-4">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex flex-col sm:flex-row gap-3 mb-4">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input placeholder="Buscar serviço..." value={searchServices} onChange={(e) => setSearchServices(e.target.value)} className="pl-9" />
+                </div>
+                <Button className="gap-2 shrink-0" onClick={() => { setEditingService(null); setServiceModal(true); }}>
+                  <Plus className="h-4 w-4" /> Novo Serviço
+                </Button>
+              </div>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nome</TableHead>
+                      <TableHead className="hidden sm:table-cell">Tipos & Especialidade</TableHead>
+                      <TableHead className="text-right">Valor</TableHead>
+                      <TableHead className="w-24 text-center">Status</TableHead>
+                      <TableHead className="w-20 text-center">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredServices.length === 0 && (
+                      <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">Nenhum serviço encontrado</TableCell></TableRow>
+                    )}
+                    {filteredServices.map((s) => (
+                      <TableRow key={s.id}>
+                        <TableCell className="font-medium">{s.name}</TableCell>
+                        <TableCell className="hidden sm:table-cell text-sm">
+                           <div className="flex flex-col gap-0.5">
+                             <span className="text-foreground">{getAppointmentTypeName(s.appointmentTypeId)}</span>
+                             <span className="text-muted-foreground text-xs">{getSpecialtyName(s.specialtyId)}</span>
+                           </div>
+                        </TableCell>
+                        <TableCell className="text-right whitespace-nowrap">{formatCurrency(s.price)}</TableCell>
+                        <TableCell className="text-center">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${s.active ? "bg-status-confirmed/15 text-status-confirmed" : "bg-muted text-muted-foreground"}`}>
+                            {s.active ? "Ativo" : "Inativo"}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingService(s); setServiceModal(true); }}>
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
 
       {/* Modals */}
@@ -655,8 +853,10 @@ const Cadastros = () => {
       <PreparationModal open={prepModal} onClose={() => { setPrepModal(false); setEditingPrep(null); }} onSave={savePrep} preparation={editingPrep} />
       <AppointmentTypeModal open={typeModal} onClose={() => { setTypeModal(false); setEditingType(null); }} onSave={saveType} appointmentType={editingType} />
       <SpecialtyModal open={specModal} onClose={() => { setSpecModal(false); setEditingSpec(null); }} onSave={saveSpecialty} specialty={editingSpec} />
+      <ServiceModal open={serviceModal} onClose={() => { setServiceModal(false); setEditingService(null); }} onSave={saveService} service={editingService} appointmentTypes={appointmentTypes} specialties={specialties} />
     </div>
   );
 };
 
 export default Cadastros;
+
