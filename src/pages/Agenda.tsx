@@ -44,6 +44,12 @@ const mockAppointmentTypes = [
   { id: "6", name: "Urgência", active: true },
 ];
 
+const mockServices = [
+  { id: "1", name: "Consulta Clínica", appointmentTypeId: "1", specialtyId: "1", examId: null, price: 150.00, active: true },
+  { id: "2", name: "Sessão de Fisioterapia", appointmentTypeId: "4", specialtyId: "4", examId: null, price: 120.00, active: true },
+  { id: "3", name: "Ultrassom Abdominal", appointmentTypeId: "3", specialtyId: null, examId: "4", price: 200.00, active: true },
+];
+
 const allHours = Array.from({ length: 21 }, (_, i) => {
   const h = Math.floor(i / 2) + 8;
   const m = i % 2 === 0 ? "00" : "30";
@@ -53,14 +59,14 @@ const allHours = Array.from({ length: 21 }, (_, i) => {
 const todayStr = format(new Date(), "yyyy-MM-dd");
 
 const initialAppointments: Appointment[] = [
-  { id: "1", patientName: "Ana Oliveira", time: "09:00", duration: 30, professionalId: "p1", status: "confirmed", type: "Consulta", date: todayStr },
-  { id: "2", patientName: "Carlos Mendes", time: "10:00", duration: 30, professionalId: "p1", status: "scheduled", type: "Retorno", date: todayStr },
-  { id: "3", patientName: "Juliana Costa", time: "09:30", duration: 30, professionalId: "p2", status: "cancelled", type: "Consulta", date: todayStr },
-  { id: "4", patientName: "Roberto Alves", time: "11:00", duration: 30, professionalId: "p2", status: "confirmed", type: "Exame", date: todayStr },
-  { id: "5", patientName: "Fernanda Lima", time: "14:00", duration: 30, professionalId: "p3", status: "missed", type: "Consulta", date: todayStr },
-  { id: "6", patientName: "Lucas Barbosa", time: "08:00", duration: 30, professionalId: "p1", status: "confirmed", type: "Avaliação", date: todayStr },
-  { id: "7", patientName: "Patrícia Souza", time: "15:30", duration: 30, professionalId: "p3", status: "scheduled", type: "Procedimento", date: todayStr },
-  { id: "8", patientName: "Marcos Vieira", time: "13:00", duration: 30, professionalId: "p2", status: "confirmed", type: "Consulta", date: todayStr },
+  { id: "1", patientName: "Ana Oliveira", time: "09:00", duration: 30, professionalId: "p1", status: "confirmed", type: "Consulta", serviceId: "1", serviceName: "Consulta Clínica", price: 150.00, date: todayStr },
+  { id: "2", patientName: "Carlos Mendes", time: "10:00", duration: 30, professionalId: "p1", status: "scheduled", type: "Consulta", serviceId: "1", serviceName: "Consulta Clínica", price: 150.00, date: todayStr },
+  { id: "3", patientName: "Juliana Costa", time: "09:30", duration: 30, professionalId: "p2", status: "cancelled", type: "Consulta", serviceId: "1", serviceName: "Consulta Clínica", price: 150.00, date: todayStr },
+  { id: "4", patientName: "Roberto Alves", time: "11:00", duration: 30, professionalId: "p2", status: "confirmed", type: "Exame", serviceId: "3", serviceName: "Ultrassom Abdominal", price: 200.00, date: todayStr },
+  { id: "5", patientName: "Fernanda Lima", time: "14:00", duration: 30, professionalId: "p3", status: "missed", type: "Consulta", serviceId: "1", serviceName: "Consulta Clínica", price: 150.00, date: todayStr },
+  { id: "6", patientName: "Lucas Barbosa", time: "08:00", duration: 30, professionalId: "p1", status: "confirmed", type: "Procedimento", serviceId: "2", serviceName: "Sessão de Fisioterapia", price: 120.00, date: todayStr },
+  { id: "7", patientName: "Patrícia Souza", time: "15:30", duration: 30, professionalId: "p3", status: "scheduled", type: "Procedimento", serviceId: "2", serviceName: "Sessão de Fisioterapia", price: 120.00, date: todayStr },
+  { id: "8", patientName: "Marcos Vieira", time: "13:00", duration: 30, professionalId: "p2", status: "confirmed", type: "Consulta", serviceId: "1", serviceName: "Consulta Clínica", price: 150.00, date: todayStr },
 ];
 
 const statusConfig: Record<AppointmentStatus, { label: string; cardClass: string; dotClass: string; borderColor: string; badgeBg: string; badgeText: string; cancelled?: boolean }> = {
@@ -243,7 +249,7 @@ const Agenda = () => {
                     {appt && (() => {
                       const cfg = statusConfig[appt.status];
                       const profLabel = isClinic ? professionals.find(p => p.id === appt.professionalId)?.name : null;
-                      const tooltipText = `${appt.patientName} — ${appt.time} · ${appt.type}${profLabel ? ` · ${profLabel}` : ""}${appt.type === "Exame" && appt.preparationName ? ` · Preparo: ${appt.preparationName}` : ""}`;
+                      const tooltipText = `${appt.patientName} — ${appt.time} · ${appt.type}${profLabel ? ` · ${profLabel}` : ""}${appt.serviceName ? ` · Serviço: ${appt.serviceName}` : ""}`;
                       return (
                         <TooltipProvider delayDuration={300}>
                           <Tooltip>
@@ -257,7 +263,7 @@ const Agenda = () => {
                                   {appt.time} · {appt.type}
                                 </p>
                                 <p className="text-muted-foreground/70 truncate leading-tight">
-                                  {profLabel || (appt.type === "Exame" && appt.preparationName ? `Preparo: ${appt.preparationName}` : "\u00A0")}
+                                  {profLabel || (appt.serviceName ? `Serviço: ${appt.serviceName}` : "\u00A0")}
                                 </p>
                               </div>
                             </TooltipTrigger>
@@ -303,7 +309,7 @@ const Agenda = () => {
                         {appt.time} · {appt.type}
                       </p>
                       <p className="text-xs text-muted-foreground/70 truncate">
-                        {profLabel || (appt.type === "Exame" && appt.preparationName ? `Preparo: ${appt.preparationName}` : "")}
+                        {profLabel || (appt.serviceName ? `Serviço: ${appt.serviceName}` : "")}
                       </p>
                     </div>
                   );
@@ -353,6 +359,7 @@ const Agenda = () => {
         preparations={mockPreparations}
         plans={mockPlans}
         appointmentTypes={mockAppointmentTypes}
+        services={mockServices}
       />
     </div>
   );

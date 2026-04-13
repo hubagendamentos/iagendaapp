@@ -52,6 +52,7 @@ export interface Service {
   name: string;
   appointmentTypeId: string;
   specialtyId: string | null;
+  examId?: string | null;
   price: number;
   active: boolean;
 }
@@ -308,10 +309,11 @@ const SpecialtyModal = ({ open, onClose, onSave, specialty }: { open: boolean; o
 };
 
 // ============ Service Modal ============
-const ServiceModal = ({ open, onClose, onSave, service, appointmentTypes, specialties }: { open: boolean; onClose: () => void; onSave: (s: Omit<Service, "id"> & { id?: string }) => void; service: Service | null; appointmentTypes: AppointmentType[]; specialties: Specialty[] }) => {
+const ServiceModal = ({ open, onClose, onSave, service, appointmentTypes, specialties, exams }: { open: boolean; onClose: () => void; onSave: (s: Omit<Service, "id"> & { id?: string }) => void; service: Service | null; appointmentTypes: AppointmentType[]; specialties: Specialty[]; exams: Exam[] }) => {
   const [name, setName] = useState("");
   const [appointmentTypeId, setAppointmentTypeId] = useState<string>("");
   const [specialtyId, setSpecialtyId] = useState<string | null>(null);
+  const [examId, setExamId] = useState<string | null>(null);
   const [priceStr, setPriceStr] = useState("R$ 0,00");
   const [price, setPrice] = useState<number>(0);
   const [active, setActive] = useState(true);
@@ -322,6 +324,7 @@ const ServiceModal = ({ open, onClose, onSave, service, appointmentTypes, specia
         setName(service.name); 
         setAppointmentTypeId(service.appointmentTypeId);
         setSpecialtyId(service.specialtyId);
+        setExamId(service.examId || null);
         setPrice(service.price);
         setPriceStr(formatCurrency(service.price));
         setActive(service.active); 
@@ -330,6 +333,7 @@ const ServiceModal = ({ open, onClose, onSave, service, appointmentTypes, specia
         setName(""); 
         setAppointmentTypeId("");
         setSpecialtyId(null);
+        setExamId(null);
         setPrice(0);
         setPriceStr("R$ 0,00");
         setActive(true); 
@@ -380,6 +384,19 @@ const ServiceModal = ({ open, onClose, onSave, service, appointmentTypes, specia
           </div>
 
           <div className="space-y-2">
+             <Label>Exame Vinculado (Opcional)</Label>
+             <Select value={examId || "__none__"} onValueChange={(v) => setExamId(v === "__none__" ? null : v)}>
+               <SelectTrigger className="w-full"><SelectValue placeholder="Nenhum exame" /></SelectTrigger>
+               <SelectContent>
+                 <SelectItem value="__none__">Nenhum exame</SelectItem>
+                 {exams.filter((e) => e.active).map((e) => (
+                   <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>
+                 ))}
+               </SelectContent>
+             </Select>
+          </div>
+
+          <div className="space-y-2">
             <Label>Valor</Label>
             <Input value={priceStr} onChange={handlePriceChange} placeholder="R$ 0,00" />
           </div>
@@ -390,7 +407,7 @@ const ServiceModal = ({ open, onClose, onSave, service, appointmentTypes, specia
           </div>
           <div className="flex gap-2 justify-end pt-2">
             <Button variant="outline" onClick={onClose}>Cancelar</Button>
-            <Button disabled={!name.trim() || !appointmentTypeId || price <= 0} onClick={() => { onSave({ id: service?.id, name: name.trim(), appointmentTypeId, specialtyId, price, active }); onClose(); }}>Salvar</Button>
+            <Button disabled={!name.trim() || !appointmentTypeId || price <= 0} onClick={() => { onSave({ id: service?.id, name: name.trim(), appointmentTypeId, specialtyId, examId, price, active }); onClose(); }}>Salvar</Button>
           </div>
         </div>
       </DialogContent>
@@ -853,7 +870,7 @@ const Cadastros = () => {
       <PreparationModal open={prepModal} onClose={() => { setPrepModal(false); setEditingPrep(null); }} onSave={savePrep} preparation={editingPrep} />
       <AppointmentTypeModal open={typeModal} onClose={() => { setTypeModal(false); setEditingType(null); }} onSave={saveType} appointmentType={editingType} />
       <SpecialtyModal open={specModal} onClose={() => { setSpecModal(false); setEditingSpec(null); }} onSave={saveSpecialty} specialty={editingSpec} />
-      <ServiceModal open={serviceModal} onClose={() => { setServiceModal(false); setEditingService(null); }} onSave={saveService} service={editingService} appointmentTypes={appointmentTypes} specialties={specialties} />
+      <ServiceModal open={serviceModal} onClose={() => { setServiceModal(false); setEditingService(null); }} onSave={saveService} service={editingService} appointmentTypes={appointmentTypes} specialties={specialties} exams={exams} />
     </div>
   );
 };

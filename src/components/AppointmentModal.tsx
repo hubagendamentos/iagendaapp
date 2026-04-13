@@ -37,9 +37,9 @@ export interface Appointment {
   professionalId: string;
   status: AppointmentStatus;
   type?: string;
-  examId?: string | null;
-  examName?: string | null;
-  preparationName?: string | null;
+  serviceId?: string | null;
+  serviceName?: string | null;
+  price?: number;
   paymentType?: "particular" | "plan";
   planId?: string | null;
   planName?: string | null;
@@ -75,6 +75,16 @@ interface AppointmentTypeOption {
   active: boolean;
 }
 
+export interface ServiceOption {
+  id: string;
+  name: string;
+  appointmentTypeId: string;
+  specialtyId: string | null;
+  examId?: string | null;
+  price: number;
+  active: boolean;
+}
+
 interface AppointmentModalProps {
   open: boolean;
   onClose: () => void;
@@ -89,6 +99,7 @@ interface AppointmentModalProps {
   preparations?: PreparationOption[];
   plans?: PlanOption[];
   appointmentTypes?: AppointmentTypeOption[];
+  services?: ServiceOption[];
 }
 
 const mockPatients = [
@@ -115,6 +126,10 @@ const statusDotClass: Record<AppointmentStatus, string> = {
   missed: "bg-status-missed",
 };
 
+const formatCurrency = (value: number) => {
+  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
+};
+
 const AppointmentModal = ({
   open,
   onClose,
@@ -129,6 +144,7 @@ const AppointmentModal = ({
   preparations = [],
   plans = [],
   appointmentTypes = [],
+  services = [],
 }: AppointmentModalProps) => {
   const isEditing = !!appointment;
 
@@ -137,51 +153,42 @@ const AppointmentModal = ({
   const [date, setDate] = useState<Date>(new Date());
   const [time, setTime] = useState("08:00");
   const [duration, setDuration] = useState("30");
-  const [type, setType] = useState("Consulta");
+  const [type, setType] = useState("");
   const [status, setStatus] = useState<AppointmentStatus>("scheduled");
   const [notes, setNotes] = useState("");
 
-  // New fields
-  const [examId, setExamId] = useState<string | null>(null);
-  const [examSearch, setExamSearch] = useState("");
-  const [showExamSuggestions, setShowExamSuggestions] = useState(false);
-  const [preparationName, setPreparationName] = useState<string | null>(null);
+  const [serviceId, setServiceId] = useState<string | null>(null);
+  const [serviceSearch, setServiceSearch] = useState("");
+  const [showServiceSuggestions, setShowServiceSuggestions] = useState(false);
+  const [price, setPrice] = useState<number | null>(null);
+
   const [paymentType, setPaymentType] = useState<"particular" | "plan">("particular");
   const [planId, setPlanId] = useState<string | null>(null);
 
   const [patientSearch, setPatientSearch] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const examInputRef = useRef<HTMLInputElement>(null);
+  const serviceInputRef = useRef<HTMLInputElement>(null);
 
-  const activeExams = exams.filter((e) => e.active);
   const activePlans = plans.filter((p) => p.active);
   const activeTypes = appointmentTypes.length > 0
     ? appointmentTypes.filter((t) => t.active).map((t) => t.name)
     : fallbackTypes;
+  const activeServices = services.filter((s) => s.active);
 
   const filteredPatients = patientSearch.length > 0
     ? mockPatients.filter((p) => p.toLowerCase().includes(patientSearch.toLowerCase()))
     : [];
 
-  const filteredExams = examSearch.length > 0
-    ? activeExams.filter((e) => e.name.toLowerCase().includes(examSearch.toLowerCase()))
-    : activeExams;
-
-  // Auto-fill preparation when exam changes
-  useEffect(() => {
-    if (examId) {
-      const exam = exams.find((e) => e.id === examId);
-      if (exam?.preparationId) {
-        const prep = preparations.find((p) => p.id === exam.preparationId);
-        setPreparationName(prep?.name || "Sem preparo");
-      } else {
-        setPreparationName("Sem preparo");
-      }
-    } else {
-      setPreparationName(null);
-    }
-  }, [examId, exams, preparations]);
+  // Logic 1: Filter services by selected type
+  const selectedTypeObj = type ? appointmentTypes.find((t) => t.name === type) : null;
+  const filteredServices = activeServices.filter((s) => {
+    // If a type is selected, enforce the match
+    if (selectedTypeObj && s.appointmentTypeId !== selectedTypeObj.id) return false;
+    // Then filter by text search
+    if (serviceSearch && !s.name.toLowerCase().includes(serviceSearch.toLowerCase())) return false;
+    return true;
+  });
 
   useEffect(() => {
     if (open) {
@@ -191,11 +198,12 @@ const AppointmentModal = ({
         setProfessionalId(appointment.professionalId);
         setTime(appointment.time);
         setDuration(String(appointment.duration));
-        setType(appointment.type || "Consulta");
+        setType(appointment.type || "");
         setStatus(appointment.status);
         setNotes(appointment.notes || "");
-        setExamId(appointment.examId || null);
-        setExamSearch(appointment.examName || "");
+        setServiceId(appointment.serviceId || null);
+        setServiceSearch(appointment.serviceName || "");
+        setPrice(appointment.price || null);
         setPaymentType(appointment.paymentType || "particular");
         setPlanId(appointment.planId || null);
         if (defaultDate) setDate(defaultDate);
@@ -205,11 +213,12 @@ const AppointmentModal = ({
         setProfessionalId(defaultProfessionalId || "");
         setTime(defaultTime || "08:00");
         setDuration("30");
-        setType("Consulta");
+        setType("");
         setStatus("scheduled");
         setNotes("");
-        setExamId(null);
-        setExamSearch("");
+        setServiceId(null);
+        setServiceSearch("");
+        setPrice(null);
         setPaymentType("particular");
         setPlanId(null);
         if (defaultDate) setDate(defaultDate);
@@ -218,8 +227,7 @@ const AppointmentModal = ({
   }, [open, appointment, defaultTime, defaultProfessionalId, defaultDate]);
 
   const handleSave = () => {
-    if (!patientName || !professionalId) return;
-    const selectedExam = exams.find((e) => e.id === examId);
+    if (!patientName || !professionalId || !serviceId) return;
     const selectedPlan = plans.find((p) => p.id === planId);
     onSave({
       ...(appointment ? { id: appointment.id } : {}),
@@ -229,9 +237,9 @@ const AppointmentModal = ({
       professionalId,
       status,
       type,
-      examId: type === "Exame" ? examId : null,
-      examName: type === "Exame" ? selectedExam?.name || null : null,
-      preparationName: type === "Exame" ? preparationName : null,
+      serviceId,
+      serviceName: serviceSearch,
+      price: price || 0,
       paymentType,
       planId: paymentType === "plan" ? planId : null,
       planName: paymentType === "plan" ? selectedPlan?.name || null : null,
@@ -246,10 +254,15 @@ const AppointmentModal = ({
     setShowSuggestions(false);
   };
 
-  const handleSelectExam = (exam: ExamOption) => {
-    setExamId(exam.id);
-    setExamSearch(exam.name);
-    setShowExamSuggestions(false);
+  const handleSelectService = (service: ServiceOption) => {
+    setServiceId(service.id);
+    setServiceSearch(service.name);
+    setPrice(service.price);
+    setShowServiceSuggestions(false);
+    
+    // Auto-fill and lock type
+    const matchedType = appointmentTypes.find((t) => t.id === service.appointmentTypeId);
+    if (matchedType) setType(matchedType.name);
   };
 
   const timeSlots = Array.from({ length: 21 }, (_, i) => {
@@ -308,80 +321,6 @@ const AppointmentModal = ({
             </div>
           </div>
 
-          {/* 2. Tipo de atendimento */}
-          <div className="space-y-1.5">
-            <Label>Tipo de atendimento</Label>
-            <Select value={type} onValueChange={(v) => {
-              setType(v);
-              if (v !== "Exame") {
-                setExamId(null);
-                setExamSearch("");
-                setPreparationName(null);
-              }
-            }}>
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {activeTypes.map((t) => (
-                  <SelectItem key={t} value={t}>{t}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* 3. Exam selection (only if type === "Exame") */}
-          {isExam && (
-            <>
-              <div className="space-y-1.5 relative">
-                <Label>Exame</Label>
-                <div className="relative">
-                  <Input
-                    ref={examInputRef}
-                    placeholder="Buscar exame..."
-                    value={examSearch}
-                    onChange={(e) => {
-                      setExamSearch(e.target.value);
-                      setExamId(null);
-                      setPreparationName(null);
-                      setShowExamSuggestions(true);
-                    }}
-                    onFocus={() => setShowExamSuggestions(true)}
-                    onBlur={() => setTimeout(() => setShowExamSuggestions(false), 150)}
-                    className="w-full"
-                  />
-                  {showExamSuggestions && filteredExams.length > 0 && (
-                    <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-popover border rounded-md shadow-md max-h-40 overflow-y-auto">
-                      {filteredExams.map((e) => (
-                        <button
-                          key={e.id}
-                          type="button"
-                          className="w-full text-left px-3 py-2 text-sm hover:bg-accent transition-colors"
-                          onMouseDown={() => handleSelectExam(e)}
-                        >
-                          <span className="font-medium">{e.name}</span>
-                          {e.description && (
-                            <span className="text-muted-foreground ml-2 text-xs">— {e.description}</span>
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Preparation (read-only, auto-filled) */}
-              <div className="space-y-1.5">
-                <Label>Preparo</Label>
-                <Input
-                  value={preparationName || "Selecione um exame"}
-                  readOnly
-                  className="w-full bg-muted cursor-default"
-                />
-              </div>
-            </>
-          )}
-
           {/* Professional */}
           <div className="space-y-1.5">
             <Label>Profissional</Label>
@@ -396,6 +335,114 @@ const AppointmentModal = ({
               </SelectContent>
             </Select>
           </div>
+
+          {/* 3. Tipo de atendimento */}
+          <div className="space-y-1.5">
+            <Label>Tipo de atendimento</Label>
+            <Select disabled={!!serviceId} value={type} onValueChange={(v) => {
+              setType(v);
+              // Clear service if changing type so it doesn't conflict
+              setServiceId(null);
+              setServiceSearch("");
+              setPrice(null);
+            }}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Qualquer tipo..." />
+              </SelectTrigger>
+              <SelectContent>
+                {activeTypes.map((t) => (
+                  <SelectItem key={t} value={t}>{t}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* 4. Serviço selection */}
+          <div className="space-y-1.5 relative">
+            <Label>Serviço (Obrigatório)</Label>
+            <div className="relative">
+              <Input
+                ref={serviceInputRef}
+                placeholder="Buscar serviço..."
+                value={serviceSearch}
+                onChange={(e) => {
+                  setServiceSearch(e.target.value);
+                  setServiceId(null);
+                  setPrice(null);
+                  setShowServiceSuggestions(true);
+                }}
+                onFocus={() => setShowServiceSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowServiceSuggestions(false), 150)}
+                className="w-full"
+              />
+              {showServiceSuggestions && filteredServices.length > 0 && (
+                <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-popover border rounded-md shadow-md max-h-40 overflow-y-auto">
+                  {filteredServices.map((s) => {
+                    const tName = appointmentTypes.find(at => at.id === s.appointmentTypeId)?.name || "Geral";
+                    return (
+                      <button
+                        key={s.id}
+                        type="button"
+                        className="w-full flex items-center justify-between px-3 py-2 text-sm hover:bg-accent transition-colors"
+                        onMouseDown={() => handleSelectService(s)}
+                      >
+                        <div className="text-left">
+                          <span className="font-medium text-foreground block">{s.name}</span>
+                          <span className="text-muted-foreground text-xs">{tName}</span>
+                        </div>
+                        <span className="text-muted-foreground font-medium shrink-0 ml-2">{formatCurrency(s.price)}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Valor */}
+          {serviceId && price !== null && (
+            <div className="space-y-1.5">
+              <Label>Valor</Label>
+              <Input value={formatCurrency(price)} readOnly className="w-full bg-muted cursor-default border-dashed" />
+            </div>
+          )}
+
+          {/* Auto-filled Exame e Preparo vinculados */}
+          {(() => {
+            if (!serviceId) return null;
+            const selectedServiceData = services.find((s) => s.id === serviceId);
+            if (!selectedServiceData?.examId) return null;
+
+            const linkedExam = exams.find((e) => e.id === selectedServiceData.examId);
+            if (!linkedExam) return null;
+
+            const linkedPrep = linkedExam.preparationId ? preparations.find((p) => p.id === linkedExam.preparationId) : null;
+
+            return (
+              <div className="space-y-1.5 pt-2">
+                <div className="p-3 bg-muted/40 border border-muted-foreground/20 rounded-md text-sm">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="font-semibold text-foreground">Exame:</span>
+                    <span className="text-muted-foreground">{linkedExam.name}</span>
+                  </div>
+                  <div className="grid grid-cols-[auto_1fr] gap-x-2 gap-y-0.5">
+                    <span className="font-semibold text-foreground">Preparo:</span>
+                    {linkedPrep ? (
+                      <div className="text-muted-foreground">
+                        <span className="inline-flex items-center rounded bg-amber-500/15 text-amber-600 px-1.5 text-[10px] font-bold uppercase mr-1.5 align-middle">Requer preparo</span>
+                        <span>{linkedPrep.name}</span>
+                        {linkedPrep.description && (
+                          <span className="block text-xs mt-0.5 opacity-80">{linkedPrep.description}</span>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-muted-foreground opacity-80">Sem preparo necessário</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Date + Time */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -542,7 +589,7 @@ const AppointmentModal = ({
           <Button
             type="button"
             onClick={handleSave}
-            disabled={!patientName || !professionalId}
+            disabled={!patientName || !professionalId || !serviceId}
             className="h-10"
           >
             Salvar
