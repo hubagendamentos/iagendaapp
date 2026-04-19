@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Pencil, Phone, Mail, MessageCircle, Calendar, Clock, User, FileText, Plus, MapPin } from "lucide-react";
+import { ArrowLeft, Pencil, Phone, Mail, MessageCircle, Calendar, Clock, User, FileText, Plus, MapPin, Activity, CalendarX2 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
@@ -62,6 +62,7 @@ const mockPacientes: Paciente[] = [
 ];
 
 const mockHistory: HistoryItem[] = [
+  { id: "h0", date: "2026-05-15", time: "14:00", type: "Consulta", professional: "Dr. João Silva", status: "scheduled" },
   { id: "h1", date: "2026-04-08", time: "09:00", type: "Consulta", professional: "Dr. João Silva", status: "confirmed", notes: "Paciente relatou dores de cabeça frequentes" },
   { id: "h2", date: "2026-03-20", time: "10:30", type: "Retorno", professional: "Dr. João Silva", status: "confirmed" },
   { id: "h3", date: "2026-03-05", time: "14:00", type: "Exame", professional: "Dra. Maria Santos", status: "confirmed", notes: "Hemograma completo - Resultados normais" },
@@ -126,28 +127,141 @@ const FichaPaciente = () => {
   // Filter history for this patient (in real app, filter by patient id)
   const patientHistory = mockHistory;
 
+  const nextAppt = patientHistory.find(h => h.status === "scheduled");
+  const lastAppt = patientHistory.find(h => h.status === "confirmed");
+  const totalAppts = patientHistory.filter(h => h.status === "confirmed" || h.status === "missed").length;
+  const missedAppts = patientHistory.filter(h => h.status === "missed").length;
+
   return (
-    <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard/pacientes")} className="shrink-0">
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <div className="flex items-center gap-3 flex-1 min-w-0">
-          <Avatar className="h-10 w-10 shrink-0">
-            <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-              {getInitials(paciente.nome)}
-            </AvatarFallback>
-          </Avatar>
-          <div className="min-w-0">
-            <h2 className="text-lg font-semibold text-foreground truncate">{paciente.nome}</h2>
-            <div className="flex items-center gap-2">
-              <Badge variant={paciente.ativo !== false ? "default" : "secondary"} className="text-[10px] px-1.5 py-0">
-                {paciente.ativo !== false ? "Ativo" : "Inativo"}
-              </Badge>
-              {idade !== null && <span className="text-xs text-muted-foreground">{idade} anos</span>}
+    <div className="space-y-6 pb-6">
+      {/* Header and Summary */}
+      <div className="space-y-6">
+        {/* Main Info */}
+        <div className="flex items-start gap-4">
+          <Button variant="outline" size="icon" onClick={() => navigate("/dashboard/pacientes")} className="shrink-0 mt-2 hidden sm:flex">
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-3 md:gap-4 mb-2">
+              <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard/pacientes")} className="shrink-0 -ml-2 sm:hidden">
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <Avatar className="h-14 w-14 sm:h-16 sm:w-16 shrink-0 border-2 border-primary/10 shadow-sm">
+                <AvatarFallback className="bg-primary/5 text-primary text-xl font-bold">
+                  {getInitials(paciente.nome)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col min-w-0">
+                <h2 className="text-xl sm:text-2xl font-bold text-foreground truncate tracking-tight">{paciente.nome}</h2>
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 mt-1 sm:mt-1.5 text-sm text-muted-foreground">
+                  <Badge variant={paciente.ativo !== false ? "default" : "secondary"} className="text-[10px] px-1.5 py-0 sm:mr-1">
+                    {paciente.ativo !== false ? "Ativo" : "Inativo"}
+                  </Badge>
+                  <span className="flex items-center gap-1.5"><Phone className="h-3.5 w-3.5" /> {applyPhoneMask(phoneDigits)}</span>
+                  <span className="hidden sm:inline text-muted-foreground/50">•</span>
+                  <span>{idade !== null ? `${idade} anos` : "Idade N/A"}</span>
+                  {paciente.genero && (
+                    <>
+                      <span className="hidden sm:inline text-muted-foreground/50">•</span>
+                      <span>{paciente.genero}</span>
+                    </>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
+        </div>
+
+        {/* Summary Cards */}
+        <div className="relative -mx-5 px-5 sm:mx-0 sm:px-0">
+          <div className="flex gap-3 sm:gap-4 overflow-x-auto pb-4 snap-x snap-mandatory pt-1 px-1 -mx-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+            
+            {/* Card: Próximo Atendimento */}
+            <div className="shrink-0 w-[240px] sm:w-auto sm:flex-1 p-4 rounded-xl border bg-card flex flex-col justify-between snap-start shadow-sm hover:shadow transition-shadow">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="h-7 w-7 rounded-md bg-blue-100 text-blue-600 flex items-center justify-center dark:bg-blue-900/30 dark:text-blue-400 shrink-0">
+                    <Calendar className="h-4 w-4" />
+                  </div>
+                  <p className="text-[13px] font-bold text-muted-foreground whitespace-nowrap">Próximo atendimento</p>
+                </div>
+                {nextAppt ? (
+                  <p className="text-xl sm:text-2xl font-bold text-foreground truncate">{format(new Date(nextAppt.date + "T12:00:00"), "dd/MM/yyyy")} às {nextAppt.time}</p>
+                ) : (
+                  <p className="text-xl sm:text-2xl font-bold text-foreground">—</p>
+                )}
+              </div>
+              <div className="mt-2">
+                {nextAppt ? (
+                  <p className="text-xs text-muted-foreground flex items-center gap-1.5 truncate">
+                    <span className={`w-1.5 h-1.5 rounded-full ${statusConfig[nextAppt.status].dotClass} shrink-0`} />
+                    {statusConfig[nextAppt.status].label}
+                  </p>
+                ) : (
+                  <p className="text-xs text-muted-foreground">Nenhum agendado</p>
+                )}
+              </div>
+            </div>
+
+            {/* Card: Total de Atendimentos */}
+            <div className="shrink-0 w-[240px] sm:w-auto sm:flex-1 p-4 rounded-xl border bg-card flex flex-col justify-between snap-start shadow-sm hover:shadow transition-shadow">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="h-7 w-7 rounded-md bg-emerald-100 text-emerald-600 flex items-center justify-center dark:bg-emerald-900/30 dark:text-emerald-400 shrink-0">
+                    <Activity className="h-4 w-4" />
+                  </div>
+                  <p className="text-[13px] font-bold text-muted-foreground whitespace-nowrap">Total de atendimentos</p>
+                </div>
+                <p className="text-xl sm:text-2xl font-bold text-foreground truncate">{totalAppts}</p>
+              </div>
+              <div className="mt-2">
+                <p className="text-xs text-muted-foreground truncate">Registros no histórico</p>
+              </div>
+            </div>
+
+            {/* Card: Faltas */}
+            <div className="shrink-0 w-[240px] sm:w-auto sm:flex-1 p-4 rounded-xl border bg-card flex flex-col justify-between snap-start shadow-sm hover:shadow transition-shadow">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="h-7 w-7 rounded-md bg-rose-100 text-rose-600 flex items-center justify-center dark:bg-rose-900/30 dark:text-rose-400 shrink-0">
+                     <CalendarX2 className="h-4 w-4" />
+                  </div>
+                  <p className="text-[13px] font-bold text-muted-foreground whitespace-nowrap">Faltas</p>
+                </div>
+                <p className="text-xl sm:text-2xl font-bold text-foreground truncate">{missedAppts}</p>
+              </div>
+              <div className="mt-2">
+                <p className="text-xs text-muted-foreground truncate">Ausências registradas</p>
+              </div>
+            </div>
+
+            {/* Card: Último Atendimento */}
+            <div className="shrink-0 w-[240px] sm:w-auto sm:flex-1 p-4 rounded-xl border bg-card flex flex-col justify-between snap-start shadow-sm hover:shadow transition-shadow">
+               <div>
+                 <div className="flex items-center gap-2 mb-2">
+                  <div className="h-7 w-7 rounded-md bg-indigo-100 text-indigo-600 flex items-center justify-center dark:bg-indigo-900/30 dark:text-indigo-400 shrink-0">
+                    <Clock className="h-4 w-4" />
+                  </div>
+                  <p className="text-[13px] font-bold text-muted-foreground whitespace-nowrap">Último atendimento</p>
+                </div>
+                {lastAppt ? (
+                  <p className="text-xl sm:text-2xl font-bold text-foreground truncate">{format(new Date(lastAppt.date + "T12:00:00"), "dd/MM/yyyy")}</p>
+                ) : (
+                  <p className="text-xl sm:text-2xl font-bold text-foreground">—</p>
+                )}
+              </div>
+              <div className="mt-2">
+                {lastAppt ? (
+                  <p className="text-xs text-muted-foreground truncate">{lastAppt.type}</p>
+                ) : (
+                  <p className="text-xs text-muted-foreground">Sem histórico</p>
+                )}
+              </div>
+            </div>
+
+          </div>
+          {/* Fade lateral (Mobile only) */}
+          <div className="absolute top-0 right-0 h-full w-8 bg-gradient-to-l from-background to-transparent pointer-events-none sm:hidden" />
         </div>
       </div>
 
@@ -167,7 +281,6 @@ const FichaPaciente = () => {
           whatsappLink={whatsappLink}
           isClinic={isClinic}
           onEdit={() => setEditModalOpen(true)}
-          onToggleStatus={() => setPaciente(prev => prev ? { ...prev, ativo: !prev.ativo } : prev)}
         />
       )}
 
@@ -196,10 +309,10 @@ const FichaPaciente = () => {
 
 /* ─── Tab: Dados ─── */
 function TabDados({
-  paciente, idade, phoneDigits, whatsappLink, isClinic, onEdit, onToggleStatus,
+  paciente, idade, phoneDigits, whatsappLink, isClinic, onEdit,
 }: {
   paciente: Paciente; idade: number | null; phoneDigits: string; whatsappLink: string; isClinic: boolean;
-  onEdit: () => void; onToggleStatus: () => void;
+  onEdit: () => void;
 }) {
   return (
     <div className="space-y-4">
@@ -208,10 +321,6 @@ function TabDados({
         <Button size="sm" onClick={onEdit}>
           <Pencil className="h-4 w-4 mr-1" /> Editar
         </Button>
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">{paciente.ativo !== false ? "Ativo" : "Inativo"}</span>
-          <Switch checked={paciente.ativo !== false} onCheckedChange={onToggleStatus} className="scale-90" />
-        </div>
       </div>
 
       {/* Info Cards */}

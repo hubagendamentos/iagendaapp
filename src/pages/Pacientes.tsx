@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Plus, Mail, Pencil, MessageCircle } from "lucide-react";
+import { Search, Plus, Mail, Pencil, MessageCircle, FileText } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -41,12 +41,13 @@ const Pacientes = () => {
   const [editing, setEditing] = useState<Paciente | null>(null);
 
   const filtered = pacientes.filter((p) => {
-    const buscaLower = busca.toLowerCase().replace(/\D/g, "");
+    const buscaDigitos = busca.replace(/\D/g, "");
     const buscaTexto = busca.toLowerCase();
-    const matchNome = p.nome.toLowerCase().includes(buscaTexto);
-    const matchCelular = p.celular.includes(busca);
-    const cpfDigits = (p.cpf || "").replace(/\D/g, "");
-    const matchCpf = buscaLower.length > 0 ? cpfDigits.includes(buscaLower) : false;
+
+    const matchNome = buscaTexto !== "" ? p.nome.toLowerCase().includes(buscaTexto) : false;
+    const matchCelular = buscaDigitos.length > 0 ? p.celular.replace(/\D/g, "").includes(buscaDigitos) : false;
+    const matchCpf = buscaDigitos.length > 0 ? (p.cpf || "").replace(/\D/g, "").includes(buscaDigitos) : false;
+
     const matchBusca = busca === "" || matchNome || matchCelular || matchCpf;
     const matchStatus =
       statusFilter === "todos" ||
@@ -115,7 +116,7 @@ const Pacientes = () => {
 
       <div className="space-y-2">
         {/* Column headers - desktop only */}
-        <div className="hidden md:grid md:grid-cols-[2fr_1.5fr_1fr_100px] gap-6 px-5 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wider border-b">
+        <div className="hidden md:grid md:grid-cols-[2fr_1.5fr_1fr_160px] gap-6 px-5 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wider border-b">
           <span>Paciente</span>
           <span>Contato</span>
           <span>Perfil</span>
@@ -139,7 +140,7 @@ const Pacientes = () => {
                 onClick={() => navigate(`/dashboard/pacientes/${p.id}`)}
               >
                 {/* Desktop: 4 columns - matching header grid */}
-                <div className="hidden md:grid md:grid-cols-[2fr_1.5fr_1fr_100px] gap-6 items-center">
+                <div className="hidden md:grid md:grid-cols-[2fr_1.5fr_1fr_160px] gap-6 items-center">
                   {/* Col 1 - Paciente */}
                   <div className="flex items-center gap-3 min-w-0">
                     <Avatar className="h-10 w-10 shrink-0">
@@ -190,9 +191,18 @@ const Pacientes = () => {
                   {/* Col 4 - Ações */}
                   <div className="flex items-center justify-center gap-2">
                     <Button
+                      variant="secondary"
+                      size="sm"
+                      className="h-8 text-xs px-2.5 bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary"
+                      onClick={(e) => { e.stopPropagation(); navigate(`/dashboard/pacientes/${p.id}`); }}
+                      title="Ver Ficha"
+                    >
+                      <FileText className="h-3.5 w-3.5 mr-1.5" /> Ficha
+                    </Button>
+                    <Button
                       variant="outline"
                       size="icon"
-                      className="h-8 w-8 rounded-full"
+                      className="h-8 w-8 rounded-full shrink-0"
                       onClick={(e) => { e.stopPropagation(); openEdit(p); }}
                       title="Editar"
                     >
@@ -259,9 +269,17 @@ const Pacientes = () => {
                     </div>
                     <div className="flex items-center gap-2">
                       <Button
+                        variant="secondary"
+                        size="sm"
+                        className="h-8 text-xs px-2.5 bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary"
+                        onClick={(e) => { e.stopPropagation(); navigate(`/dashboard/pacientes/${p.id}`); }}
+                      >
+                        <FileText className="h-3.5 w-3.5 mr-1" /> Ficha
+                      </Button>
+                      <Button
                         variant="outline"
                         size="icon"
-                        className="h-8 w-8 rounded-full"
+                        className="h-8 w-8 rounded-full shrink-0"
                         onClick={(e) => { e.stopPropagation(); openEdit(p); }}
                       >
                         <Pencil className="h-3.5 w-3.5" />

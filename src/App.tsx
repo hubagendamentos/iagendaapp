@@ -14,6 +14,7 @@ import Profissionais from "./pages/Profissionais.tsx";
 import Configuracoes from "./pages/Configuracoes.tsx";
 import Cadastros from "./pages/Cadastros.tsx";
 import FichaPaciente from "./pages/FichaPaciente.tsx";
+import BuscaFichaPaciente from "./pages/BuscaFichaPaciente.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -33,6 +34,7 @@ const App = () => (
               <Route path="agenda" element={<Agenda />} />
               <Route path="pacientes" element={<Pacientes />} />
               <Route path="pacientes/:id" element={<FichaPaciente />} />
+              <Route path="ficha-paciente" element={<BuscaFichaPaciente />} />
               <Route path="profissionais" element={<Profissionais />} />
               <Route path="cadastros" element={<Cadastros />} />
               <Route path="configuracoes" element={<Configuracoes />} />
