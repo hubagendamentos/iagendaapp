@@ -1,10 +1,14 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { format, addDays, subDays, isToday } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, CalendarDays, Filter } from "lucide-react";
+import { ChevronLeft, ChevronRight, CalendarDays, Filter, AlertTriangle, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useNavigate } from "react-router-dom";
 import { useUser } from "@/contexts/UserContext";
+import { useSubscription } from "@/contexts/SubscriptionContext";
+import { toast } from "sonner";
+import { Progress } from "@/components/ui/progress";
 import AppointmentModal, { type Appointment, type AppointmentStatus } from "@/components/AppointmentModal";
 import AgendaFilterModal, { type AgendaFilters } from "@/components/AgendaFilterModal";
 import { ScrollableChips } from "@/components/ScrollableChips";
@@ -77,7 +81,9 @@ const statusConfig: Record<AppointmentStatus, { label: string; cardClass: string
 };
 
 const Agenda = () => {
+  const navigate = useNavigate();
   const { userType, professionalId: userProfId } = useUser();
+  const { plan, usage, checkLimit, incrementUsage } = useSubscription();
   const isClinic = userType === "clinic";
 
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -128,19 +134,33 @@ const Agenda = () => {
     if (existing) {
       setEditingAppointment(existing);
       setDefaultSlot(null);
+      setModalOpen(true);
     } else {
+      if (checkLimit()) {
+        toast.error("Você atingiu o limite do seu plano. Faça upgrade para continuar.");
+        return;
+      }
+      
+      const usagePercentage = usage / plan.limit;
+      if (plan.isEnterprise && usage >= plan.limit) {
+        toast.info("Atenção: Será cobrado R$ 0,05 extra por este agendamento.");
+      } else if (usagePercentage >= 0.8 && usagePercentage < 1) {
+        toast.warning("Você está próximo do limite do seu plano.");
+      }
+
       setEditingAppointment(null);
       setDefaultSlot({ time, professionalId });
+      setModalOpen(true);
     }
-    setModalOpen(true);
   };
 
   const handleSave = useCallback((data: Omit<Appointment, "id"> & { id?: string }) => {
     setAppointments((prev) => {
       if (data.id) return prev.map((a) => (a.id === data.id ? { ...a, ...data } as Appointment : a));
+      incrementUsage();
       return [...prev, { ...data, id: crypto.randomUUID(), date: data.date || format(currentDate, "yyyy-MM-dd") } as Appointment];
     });
-  }, [currentDate]);
+  }, [currentDate, incrementUsage]);
 
   const handleDelete = useCallback((id: string) => {
     setAppointments((prev) => prev.filter((a) => a.id !== id));
@@ -199,6 +219,8 @@ const Agenda = () => {
           ))}
         </div>
       </div>
+
+
 
       {/* Mobile professional switcher */}
       {visibleProfessionals.length > 1 && (

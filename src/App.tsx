@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { UserProvider } from "@/contexts/UserContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import Login from "./pages/Login.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import DashboardHome from "./pages/DashboardHome.tsx";
@@ -15,6 +16,7 @@ import Configuracoes from "./pages/Configuracoes.tsx";
 import Cadastros from "./pages/Cadastros.tsx";
 import FichaPaciente from "./pages/FichaPaciente.tsx";
 import BuscaFichaPaciente from "./pages/BuscaFichaPaciente.tsx";
+import Assinatura from "./pages/Assinatura.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -23,6 +25,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
     <UserProvider>
+    <SubscriptionProvider>
       <TooltipProvider>
         <Toaster />
         <Sonner />
@@ -38,11 +41,13 @@ const App = () => (
               <Route path="profissionais" element={<Profissionais />} />
               <Route path="cadastros" element={<Cadastros />} />
               <Route path="configuracoes" element={<Configuracoes />} />
+              <Route path="assinatura" element={<Assinatura />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
+    </SubscriptionProvider>
     </UserProvider>
     </ThemeProvider>
   </QueryClientProvider>
