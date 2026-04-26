@@ -27,7 +27,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
-export type AppointmentStatus = "scheduled" | "confirmed" | "cancelled" | "missed";
+export type AppointmentStatus = "scheduled" | "confirmed" | "in_progress" | "completed" | "cancelled" | "missed";
 
 export interface Appointment {
   id: string;
@@ -115,6 +115,8 @@ const fallbackTypes = [
 const statusOptions: { value: AppointmentStatus; label: string }[] = [
   { value: "scheduled", label: "Agendado" },
   { value: "confirmed", label: "Confirmado" },
+  { value: "in_progress", label: "Em atendimento" },
+  { value: "completed", label: "Finalizado" },
   { value: "cancelled", label: "Cancelado" },
   { value: "missed", label: "Faltou" },
 ];
@@ -122,6 +124,8 @@ const statusOptions: { value: AppointmentStatus; label: string }[] = [
 const statusDotClass: Record<AppointmentStatus, string> = {
   scheduled: "bg-status-scheduled",
   confirmed: "bg-status-confirmed",
+  in_progress: "bg-blue-500",
+  completed: "bg-muted-foreground",
   cancelled: "bg-status-cancelled",
   missed: "bg-status-missed",
 };

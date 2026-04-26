@@ -25,6 +25,7 @@ function getInitials(name: string) {
 }
 
 const initialPacientes: Paciente[] = [
+  { id: "1", nome: "Claudinei balboena", celular: "(55) 99188-4330", nascimento: "1993-06-01", observacoes: "", ultimaConsulta: "20/03/2026", cpf: "12345678901", email: "balboena47@gmail.com", genero: "Masculino", ativo: true },
   { id: "1", nome: "Maria Silva", celular: "(11) 99999-0001", nascimento: "1985-03-15", observacoes: "", ultimaConsulta: "20/03/2026", cpf: "12345678901", email: "maria@email.com", genero: "Feminino", ativo: true },
   { id: "2", nome: "João Santos", celular: "(11) 99999-0002", nascimento: "1990-07-22", observacoes: "Alérgico a dipirona", ultimaConsulta: "18/03/2026", cpf: "98765432100", genero: "Masculino", ativo: true },
   { id: "3", nome: "Ana Oliveira", celular: "(11) 99999-0003", nascimento: "1978-11-10", observacoes: "", ultimaConsulta: "15/03/2026", genero: "Feminino", ativo: false },

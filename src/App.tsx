@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { UserProvider } from "@/contexts/UserContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
+import { AppointmentsProvider } from "@/contexts/AppointmentsContext";
 import Login from "./pages/Login.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import DashboardHome from "./pages/DashboardHome.tsx";
@@ -16,6 +17,7 @@ import Configuracoes from "./pages/Configuracoes.tsx";
 import Cadastros from "./pages/Cadastros.tsx";
 import FichaPaciente from "./pages/FichaPaciente.tsx";
 import BuscaFichaPaciente from "./pages/BuscaFichaPaciente.tsx";
+import Atendimentos from "./pages/Atendimentos.tsx";
 import Assinatura from "./pages/Assinatura.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
@@ -26,6 +28,7 @@ const App = () => (
     <ThemeProvider>
     <UserProvider>
     <SubscriptionProvider>
+    <AppointmentsProvider>
       <TooltipProvider>
         <Toaster />
         <Sonner />
@@ -34,6 +37,7 @@ const App = () => (
             <Route path="/" element={<Login />} />
             <Route path="/dashboard" element={<Dashboard />}>
               <Route index element={<DashboardHome />} />
+              <Route path="atendimentos" element={<Atendimentos />} />
               <Route path="agenda" element={<Agenda />} />
               <Route path="pacientes" element={<Pacientes />} />
               <Route path="pacientes/:id" element={<FichaPaciente />} />
@@ -47,6 +51,7 @@ const App = () => (
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
+    </AppointmentsProvider>
     </SubscriptionProvider>
     </UserProvider>
     </ThemeProvider>

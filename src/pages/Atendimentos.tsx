@@ -1,0 +1,303 @@
+import { useState, useMemo } from "react";
+import { format, isToday, parse } from "date-fns";
+import { useAppointments } from "@/contexts/AppointmentsContext";
+import { useUser } from "@/contexts/UserContext";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Calendar as CalendarIcon,
+  CheckCircle2,
+  PlayCircle,
+  XCircle,
+  UserX,
+  ChevronRight,
+} from "lucide-react";
+import { Appointment, AppointmentStatus } from "@/components/AppointmentModal";
+
+const professionals = [
+  { id: "p1", name: "Dr. João Silva" },
+  { id: "p2", name: "Dra. Maria Santos" },
+  { id: "p3", name: "Dr. Pedro Lima" },
+];
+
+const statusConfig: Record<
+  AppointmentStatus,
+  { label: string; badgeClass: string }
+> = {
+  scheduled: { label: "Agendado", badgeClass: "bg-muted text-muted-foreground" },
+  confirmed: {
+    label: "Confirmado",
+    badgeClass:
+      "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
+  },
+  in_progress: {
+    label: "Em atendimento",
+    badgeClass:
+      "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+  },
+  completed: {
+    label: "Finalizado",
+    badgeClass: "bg-secondary text-secondary-foreground",
+  },
+  cancelled: {
+    label: "Cancelado",
+    badgeClass:
+      "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+  },
+  missed: {
+    label: "Faltou",
+    badgeClass:
+      "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+  },
+};
+
+const Atendimentos = () => {
+  const { userType, professionalId: userProfId } = useUser();
+  const { getAppointmentsByDate, updateAppointmentStatus } = useAppointments();
+  const isClinic = userType === "clinic";
+
+  const [dateStr, setDateStr] = useState(format(new Date(), "yyyy-MM-dd"));
+  const [profFilter, setProfFilter] = useState<string>("all");
+
+  const selectedDate = parse(dateStr, "yyyy-MM-dd", new Date());
+  const allAppointments = getAppointmentsByDate(selectedDate);
+
+  const now = new Date();
+  const currentTimeStr = format(now, "HH:mm");
+
+  const filtered = useMemo(() => {
+    let list = allAppointments;
+
+    if (!isClinic) {
+      list = list.filter((a) => a.professionalId === userProfId);
+    } else if (profFilter !== "all") {
+      list = list.filter((a) => a.professionalId === profFilter);
+    }
+
+    return list.sort((a, b) => a.time.localeCompare(b.time));
+  }, [allAppointments, isClinic, userProfId, profFilter]);
+
+  // 🔵 Em atendimento
+  const inProgress = filtered.filter((a) => a.status === "in_progress");
+
+  // ⚪ Fila com prioridade
+  const queue = filtered
+    .filter((a) => a.status === "scheduled" || a.status === "confirmed")
+    .sort((a, b) => {
+      const aLate = a.time < currentTimeStr ? 1 : 0;
+      const bLate = b.time < currentTimeStr ? 1 : 0;
+
+      if (aLate !== bLate) return bLate - aLate;
+      return a.time.localeCompare(b.time);
+    });
+
+  const handleStatusChange = (id: string, status: AppointmentStatus) => {
+    updateAppointmentStatus(id, status);
+  };
+
+  const renderCard = (apt: Appointment, isNext = false) => {
+    const cfg = statusConfig[apt.status];
+
+    const isLate =
+      isToday(selectedDate) &&
+      (apt.status === "scheduled" || apt.status === "confirmed") &&
+      apt.time < currentTimeStr;
+
+    const profName =
+      professionals.find((p) => p.id === apt.professionalId)?.name ||
+      "Profissional";
+
+    return (
+      <div
+        key={apt.id}
+        className={`bg-card border rounded-xl p-4 mb-3 shadow-sm hover:shadow-md transition ${apt.status === "in_progress"
+            ? "border-blue-500 ring-1 ring-blue-500/30"
+            : ""
+          }`}
+      >
+        <div className="flex justify-between flex-col sm:flex-row gap-4">
+
+          {/* ESQUERDA */}
+          <div className="flex gap-4">
+            <div className="min-w-[70px] text-center border-r pr-4">
+              <div className="text-lg font-bold">{apt.time}</div>
+
+              {isLate && (
+                <div className="text-xs text-red-600 font-semibold mt-1">
+                  ATRASADO
+                </div>
+              )}
+
+              {isNext && (
+                <div className="text-xs text-blue-600 font-semibold mt-1">
+                  PRÓXIMO
+                </div>
+              )}
+            </div>
+
+            <div>
+              <div className="flex gap-2 items-center flex-wrap">
+                <span className="font-semibold">{apt.patientName}</span>
+
+                <span className={`text-xs px-2 py-0.5 rounded ${cfg.badgeClass}`}>
+                  {cfg.label}
+                </span>
+              </div>
+
+              <div className="text-sm text-muted-foreground mt-1 flex flex-wrap gap-2">
+                <span className="flex items-center">
+                  <ChevronRight className="w-3 h-3 mr-1" />
+                  {apt.type} {apt.serviceName ? `- ${apt.serviceName}` : ""}
+                </span>
+
+                {isClinic && (
+                  <span className="flex items-center">
+                    <ChevronRight className="w-3 h-3 mr-1" />
+                    {profName}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* AÇÕES */}
+          <div className="flex gap-2 flex-wrap items-center">
+            {apt.status === "scheduled" && (
+              <>
+                <Button
+                  size="sm"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                  onClick={() => handleStatusChange(apt.id, "confirmed")}
+                >
+                  Confirmar
+                </Button>
+
+                <Button
+                  size="sm"
+                  className="bg-amber-500 hover:bg-amber-600 text-white"
+                  onClick={() => handleStatusChange(apt.id, "missed")}
+                >
+                  Faltou
+                </Button>
+
+                <Button
+                  size="sm"
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                  onClick={() => handleStatusChange(apt.id, "cancelled")}
+                >
+                  Cancelar
+                </Button>
+              </>
+            )}
+
+            {apt.status === "confirmed" && (
+              <>
+                <Button
+                  size="sm"
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                  onClick={() => handleStatusChange(apt.id, "in_progress")}
+                >
+                  Iniciar
+                </Button>
+
+                <Button
+                  size="sm"
+                  className="bg-amber-500 hover:bg-amber-600 text-white"
+                  onClick={() => handleStatusChange(apt.id, "missed")}
+                >
+                  Faltou
+                </Button>
+
+                <Button
+                  size="sm"
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                  onClick={() => handleStatusChange(apt.id, "cancelled")}
+                >
+                  Cancelar
+                </Button>
+              </>
+            )}
+
+            {apt.status === "in_progress" && (
+              <Button
+                size="sm"
+                className="bg-blue-700 hover:bg-blue-800 text-white"
+                onClick={() => handleStatusChange(apt.id, "completed")}
+              >
+                Finalizar
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const Section = ({
+    title,
+    list,
+  }: {
+    title: string;
+    list: Appointment[];
+  }) => {
+    if (list.length === 0) return null;
+
+    return (
+      <div className="mb-6">
+        <h2 className="text-sm font-semibold text-muted-foreground mb-2">
+          {title} ({list.length})
+        </h2>
+
+        {list.map((apt, index) =>
+          renderCard(apt, title.includes("Fila") && index === 0)
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div className="p-6">
+      <h1 className="text-xl font-bold mb-4">Atendimentos</h1>
+
+      <div className="flex gap-3 mb-6">
+        <div className="relative">
+          <Input
+            type="date"
+            value={dateStr}
+            onChange={(e) => setDateStr(e.target.value)}
+            className="pl-9"
+          />
+          <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" />
+        </div>
+
+        {isClinic && (
+          <Select value={profFilter} onValueChange={setProfFilter}>
+            <SelectTrigger className="w-[220px]">
+              <SelectValue placeholder="Profissional" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos</SelectItem>
+              {professionals.map((p) => (
+                <SelectItem key={p.id} value={p.id}>
+                  {p.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+      </div>
+
+      <Section title="🔵 Em atendimento" list={inProgress} />
+      <Section title="⚪ Fila de atendimento" list={queue} />
+    </div>
+  );
+};
+
+export default Atendimentos;

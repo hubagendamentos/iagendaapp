@@ -7,6 +7,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { useNavigate } from "react-router-dom";
 import { useUser } from "@/contexts/UserContext";
 import { useSubscription } from "@/contexts/SubscriptionContext";
+import { useAppointments } from "@/contexts/AppointmentsContext";
 import { toast } from "sonner";
 import { Progress } from "@/components/ui/progress";
 import AppointmentModal, { type Appointment, type AppointmentStatus } from "@/components/AppointmentModal";
@@ -60,22 +61,11 @@ const allHours = Array.from({ length: 21 }, (_, i) => {
   return `${String(h).padStart(2, "0")}:${m}`;
 });
 
-const todayStr = format(new Date(), "yyyy-MM-dd");
-
-const initialAppointments: Appointment[] = [
-  { id: "1", patientName: "Ana Oliveira", time: "09:00", duration: 30, professionalId: "p1", status: "confirmed", type: "Consulta", serviceId: "1", serviceName: "Consulta Clínica", price: 150.00, date: todayStr },
-  { id: "2", patientName: "Carlos Mendes", time: "10:00", duration: 30, professionalId: "p1", status: "scheduled", type: "Consulta", serviceId: "1", serviceName: "Consulta Clínica", price: 150.00, date: todayStr },
-  { id: "3", patientName: "Juliana Costa", time: "09:30", duration: 30, professionalId: "p2", status: "cancelled", type: "Consulta", serviceId: "1", serviceName: "Consulta Clínica", price: 150.00, date: todayStr },
-  { id: "4", patientName: "Roberto Alves", time: "11:00", duration: 30, professionalId: "p2", status: "confirmed", type: "Exame", serviceId: "3", serviceName: "Ultrassom Abdominal", price: 200.00, date: todayStr },
-  { id: "5", patientName: "Fernanda Lima", time: "14:00", duration: 30, professionalId: "p3", status: "missed", type: "Consulta", serviceId: "1", serviceName: "Consulta Clínica", price: 150.00, date: todayStr },
-  { id: "6", patientName: "Lucas Barbosa", time: "08:00", duration: 30, professionalId: "p1", status: "confirmed", type: "Procedimento", serviceId: "2", serviceName: "Sessão de Fisioterapia", price: 120.00, date: todayStr },
-  { id: "7", patientName: "Patrícia Souza", time: "15:30", duration: 30, professionalId: "p3", status: "scheduled", type: "Procedimento", serviceId: "2", serviceName: "Sessão de Fisioterapia", price: 120.00, date: todayStr },
-  { id: "8", patientName: "Marcos Vieira", time: "13:00", duration: 30, professionalId: "p2", status: "confirmed", type: "Consulta", serviceId: "1", serviceName: "Consulta Clínica", price: 150.00, date: todayStr },
-];
-
 const statusConfig: Record<AppointmentStatus, { label: string; cardClass: string; dotClass: string; borderColor: string; badgeBg: string; badgeText: string; cancelled?: boolean }> = {
   scheduled: { label: "Agendado", cardClass: "bg-card border-border", dotClass: "bg-status-scheduled", borderColor: "border-l-status-scheduled", badgeBg: "bg-muted", badgeText: "text-muted-foreground" },
   confirmed: { label: "Confirmado", cardClass: "bg-card border-border", dotClass: "bg-status-confirmed", borderColor: "border-l-status-confirmed", badgeBg: "bg-[hsl(var(--status-confirmed)/0.15)]", badgeText: "text-[hsl(var(--status-confirmed))]" },
+  in_progress: { label: "Em atendimento", cardClass: "bg-card border-blue-500", dotClass: "bg-blue-500", borderColor: "border-l-blue-500", badgeBg: "bg-blue-100 dark:bg-blue-900/30", badgeText: "text-blue-600 dark:text-blue-400" },
+  completed: { label: "Finalizado", cardClass: "bg-card border-border", dotClass: "bg-muted-foreground", borderColor: "border-l-muted-foreground", badgeBg: "bg-secondary", badgeText: "text-secondary-foreground" },
   cancelled: { label: "Cancelado", cardClass: "bg-card border-border opacity-60", dotClass: "bg-status-cancelled", borderColor: "border-l-status-cancelled", badgeBg: "bg-[hsl(var(--status-cancelled)/0.15)]", badgeText: "text-[hsl(var(--status-cancelled))]", cancelled: true },
   missed: { label: "Faltou", cardClass: "bg-card border-border", dotClass: "bg-status-missed", borderColor: "border-l-status-missed", badgeBg: "bg-[hsl(var(--status-missed)/0.15)]", badgeText: "text-[hsl(var(--status-missed))]" },
 };
@@ -84,10 +74,10 @@ const Agenda = () => {
   const navigate = useNavigate();
   const { userType, professionalId: userProfId } = useUser();
   const { plan, usage, checkLimit, incrementUsage } = useSubscription();
+  const { appointments, addAppointment, updateAppointment, deleteAppointment } = useAppointments();
   const isClinic = userType === "clinic";
 
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [appointments, setAppointments] = useState<Appointment[]>(initialAppointments);
   const [modalOpen, setModalOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
@@ -155,16 +145,17 @@ const Agenda = () => {
   };
 
   const handleSave = useCallback((data: Omit<Appointment, "id"> & { id?: string }) => {
-    setAppointments((prev) => {
-      if (data.id) return prev.map((a) => (a.id === data.id ? { ...a, ...data } as Appointment : a));
+    if (data.id) {
+      updateAppointment(data.id, data);
+    } else {
       incrementUsage();
-      return [...prev, { ...data, id: crypto.randomUUID(), date: data.date || format(currentDate, "yyyy-MM-dd") } as Appointment];
-    });
-  }, [currentDate, incrementUsage]);
+      addAppointment({ ...data, id: crypto.randomUUID(), date: data.date || format(currentDate, "yyyy-MM-dd") } as Appointment);
+    }
+  }, [currentDate, incrementUsage, updateAppointment, addAppointment]);
 
   const handleDelete = useCallback((id: string) => {
-    setAppointments((prev) => prev.filter((a) => a.id !== id));
-  }, []);
+    deleteAppointment(id);
+  }, [deleteAppointment]);
 
   const handleCloseModal = () => { setModalOpen(false); setEditingAppointment(null); setDefaultSlot(null); };
 
