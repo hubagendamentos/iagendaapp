@@ -137,8 +137,7 @@ const Pacientes = () => {
             return (
               <div
                 key={p.id}
-                className="rounded-lg border bg-card p-4 md:px-5 md:py-3.5 hover:shadow-md transition-shadow cursor-pointer"
-                onClick={() => navigate(`/dashboard/pacientes/${p.id}`)}
+                className="rounded-lg border bg-card p-4 md:px-5 md:py-3.5 hover:shadow-md transition-shadow"
               >
                 {/* Desktop: 4 columns - matching header grid */}
                 <div className="hidden md:grid md:grid-cols-[2fr_1.5fr_1fr_160px] gap-6 items-center">
@@ -191,15 +190,6 @@ const Pacientes = () => {
 
                   {/* Col 4 - Ações */}
                   <div className="flex items-center justify-center gap-2">
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      className="h-8 text-xs px-2.5 bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary"
-                      onClick={(e) => { e.stopPropagation(); navigate(`/dashboard/pacientes/${p.id}`); }}
-                      title="Ver Ficha"
-                    >
-                      <FileText className="h-3.5 w-3.5 mr-1.5" /> Ficha
-                    </Button>
                     <Button
                       variant="outline"
                       size="icon"
@@ -269,14 +259,6 @@ const Pacientes = () => {
                       {p.genero && <span>{p.genero}</span>}
                     </div>
                     <div className="flex items-center gap-2">
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        className="h-8 text-xs px-2.5 bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary"
-                        onClick={(e) => { e.stopPropagation(); navigate(`/dashboard/pacientes/${p.id}`); }}
-                      >
-                        <FileText className="h-3.5 w-3.5 mr-1" /> Ficha
-                      </Button>
                       <Button
                         variant="outline"
                         size="icon"

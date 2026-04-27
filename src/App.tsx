@@ -7,6 +7,7 @@ import { UserProvider } from "@/contexts/UserContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import { AppointmentsProvider } from "@/contexts/AppointmentsContext";
+import { TimelineProvider } from "@/contexts/TimelineContext";
 import Login from "./pages/Login.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import DashboardHome from "./pages/DashboardHome.tsx";
@@ -19,6 +20,7 @@ import FichaPaciente from "./pages/FichaPaciente.tsx";
 import BuscaFichaPaciente from "./pages/BuscaFichaPaciente.tsx";
 import Atendimentos from "./pages/Atendimentos.tsx";
 import Assinatura from "./pages/Assinatura.tsx";
+import Usuarios from "./pages/Usuarios.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -28,6 +30,7 @@ const App = () => (
     <ThemeProvider>
     <UserProvider>
     <SubscriptionProvider>
+    <TimelineProvider>
     <AppointmentsProvider>
       <TooltipProvider>
         <Toaster />
@@ -40,18 +43,20 @@ const App = () => (
               <Route path="atendimentos" element={<Atendimentos />} />
               <Route path="agenda" element={<Agenda />} />
               <Route path="pacientes" element={<Pacientes />} />
-              <Route path="pacientes/:id" element={<FichaPaciente />} />
               <Route path="ficha-paciente" element={<BuscaFichaPaciente />} />
+              <Route path="ficha-paciente/:id" element={<FichaPaciente />} />
               <Route path="profissionais" element={<Profissionais />} />
               <Route path="cadastros" element={<Cadastros />} />
               <Route path="configuracoes" element={<Configuracoes />} />
               <Route path="assinatura" element={<Assinatura />} />
+              <Route path="usuarios" element={<Usuarios />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
     </AppointmentsProvider>
+    </TimelineProvider>
     </SubscriptionProvider>
     </UserProvider>
     </ThemeProvider>

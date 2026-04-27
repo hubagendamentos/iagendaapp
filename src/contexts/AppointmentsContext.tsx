@@ -23,14 +23,14 @@ export const useAppointments = () => {
 const todayStr = format(new Date(), "yyyy-MM-dd");
 
 const initialAppointments: Appointment[] = [
-  { id: "1", patientName: "Ana Oliveira", time: "09:00", duration: 30, professionalId: "p1", status: "confirmed", type: "Consulta", serviceId: "1", serviceName: "Consulta Clínica", price: 150.00, date: todayStr },
-  { id: "2", patientName: "Carlos Mendes", time: "10:00", duration: 30, professionalId: "p1", status: "scheduled", type: "Consulta", serviceId: "1", serviceName: "Consulta Clínica", price: 150.00, date: todayStr },
-  { id: "3", patientName: "Juliana Costa", time: "09:30", duration: 30, professionalId: "p2", status: "cancelled", type: "Consulta", serviceId: "1", serviceName: "Consulta Clínica", price: 150.00, date: todayStr },
-  { id: "4", patientName: "Roberto Alves", time: "11:00", duration: 30, professionalId: "p2", status: "confirmed", type: "Exame", serviceId: "3", serviceName: "Ultrassom Abdominal", price: 200.00, date: todayStr },
-  { id: "5", patientName: "Fernanda Lima", time: "14:00", duration: 30, professionalId: "p3", status: "missed", type: "Consulta", serviceId: "1", serviceName: "Consulta Clínica", price: 150.00, date: todayStr },
-  { id: "6", patientName: "Lucas Barbosa", time: "08:00", duration: 30, professionalId: "p1", status: "confirmed", type: "Procedimento", serviceId: "2", serviceName: "Sessão de Fisioterapia", price: 120.00, date: todayStr },
-  { id: "7", patientName: "Patrícia Souza", time: "15:30", duration: 30, professionalId: "p3", status: "scheduled", type: "Procedimento", serviceId: "2", serviceName: "Sessão de Fisioterapia", price: 120.00, date: todayStr },
-  { id: "8", patientName: "Marcos Vieira", time: "13:00", duration: 30, professionalId: "p2", status: "confirmed", type: "Consulta", serviceId: "1", serviceName: "Consulta Clínica", price: 150.00, date: todayStr },
+  { id: "1", patientId: "3", patientName: "Ana Oliveira", time: "09:00", duration: 30, professionalId: "p1", status: "confirmed", type: "Consulta", serviceId: "1", serviceName: "Consulta Clínica", price: 150.00, date: todayStr },
+  { id: "2", patientId: "1", patientName: "Carlos Mendes", time: "10:00", duration: 30, professionalId: "p1", status: "scheduled", type: "Consulta", serviceId: "1", serviceName: "Consulta Clínica", price: 150.00, date: todayStr },
+  { id: "3", patientId: "2", patientName: "Juliana Costa", time: "09:30", duration: 30, professionalId: "p2", status: "cancelled", type: "Consulta", serviceId: "1", serviceName: "Consulta Clínica", price: 150.00, date: todayStr },
+  { id: "4", patientId: "1", patientName: "Roberto Alves", time: "11:00", duration: 30, professionalId: "p2", status: "confirmed", type: "Exame", serviceId: "3", serviceName: "Ultrassom Abdominal", price: 200.00, date: todayStr },
+  { id: "5", patientId: "2", patientName: "Fernanda Lima", time: "14:00", duration: 30, professionalId: "p3", status: "missed", type: "Consulta", serviceId: "1", serviceName: "Consulta Clínica", price: 150.00, date: todayStr },
+  { id: "6", patientId: "3", patientName: "Lucas Barbosa", time: "08:00", duration: 30, professionalId: "p1", status: "confirmed", type: "Procedimento", serviceId: "2", serviceName: "Sessão de Fisioterapia", price: 120.00, date: todayStr },
+  { id: "7", patientId: "1", patientName: "Patrícia Souza", time: "15:30", duration: 30, professionalId: "p3", status: "scheduled", type: "Procedimento", serviceId: "2", serviceName: "Sessão de Fisioterapia", price: 120.00, date: todayStr },
+  { id: "8", patientId: "2", patientName: "Marcos Vieira", time: "13:00", duration: 30, professionalId: "p2", status: "confirmed", type: "Consulta", serviceId: "1", serviceName: "Consulta Clínica", price: 150.00, date: todayStr },
 ];
 
 export const AppointmentsProvider = ({ children }: { children: ReactNode }) => {

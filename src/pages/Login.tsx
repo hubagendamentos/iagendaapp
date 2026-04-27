@@ -24,17 +24,28 @@ const Login = () => {
   const [regType, setRegType] = useState<UserType>("clinic");
 
   const navigate = useNavigate();
-  const { setUserType } = useUser();
+  const { setUserType, setClinic, setUser } = useUser();
+
+  const applyMockLogin = (type: UserType) => {
+    setUserType(type);
+    if (type === "clinic") {
+      setClinic({ id: "c1", name: "Clínica Saúde Total", type: "clinic" });
+      setUser({ id: "u1", name: "Admin Silva", email: "admin@clinica.com", role: "admin", clinicId: "c1" });
+    } else {
+      setClinic({ id: "s1", name: "Consultório Dr. João", type: "solo" });
+      setUser({ id: "u3", name: "Dr. João Silva", email: "joao@solo.com", role: "professional", clinicId: "s1", professionalId: "p1" });
+    }
+  };
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    setUserType(selectedType);
+    applyMockLogin(selectedType);
     navigate("/dashboard");
   };
 
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
-    setUserType(regType);
+    applyMockLogin(regType);
     navigate("/dashboard");
   };
 

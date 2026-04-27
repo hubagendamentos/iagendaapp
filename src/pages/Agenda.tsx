@@ -72,10 +72,10 @@ const statusConfig: Record<AppointmentStatus, { label: string; cardClass: string
 
 const Agenda = () => {
   const navigate = useNavigate();
-  const { userType, professionalId: userProfId } = useUser();
+  const { clinic, professionalId: userProfId } = useUser();
   const { plan, usage, checkLimit, incrementUsage } = useSubscription();
   const { appointments, addAppointment, updateAppointment, deleteAppointment } = useAppointments();
-  const isClinic = userType === "clinic";
+  const isClinic = clinic?.type === "clinic";
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [modalOpen, setModalOpen] = useState(false);

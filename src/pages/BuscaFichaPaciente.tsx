@@ -74,7 +74,7 @@ const BuscaFichaPaciente = () => {
               <div
                 key={p.id}
                 className="rounded-xl border bg-card p-4 hover:shadow-md hover:border-primary/40 transition-all cursor-pointer flex items-center justify-between group"
-                onClick={() => navigate(`/dashboard/pacientes/${p.id}`)}
+                onClick={() => navigate(`/dashboard/ficha-paciente/${p.id}`)}
               >
                 <div className="flex items-center gap-4 min-w-0">
                   <Avatar className="h-12 w-12 shrink-0 border border-primary/10">

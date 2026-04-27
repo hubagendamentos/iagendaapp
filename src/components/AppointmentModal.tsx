@@ -31,6 +31,7 @@ export type AppointmentStatus = "scheduled" | "confirmed" | "in_progress" | "com
 
 export interface Appointment {
   id: string;
+  patientId?: string;
   patientName: string;
   time: string;
   duration: number;
@@ -134,6 +135,8 @@ const formatCurrency = (value: number) => {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
 };
 
+import { useUser } from "@/contexts/UserContext";
+
 const AppointmentModal = ({
   open,
   onClose,
@@ -150,6 +153,7 @@ const AppointmentModal = ({
   appointmentTypes = [],
   services = [],
 }: AppointmentModalProps) => {
+  const { hasPermission } = useUser();
   const isEditing = !!appointment;
 
   const [patientName, setPatientName] = useState("");
@@ -540,7 +544,14 @@ const AppointmentModal = ({
           <div className="space-y-1.5">
             <Label>Status</Label>
             <div className="flex flex-wrap gap-2">
-              {statusOptions.map((opt) => (
+              {statusOptions.filter(opt => {
+                if (opt.value === "confirmed") return hasPermission("podeConfirmar");
+                if (opt.value === "in_progress") return hasPermission("podeIniciar");
+                if (opt.value === "completed") return hasPermission("podeFinalizar");
+                if (opt.value === "cancelled") return hasPermission("podeCancelar");
+                if (opt.value === "missed") return hasPermission("podeMarcarFalta");
+                return true;
+              }).map((opt) => (
                 <button
                   key={opt.value}
                   type="button"

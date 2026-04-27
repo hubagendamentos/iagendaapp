@@ -1,6 +1,8 @@
 import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { format, isToday, parse } from "date-fns";
 import { useAppointments } from "@/contexts/AppointmentsContext";
+import { useTimeline } from "@/contexts/TimelineContext";
 import { useUser } from "@/contexts/UserContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,9 +61,11 @@ const statusConfig: Record<
 };
 
 const Atendimentos = () => {
-  const { userType, professionalId: userProfId } = useUser();
+  const { hasPermission, clinic, professionalId: userProfId, user } = useUser();
   const { getAppointmentsByDate, updateAppointmentStatus } = useAppointments();
-  const isClinic = userType === "clinic";
+  const { addTimelineItem } = useTimeline();
+  const navigate = useNavigate();
+  const isClinic = clinic?.type === "clinic";
 
   const [dateStr, setDateStr] = useState(format(new Date(), "yyyy-MM-dd"));
   const [profFilter, setProfFilter] = useState<string>("all");
@@ -171,61 +175,83 @@ const Atendimentos = () => {
           <div className="flex gap-2 flex-wrap items-center">
             {apt.status === "scheduled" && (
               <>
-                <Button
-                  size="sm"
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
-                  onClick={() => handleStatusChange(apt.id, "confirmed")}
-                >
-                  Confirmar
-                </Button>
+                {hasPermission("podeConfirmar") && (
+                  <Button
+                    size="sm"
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                    onClick={() => handleStatusChange(apt.id, "confirmed")}
+                  >
+                    Confirmar
+                  </Button>
+                )}
 
-                <Button
-                  size="sm"
-                  className="bg-amber-500 hover:bg-amber-600 text-white"
-                  onClick={() => handleStatusChange(apt.id, "missed")}
-                >
-                  Faltou
-                </Button>
+                {hasPermission("podeMarcarFalta") && (
+                  <Button
+                    size="sm"
+                    className="bg-amber-500 hover:bg-amber-600 text-white"
+                    onClick={() => handleStatusChange(apt.id, "missed")}
+                  >
+                    Faltou
+                  </Button>
+                )}
 
-                <Button
-                  size="sm"
-                  className="bg-red-600 hover:bg-red-700 text-white"
-                  onClick={() => handleStatusChange(apt.id, "cancelled")}
-                >
-                  Cancelar
-                </Button>
+                {hasPermission("podeCancelar") && (
+                  <Button
+                    size="sm"
+                    className="bg-red-600 hover:bg-red-700 text-white"
+                    onClick={() => handleStatusChange(apt.id, "cancelled")}
+                  >
+                    Cancelar
+                  </Button>
+                )}
               </>
             )}
 
             {apt.status === "confirmed" && (
               <>
-                <Button
-                  size="sm"
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                  onClick={() => handleStatusChange(apt.id, "in_progress")}
-                >
-                  Iniciar
-                </Button>
+                {hasPermission("podeIniciar") && (
+                  <Button
+                    size="sm"
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                    onClick={() => {
+                      handleStatusChange(apt.id, "in_progress");
+                      addTimelineItem({
+                        patientId: apt.patientId || "1",
+                        appointmentId: apt.id,
+                        type: "status",
+                        content: "Atendimento iniciado.",
+                        createdBy: user?.name || "Sistema",
+                      });
+                      navigate(`/dashboard/ficha-paciente/${apt.patientId || "1"}?mode=atendimento&appointmentId=${apt.id}`);
+                    }}
+                  >
+                    Iniciar
+                  </Button>
+                )}
 
-                <Button
-                  size="sm"
-                  className="bg-amber-500 hover:bg-amber-600 text-white"
-                  onClick={() => handleStatusChange(apt.id, "missed")}
-                >
-                  Faltou
-                </Button>
+                {hasPermission("podeMarcarFalta") && (
+                  <Button
+                    size="sm"
+                    className="bg-amber-500 hover:bg-amber-600 text-white"
+                    onClick={() => handleStatusChange(apt.id, "missed")}
+                  >
+                    Faltou
+                  </Button>
+                )}
 
-                <Button
-                  size="sm"
-                  className="bg-red-600 hover:bg-red-700 text-white"
-                  onClick={() => handleStatusChange(apt.id, "cancelled")}
-                >
-                  Cancelar
-                </Button>
+                {hasPermission("podeCancelar") && (
+                  <Button
+                    size="sm"
+                    className="bg-red-600 hover:bg-red-700 text-white"
+                    onClick={() => handleStatusChange(apt.id, "cancelled")}
+                  >
+                    Cancelar
+                  </Button>
+                )}
               </>
             )}
 
-            {apt.status === "in_progress" && (
+            {apt.status === "in_progress" && hasPermission("podeFinalizar") && (
               <Button
                 size="sm"
                 className="bg-blue-700 hover:bg-blue-800 text-white"
