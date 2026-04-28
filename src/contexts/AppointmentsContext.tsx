@@ -2,6 +2,15 @@ import { createContext, useContext, useState, ReactNode, useCallback } from "rea
 import { format } from "date-fns";
 import type { Appointment, AppointmentStatus } from "@/components/AppointmentModal";
 
+export type ActiveAppointment = {
+  id: string;
+  patientId: string;
+  professionalId: string;
+  clinicId?: string;
+  startedAt: string;
+  patientName: string; // Adicionado para exibição no banner
+};
+
 interface AppointmentsContextType {
   appointments: Appointment[];
   addAppointment: (appointment: Appointment) => void;
@@ -10,6 +19,9 @@ interface AppointmentsContextType {
   updateAppointmentStatus: (id: string, status: AppointmentStatus) => void;
   getAppointmentsByDate: (date: Date) => Appointment[];
   getAppointmentsByProfessional: (date: Date, professionalId: string) => Appointment[];
+  activeAppointment: ActiveAppointment | null;
+  startAppointment: (appointment: ActiveAppointment) => void;
+  clearActiveAppointment: () => void;
 }
 
 const AppointmentsContext = createContext<AppointmentsContextType | null>(null);
@@ -35,6 +47,20 @@ const initialAppointments: Appointment[] = [
 
 export const AppointmentsProvider = ({ children }: { children: ReactNode }) => {
   const [appointments, setAppointments] = useState<Appointment[]>(initialAppointments);
+  const [activeAppointment, setActiveAppointment] = useState<ActiveAppointment | null>(() => {
+    const stored = localStorage.getItem("activeAppointment");
+    return stored ? JSON.parse(stored) : null;
+  });
+
+  const startAppointment = useCallback((appt: ActiveAppointment) => {
+    setActiveAppointment(appt);
+    localStorage.setItem("activeAppointment", JSON.stringify(appt));
+  }, []);
+
+  const clearActiveAppointment = useCallback(() => {
+    setActiveAppointment(null);
+    localStorage.removeItem("activeAppointment");
+  }, []);
 
   const addAppointment = useCallback((appointment: Appointment) => {
     setAppointments((prev) => [...prev, appointment]);
@@ -72,6 +98,9 @@ export const AppointmentsProvider = ({ children }: { children: ReactNode }) => {
         updateAppointmentStatus,
         getAppointmentsByDate,
         getAppointmentsByProfessional,
+        activeAppointment,
+        startAppointment,
+        clearActiveAppointment,
       }}
     >
       {children}

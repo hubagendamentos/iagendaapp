@@ -47,8 +47,6 @@ interface UserContextType {
   setUser: (user: User | null) => void;
   setClinic: (clinic: Clinic | null) => void;
   hasPermission: (permission: keyof UserPermissions) => boolean;
-  
-  // For backwards compatibility
   userType: "clinic" | "professional";
   setUserType: (type: "clinic" | "professional") => void;
   userName: string;
@@ -75,26 +73,26 @@ const mockAdmin: User = { id: "u1", name: "Admin Silva", email: "admin@clinica.c
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(mockAdmin);
   const [clinic, setClinic] = useState<Clinic | null>(mockClinic);
-  
+
   const [usersList, setUsersList] = useState<User[]>([
     mockAdmin,
-    { 
-      id: "u2", 
-      name: "Recepção", 
-      email: "recepcao@clinica.com", 
-      role: "staff", 
+    {
+      id: "u2",
+      name: "Recepção",
+      email: "recepcao@clinica.com",
+      role: "staff",
       clinicId: "c1",
       permissions: {
         agenda: true, atendimentos: true, pacientes: true,
         podeConfirmar: true, podeCancelar: true, podeMarcarFalta: true, podeIniciar: true
       }
     },
-    { 
-      id: "u3", 
-      name: "Dr. João Silva", 
-      email: "joao@clinica.com", 
-      role: "professional", 
-      clinicId: "c1", 
+    {
+      id: "u3",
+      name: "Dr. João Silva",
+      email: "joao@clinica.com",
+      role: "professional",
+      clinicId: "c1",
       professionalId: "p1",
       permissions: {
         agenda: true, atendimentos: true,
@@ -107,7 +105,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
   const hasPermission = (permission: keyof UserPermissions): boolean => {
     if (!clinic || !user) return false;
-    
+
     // Solo bypass
     if (clinic.type === "solo") return true;
 

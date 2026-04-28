@@ -39,7 +39,7 @@ export const FichaAtendimento = () => {
   
   const { user, hasPermission } = useUser();
   const { getTimelineByPatient, addTimelineItem } = useTimeline();
-  const { updateAppointmentStatus } = useAppointments();
+  const { updateAppointmentStatus, clearActiveAppointment } = useAppointments();
 
   const [noteContent, setNoteContent] = useState("");
 
@@ -68,6 +68,7 @@ export const FichaAtendimento = () => {
   const handleFinishAttendance = () => {
     if (appointmentId) {
       updateAppointmentStatus(appointmentId, "completed");
+      clearActiveAppointment();
       addTimelineItem({
         patientId: paciente.id,
         appointmentId,
@@ -76,7 +77,7 @@ export const FichaAtendimento = () => {
         createdBy: user?.name || "Sistema",
       });
     }
-    navigate(`/dashboard/ficha-paciente/${paciente.id}`);
+    navigate(`/dashboard/atendimentos`);
   };
 
   const handleAddNote = () => {

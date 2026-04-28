@@ -62,7 +62,7 @@ const statusConfig: Record<
 
 const Atendimentos = () => {
   const { hasPermission, clinic, professionalId: userProfId, user } = useUser();
-  const { getAppointmentsByDate, updateAppointmentStatus } = useAppointments();
+  const { getAppointmentsByDate, updateAppointmentStatus, activeAppointment, startAppointment } = useAppointments();
   const { addTimelineItem } = useTimeline();
   const navigate = useNavigate();
   const isClinic = clinic?.type === "clinic";
@@ -214,7 +214,21 @@ const Atendimentos = () => {
                     size="sm"
                     className="bg-blue-600 hover:bg-blue-700 text-white"
                     onClick={() => {
+                      if (activeAppointment && activeAppointment.id !== apt.id) {
+                        alert("Finalize o atendimento atual antes de iniciar outro.");
+                        return;
+                      }
+
                       handleStatusChange(apt.id, "in_progress");
+                      
+                      startAppointment({
+                        id: apt.id,
+                        patientId: apt.patientId || "1",
+                        professionalId: apt.professionalId,
+                        patientName: apt.patientName,
+                        startedAt: new Date().toISOString()
+                      });
+
                       addTimelineItem({
                         patientId: apt.patientId || "1",
                         appointmentId: apt.id,
@@ -222,6 +236,7 @@ const Atendimentos = () => {
                         content: "Atendimento iniciado.",
                         createdBy: user?.name || "Sistema",
                       });
+                      
                       navigate(`/dashboard/ficha-paciente/${apt.patientId || "1"}?mode=atendimento&appointmentId=${apt.id}`);
                     }}
                   >
