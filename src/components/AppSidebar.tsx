@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { PanelLeft } from "lucide-react";
 import {
   Calendar, Users, UserCog, Settings, ClipboardList, LayoutDashboard,
   BadgeCheck, ListChecks, Shield, ChevronsUpDown, ChevronRight,
@@ -28,6 +27,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 
 type MenuItem = {
   title: string;
@@ -193,24 +193,26 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="p-0">
-        <div className="flex items-center justify-between px-4 py-4">
-          <button onClick={() => navigate("/dashboard")} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-            <Calendar className="h-6 w-6 text-sidebar-primary shrink-0" />
-            {!collapsed && (
-              <span className="text-lg font-bold text-sidebar-primary-foreground tracking-tight">
-                Hub Agendamentos
-              </span>
-            )}
-          </button>
-          {!collapsed && (
-            <button
-              onClick={toggleSidebar}
-              className="h-7 w-7 flex items-center justify-center rounded-md hover:bg-sidebar-accent transition-colors text-sidebar-foreground/70"
-            >
-              <PanelLeft className="h-4 w-4" />
-            </button>
-          )}
-        </div>
+        <TooltipProvider delayDuration={300}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={toggleSidebar}
+                className="flex items-center gap-2 px-4 py-4 w-full cursor-pointer hover:bg-sidebar-accent/50 transition-colors"
+              >
+                <Calendar className="h-6 w-6 text-sidebar-primary shrink-0" />
+                {!collapsed && (
+                  <span className="text-lg font-bold text-sidebar-primary-foreground tracking-tight">
+                    Hub Agendamentos
+                  </span>
+                )}
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              {collapsed ? "Expandir menu" : "Recolher menu"}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </SidebarHeader>
 
       <SidebarContent>
