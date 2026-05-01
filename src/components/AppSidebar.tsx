@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { PanelLeft } from "lucide-react";
 import {
   Calendar, Users, UserCog, Settings, ClipboardList, LayoutDashboard,
   BadgeCheck, ListChecks, Shield, ChevronsUpDown, ChevronRight,
@@ -16,6 +17,8 @@ import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
+  SidebarHeader,
+  SidebarFooter,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -173,7 +176,7 @@ function SidebarNavItem({ item, collapsed, pathname }: { item: MenuItem; collaps
 }
 
 export function AppSidebar() {
-  const { state } = useSidebar();
+  const { state, toggleSidebar } = useSidebar();
   const collapsed = state === "collapsed";
   const { pathname } = useLocation();
   const navigate = useNavigate();
@@ -189,19 +192,28 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarContent className="flex flex-col">
-        {/* Logo */}
-        <button onClick={() => navigate("/dashboard")} className="flex items-center gap-2 px-4 py-5 hover:opacity-80 transition-opacity shrink-0">
-          <Calendar className="h-6 w-6 text-sidebar-primary shrink-0" />
+      <SidebarHeader className="p-0">
+        <div className="flex items-center justify-between px-4 py-4">
+          <button onClick={() => navigate("/dashboard")} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <Calendar className="h-6 w-6 text-sidebar-primary shrink-0" />
+            {!collapsed && (
+              <span className="text-lg font-bold text-sidebar-primary-foreground tracking-tight">
+                Hub Agendamentos
+              </span>
+            )}
+          </button>
           {!collapsed && (
-            <span className="text-lg font-bold text-sidebar-primary-foreground tracking-tight">
-              Hub Agendamentos
-            </span>
+            <button
+              onClick={toggleSidebar}
+              className="h-7 w-7 flex items-center justify-center rounded-md hover:bg-sidebar-accent transition-colors text-sidebar-foreground/70"
+            >
+              <PanelLeft className="h-4 w-4" />
+            </button>
           )}
-        </button>
+        </div>
+      </SidebarHeader>
 
-        {/* Menu groups */}
-        <div className="flex-1 overflow-y-auto">
+      <SidebarContent>
           {menuStructure.map((group) => {
             const visibleItems = group.items.filter(canShow);
             if (visibleItems.length === 0) return null;
@@ -219,10 +231,9 @@ export function AppSidebar() {
               </SidebarGroup>
             );
           })}
-        </div>
+      </SidebarContent>
 
-        {/* User footer */}
-        <div className="shrink-0 p-3 border-t border-sidebar-border">
+      <SidebarFooter className="border-t border-sidebar-border">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="flex items-center gap-2 w-full hover:bg-sidebar-accent/50 p-2 rounded-md transition-colors text-left outline-none">
@@ -268,8 +279,7 @@ export function AppSidebar() {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-        </div>
-      </SidebarContent>
+      </SidebarFooter>
     </Sidebar>
   );
 }
