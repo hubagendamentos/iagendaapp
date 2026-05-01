@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { PanelLeft } from "lucide-react";
 import {
   Calendar, Users, UserCog, Settings, ClipboardList, LayoutDashboard,
   BadgeCheck, ListChecks, Shield, ChevronsUpDown, ChevronRight,
@@ -28,6 +27,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 
 type MenuItem = {
   title: string;
