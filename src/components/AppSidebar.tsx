@@ -176,7 +176,7 @@ function SidebarNavItem({ item, collapsed, pathname }: { item: MenuItem; collaps
 }
 
 export function AppSidebar() {
-  const { state } = useSidebar();
+  const { state, toggleSidebar } = useSidebar();
   const collapsed = state === "collapsed";
   const { pathname } = useLocation();
   const navigate = useNavigate();
@@ -204,7 +204,7 @@ export function AppSidebar() {
           </button>
           {!collapsed && (
             <button
-              onClick={() => { const { toggleSidebar } = useSidebarRef.current; toggleSidebar(); }}
+              onClick={toggleSidebar}
               className="h-7 w-7 flex items-center justify-center rounded-md hover:bg-sidebar-accent transition-colors text-sidebar-foreground/70"
             >
               <PanelLeft className="h-4 w-4" />
