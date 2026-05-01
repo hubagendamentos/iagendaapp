@@ -9,7 +9,7 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useUser, type User, type UserRole } from "@/contexts/UserContext";
+import { useUser, type User, type UserRole, type UserPermissions } from "@/contexts/UserContext";
 import { PermissoesUsuario } from "@/components/PermissoesUsuario";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -20,7 +20,7 @@ const roleLabels: Record<UserRole, string> = {
 };
 
 export default function Usuarios() {
-  const { usersList, addUser, updateUser, clinic } = useUser();
+  const { usersList, addUser, updateUser, clinic, setUsersList, user } = useUser();
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Partial<User> | null>(null);
 
@@ -28,25 +28,41 @@ export default function Usuarios() {
     return <div className="p-6">Esta clínica não suporta múltiplos usuários.</div>;
   }
 
-const getDefaultPermissions = (role: UserRole): Partial<UserPermissions> => {
-  if (role === "admin") return {}; // Admin has all by default
-  if (role === "staff") {
-    return {
-      agenda: true, atendimentos: true, pacientes: true,
-      podeConfirmar: true, podeCancelar: true, podeMarcarFalta: true, podeIniciar: true
-    };
-  }
-  if (role === "professional") {
-    return {
-      agenda: true, atendimentos: true,
-      podeIniciar: true, podeFinalizar: true, podeEditarFicha: true
-    };
-  }
-  return {};
-};
+  const getDefaultPermissions = (role: UserRole): Partial<UserPermissions> => {
+    if (role === "admin") return {};
+
+    if (role === "staff") {
+      return {
+        agenda: true,
+        atendimentos: true,
+        pacientes: true,
+        podeConfirmar: true,
+        podeCancelar: true,
+        podeMarcarFalta: true,
+        podeIniciar: true
+      };
+    }
+
+    if (role === "professional") {
+      return {
+        agenda: true,
+        atendimentos: true,
+        podeIniciar: true,
+        podeFinalizar: true,
+        podeEditarFicha: true
+      };
+    }
+
+    return {};
+  };
 
   const openNew = () => {
-    setEditing({ name: "", email: "", role: "staff", permissions: getDefaultPermissions("staff") });
+    setEditing({
+      name: "",
+      email: "",
+      role: "staff",
+      permissions: getDefaultPermissions("staff")
+    });
     setModalOpen(true);
   };
 
@@ -61,8 +77,32 @@ const getDefaultPermissions = (role: UserRole): Partial<UserPermissions> => {
     if (editing.id) {
       updateUser(editing as User);
     } else {
-      addUser({ ...editing, id: crypto.randomUUID(), clinicId: clinic!.id } as User);
+      addUser({
+        ...editing,
+        id: crypto.randomUUID(),
+        clinicId: clinic!.id
+      } as User);
     }
+
+    setEditing(null);
+    setModalOpen(false);
+  };
+
+  const handleDelete = () => {
+    if (!editing?.id) return;
+
+    // 🚫 não deixar excluir usuário logado
+    if (editing.id === user?.id) {
+      alert("Você não pode excluir o usuário logado.");
+      return;
+    }
+
+    const confirmDelete = window.confirm("Tem certeza que deseja excluir este usuário?");
+    if (!confirmDelete) return;
+
+    setUsersList((prev) => prev.filter((u) => u.id !== editing.id));
+
+    setEditing(null);
     setModalOpen(false);
   };
 
@@ -112,7 +152,10 @@ const getDefaultPermissions = (role: UserRole): Partial<UserPermissions> => {
         </Table>
       </div>
 
-      <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+      <Dialog open={modalOpen} onOpenChange={(open) => {
+        setModalOpen(open);
+        if (!open) setEditing(null);
+      }}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editing?.id ? "Editar Usuário" : "Novo Usuário"}</DialogTitle>
@@ -125,31 +168,33 @@ const getDefaultPermissions = (role: UserRole): Partial<UserPermissions> => {
                 <Shield className="w-4 h-4 mr-2" /> Permissões
               </TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="dados" className="space-y-4 pt-4">
               <div className="space-y-2">
                 <Label>Nome Completo</Label>
-                <Input 
-                  value={editing?.name || ""} 
-                  onChange={e => setEditing(prev => ({ ...prev, name: e.target.value }))} 
+                <Input
+                  value={editing?.name || ""}
+                  onChange={e => setEditing(prev => ({ ...prev, name: e.target.value }))}
                 />
               </div>
+
               <div className="space-y-2">
                 <Label>Email</Label>
-                <Input 
-                  type="email" 
-                  value={editing?.email || ""} 
-                  onChange={e => setEditing(prev => ({ ...prev, email: e.target.value }))} 
+                <Input
+                  type="email"
+                  value={editing?.email || ""}
+                  onChange={e => setEditing(prev => ({ ...prev, email: e.target.value }))}
                 />
               </div>
+
               <div className="space-y-2">
                 <Label>Nível de Acesso (Role)</Label>
-                <Select 
-                  value={editing?.role || "staff"} 
-                  onValueChange={(val: UserRole) => setEditing(prev => ({ 
-                    ...prev, 
+                <Select
+                  value={editing?.role || "staff"}
+                  onValueChange={(val: UserRole) => setEditing(prev => ({
+                    ...prev,
                     role: val,
-                    permissions: getDefaultPermissions(val) 
+                    permissions: getDefaultPermissions(val)
                   }))}
                 >
                   <SelectTrigger>
@@ -158,44 +203,52 @@ const getDefaultPermissions = (role: UserRole): Partial<UserPermissions> => {
                   <SelectContent>
                     <SelectItem value="admin">Administrador (Acesso Total)</SelectItem>
                     <SelectItem value="staff">Staff (Recepção / Apoio)</SelectItem>
-                    <SelectItem value="professional">Profissional (Médico / Dentista)</SelectItem>
+                    <SelectItem value="professional">Profissional</SelectItem>
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-muted-foreground mt-1">
-                  O papel define as permissões padrão, que podem ser customizadas na aba Permissões.
-                </p>
               </div>
 
               {editing?.role === "professional" && (
                 <div className="space-y-2">
                   <Label>ID do Profissional Vinculado</Label>
-                  <Input 
-                    value={editing?.professionalId || ""} 
-                    onChange={e => setEditing(prev => ({ ...prev, professionalId: e.target.value }))} 
-                    placeholder="Ex: p1"
+                  <Input
+                    value={editing?.professionalId || ""}
+                    onChange={e => setEditing(prev => ({ ...prev, professionalId: e.target.value }))}
                   />
                 </div>
               )}
             </TabsContent>
 
             <TabsContent value="permissoes" className="pt-4">
-              <PermissoesUsuario 
-                permissions={editing?.permissions || {}} 
+              <PermissoesUsuario
+                permissions={editing?.permissions || {}}
                 onChange={perms => setEditing(prev => ({ ...prev, permissions: perms }))}
                 disabled={editing?.role === "admin"}
               />
-              {editing?.role === "admin" && (
-                <p className="text-sm text-amber-600 mt-4 bg-amber-50 p-3 rounded-md">
-                  Administradores possuem acesso total ao sistema. Para restringir permissões, altere o papel do usuário.
-                </p>
-              )}
             </TabsContent>
           </Tabs>
 
-          <div className="flex justify-end gap-2 mt-6">
-            <Button variant="outline" onClick={() => setModalOpen(false)}>Cancelar</Button>
-            <Button onClick={handleSave}>Salvar</Button>
+          <div className="flex justify-between mt-6">
+            {editing?.id && (
+              <Button variant="destructive" onClick={handleDelete}>
+                Excluir
+              </Button>
+            )}
+
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => {
+                setEditing(null);
+                setModalOpen(false);
+              }}>
+                Cancelar
+              </Button>
+
+              <Button onClick={handleSave}>
+                Salvar
+              </Button>
+            </div>
           </div>
+
         </DialogContent>
       </Dialog>
     </div>

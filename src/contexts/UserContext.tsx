@@ -1,18 +1,32 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
 
 export type UserPermissions = {
+  // 🔵 MÓDULOS PRINCIPAIS
   agenda: boolean;
   atendimentos: boolean;
   pacientes: boolean;
-  servicos: boolean;
-  usuarios: boolean;
 
+  // 🟢 GESTÃO
+  financeiro: boolean;
+  relatorios: boolean;
+
+  // 🟣 COMUNICAÇÃO
+  comunicacao: boolean;
+
+  // ⚙️ ESTRUTURA
+  usuarios: boolean;
   profissionais: boolean;
   configuracoes: boolean;
-  assinatura: boolean;
-  fichaPaciente: boolean;
   cadastros: boolean;
 
+  // SUBCONFIGURAÇÕES (dependem de configuracoes)
+  pagamentos: boolean;
+  notificacoes: boolean;
+
+  // 💳 COMERCIAL
+  assinatura: boolean;
+
+  // 🟠 AÇÕES
   podeConfirmar: boolean;
   podeIniciar: boolean;
   podeFinalizar: boolean;
@@ -52,7 +66,6 @@ interface UserContextType {
   userName: string;
   professionalId: string;
 
-  // Mock list of users for the Users page
   usersList: User[];
   setUsersList: (users: User[]) => void;
   addUser: (user: User) => void;
@@ -67,8 +80,19 @@ export const useUser = () => {
   return ctx;
 };
 
-const mockClinic: Clinic = { id: "c1", name: "Clínica Saúde Total", type: "clinic" };
-const mockAdmin: User = { id: "u1", name: "Admin Silva", email: "admin@clinica.com", role: "admin", clinicId: "c1" };
+const mockClinic: Clinic = {
+  id: "c1",
+  name: "Clínica Saúde Total",
+  type: "clinic",
+};
+
+const mockAdmin: User = {
+  id: "u1",
+  name: "Admin Silva",
+  email: "admin@clinica.com",
+  role: "admin",
+  clinicId: "c1",
+};
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(mockAdmin);
@@ -83,9 +107,15 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       role: "staff",
       clinicId: "c1",
       permissions: {
-        agenda: true, atendimentos: true, pacientes: true,
-        podeConfirmar: true, podeCancelar: true, podeMarcarFalta: true, podeIniciar: true
-      }
+        agenda: true,
+        atendimentos: true,
+        pacientes: true,
+
+        podeConfirmar: true,
+        podeCancelar: true,
+        podeMarcarFalta: true,
+        podeIniciar: true,
+      },
     },
     {
       id: "u3",
@@ -95,10 +125,14 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       clinicId: "c1",
       professionalId: "p1",
       permissions: {
-        agenda: true, atendimentos: true,
-        podeIniciar: true, podeFinalizar: true
-      }
-    }
+        agenda: true,
+        atendimentos: true,
+
+        podeIniciar: true,
+        podeFinalizar: true,
+        podeEditarFicha: true,
+      },
+    },
   ]);
 
   const [userType, setUserType] = useState<"clinic" | "professional">("clinic");
@@ -106,24 +140,24 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const hasPermission = (permission: keyof UserPermissions): boolean => {
     if (!clinic || !user) return false;
 
-    // Solo bypass
+    // 🔥 SOLO → tudo liberado
     if (clinic.type === "solo") return true;
 
-    // Custom permission override
+    // 🔐 Permissão customizada
     if (user.permissions && user.permissions[permission] !== undefined) {
       return user.permissions[permission] as boolean;
     }
 
-    // Admin has all permissions
+    // 👑 Admin tem tudo
     if (user.role === "admin") return true;
 
-    // Default Role-Based Access Control (RBAC) is completely removed.
-    // Everything must be explicitly set in user.permissions.
     return false;
   };
 
   const addUser = (newUser: User) => setUsersList([...usersList, newUser]);
-  const updateUser = (updatedUser: User) => setUsersList(usersList.map(u => u.id === updatedUser.id ? updatedUser : u));
+
+  const updateUser = (updatedUser: User) =>
+    setUsersList(usersList.map((u) => (u.id === updatedUser.id ? updatedUser : u)));
 
   return (
     <UserContext.Provider
@@ -140,7 +174,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         usersList,
         setUsersList,
         addUser,
-        updateUser
+        updateUser,
       }}
     >
       {children}

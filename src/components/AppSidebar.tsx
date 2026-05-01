@@ -53,52 +53,105 @@ const menuStructure: { label: string; items: MenuItem[] }[] = [
     label: "Gestão",
     items: [
       {
-        title: "Financeiro", icon: DollarSign, children: [
+        title: "Financeiro",
+        icon: DollarSign,
+        permission: "financeiro", // 🔥 IMPORTANTE
+        children: [
           { title: "Caixa", url: "/dashboard/financeiro/caixa", icon: Wallet },
           { title: "Contas a receber", url: "/dashboard/financeiro/receber", icon: Receipt },
           { title: "Contas a pagar", url: "/dashboard/financeiro/pagar", icon: HandCoins },
         ],
       },
-      { title: "Relatórios", url: "/dashboard/relatorios", icon: BarChart3 },
+      {
+        title: "Relatórios",
+        url: "/dashboard/relatorios",
+        icon: BarChart3,
+        permission: "relatorios", // 🔥
+      },
     ],
   },
   {
     label: "Comunicação",
     items: [
-      { title: "Templates", url: "/dashboard/templates", icon: MessageSquare },
-      { title: "Automações", url: "/dashboard/automacoes", icon: Bot },
-      { title: "Histórico de envios", url: "/dashboard/historico-envios", icon: History },
+      {
+        title: "Comunicação",
+        url: "/dashboard/templates",
+        icon: MessageSquare,
+        permission: "comunicacao", // 🔥
+      },
+      {
+        title: "Automações",
+        url: "/dashboard/automacoes",
+        icon: Bot,
+        permission: "comunicacao",
+      },
+      {
+        title: "Histórico de envios",
+        url: "/dashboard/historico-envios",
+        icon: History,
+        permission: "comunicacao",
+      },
     ],
   },
   {
     label: "Configurações",
     items: [
-      { title: "Clínica", url: "/dashboard/configuracoes", icon: Building2, permission: "configuracoes" },
-      { title: "Profissionais", url: "/dashboard/profissionais", icon: UserCog, permission: "profissionais", requireClinic: true },
-      { title: "Horários", url: "/dashboard/horarios", icon: Clock },
       {
-        title: "Cadastros", icon: ClipboardList, permission: "cadastros", children: [
-          { title: "Serviços", url: "/dashboard/cadastros?tab=services", icon: ClipboardList },
-          { title: "Planos", url: "/dashboard/cadastros?tab=plans", icon: ClipboardList },
-          { title: "Tipos de atendimento", url: "/dashboard/cadastros?tab=types", icon: ClipboardList },
-          { title: "Exames", url: "/dashboard/cadastros?tab=exams", icon: ClipboardList },
-        ],
+        title: "Conta",
+        url: "/dashboard/configuracoes",
+        icon: Building2,
+        permission: "configuracoes",
       },
-      { title: "Pagamentos", url: "/dashboard/formas-pagamento", icon: CreditCard },
-      { title: "Notificações", url: "/dashboard/notificacoes", icon: Bell },
+      {
+        title: "Profissionais",
+        url: "/dashboard/profissionais",
+        icon: UserCog,
+        permission: "profissionais",
+        requireClinic: true,
+      },
+      {
+        title: "Cadastros",
+        url: "/dashboard/cadastros",
+        icon: ClipboardList,
+        permission: "cadastros",
+      },
+      {
+        title: "Pagamentos",
+        url: "/dashboard/formas-pagamento",
+        icon: CreditCard,
+        permission: "pagamentos", // 🔥
+      },
+      {
+        title: "Notificações",
+        url: "/dashboard/notificacoes",
+        icon: Bell,
+        permission: "notificacoes", // 🔥
+      },
     ],
   },
   {
     label: "Administração",
     items: [
-      { title: "Usuários", url: "/dashboard/usuarios", icon: Shield, permission: "usuarios", requireClinic: true, adminOnly: true },
-      { title: "Permissões", url: "/dashboard/permissoes", icon: Lock, adminOnly: true },
+      {
+        title: "Usuários",
+        url: "/dashboard/usuarios",
+        icon: Shield,
+        permission: "usuarios",
+        requireClinic: true,
+        adminOnly: true,
+      },
     ],
   },
   {
     label: "Comercial",
     items: [
-      { title: "Assinatura", url: "/dashboard/assinatura", icon: BadgeCheck, permission: "assinatura", requireClinic: true },
+      {
+        title: "Assinatura",
+        url: "/dashboard/assinatura",
+        icon: BadgeCheck,
+        permission: "assinatura",
+        requireClinic: true,
+      },
     ],
   },
 ];
@@ -186,14 +239,25 @@ export function AppSidebar() {
   const canShow = (item: MenuItem): boolean => {
     if (item.requireClinic && clinic?.type === "solo") return false;
     if (item.adminOnly && user?.role !== "admin") return false;
+
+    // 🔐 Regra principal
     if (item.permission && !hasPermission(item.permission)) return false;
+
+    // 🔥 REGRA EXTRA: subconfig depende de configuracoes
+    if (
+      (item.permission === "pagamentos" || item.permission === "notificacoes") &&
+      !hasPermission("configuracoes")
+    ) {
+      return false;
+    }
+
     return true;
   };
 
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="p-0">
-        <TooltipProvider delayDuration={300}>
+        <TooltipProvider delayDuration={300} disableHoverableContent={window.innerWidth < 768}>
           <Tooltip>
             <TooltipTrigger asChild>
               <button
@@ -208,79 +272,75 @@ export function AppSidebar() {
                 )}
               </button>
             </TooltipTrigger>
-            <TooltipContent side="right">
-              {collapsed ? "Expandir menu" : "Recolher menu"}
-            </TooltipContent>
+            {window.innerWidth >= 768 && (
+              <TooltipContent side="right">
+                {collapsed ? "Expandir menu" : "Recolher menu"}
+              </TooltipContent>
+            )}
           </Tooltip>
         </TooltipProvider>
       </SidebarHeader>
 
       <SidebarContent>
-          {menuStructure.map((group) => {
-            const visibleItems = group.items.filter(canShow);
-            if (visibleItems.length === 0) return null;
+        {menuStructure.map((group) => {
+          const visibleItems = group.items.filter(canShow);
+          if (visibleItems.length === 0) return null;
 
-            return (
-              <SidebarGroup key={group.label}>
-                <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
-                <SidebarGroupContent>
-                  <SidebarMenu>
-                    {visibleItems.map((item) => (
-                      <SidebarNavItem key={item.title} item={item} collapsed={collapsed} pathname={pathname} />
-                    ))}
-                  </SidebarMenu>
-                </SidebarGroupContent>
-              </SidebarGroup>
-            );
-          })}
+          return (
+            <SidebarGroup key={group.label}>
+              <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {visibleItems.map((item) => (
+                    <SidebarNavItem key={item.title} item={item} collapsed={collapsed} pathname={pathname} />
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          );
+        })}
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-2 w-full hover:bg-sidebar-accent/50 p-2 rounded-md transition-colors text-left outline-none">
-                <Avatar className="h-8 w-8 shrink-0">
-                  <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                    {user?.name.substring(0, 2).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                {!collapsed && (
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{user?.name}</p>
-                    <div className="flex items-center gap-1.5">
-                      <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-primary/10 text-primary rounded-full px-1.5 py-0.5">
-                        {usage}/{plan.limit}
-                      </span>
-                    </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="flex items-center gap-2 w-full hover:bg-sidebar-accent/50 p-2 rounded-md transition-colors text-left outline-none">
+              <Avatar className="h-8 w-8 shrink-0">
+                <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                  {user?.name.substring(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              {!collapsed && (
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{user?.name}</p>
+                  <div className="flex items-center gap-1.5">
+                    <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-primary/10 text-primary rounded-full px-1.5 py-0.5">
+                      {usage}/{plan.limit}
+                    </span>
                   </div>
-                )}
-                {!collapsed && <ChevronsUpDown className="h-4 w-4 text-muted-foreground shrink-0" />}
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" side="top" className="w-[200px]">
-              <DropdownMenuItem onClick={() => navigate("/dashboard/configuracoes")} className="cursor-pointer gap-2">
-                <Settings className="h-4 w-4" /> Meu perfil
+                </div>
+              )}
+              {!collapsed && <ChevronsUpDown className="h-4 w-4 text-muted-foreground shrink-0" />}
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" side="top" className="w-[200px]">
+            <DropdownMenuSeparator />
+            {usersList.filter(u => u.clinicId === clinic?.id).map((u) => (
+              <DropdownMenuItem
+                key={u.id}
+                onClick={() => { setUser(u); navigate("/dashboard"); }}
+                className="cursor-pointer flex flex-col items-start gap-0.5"
+              >
+                <span className="font-medium text-sm">{u.name} {u.id === user?.id && "(Atual)"}</span>
+                <span className="text-xs text-muted-foreground capitalize">{u.role}</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate("/dashboard/configuracoes")} className="cursor-pointer gap-2">
-                <Building2 className="h-4 w-4" /> Configurações
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              {usersList.filter(u => u.clinicId === clinic?.id).map((u) => (
-                <DropdownMenuItem
-                  key={u.id}
-                  onClick={() => { setUser(u); navigate("/dashboard"); }}
-                  className="cursor-pointer flex flex-col items-start gap-0.5"
-                >
-                  <span className="font-medium text-sm">{u.name} {u.id === user?.id && "(Atual)"}</span>
-                  <span className="text-xs text-muted-foreground capitalize">{u.role}</span>
-                </DropdownMenuItem>
-              ))}
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => navigate("/")} className="cursor-pointer text-destructive gap-2">
-                Sair
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+            ))}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => navigate("/")} className="cursor-pointer text-destructive gap-2">
+              Sair
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </SidebarFooter>
     </Sidebar>
   );
