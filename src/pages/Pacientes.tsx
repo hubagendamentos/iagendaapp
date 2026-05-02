@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { PacienteModal, type Paciente } from "@/components/PacienteModal";
 import { applyPhoneMask } from "@/components/PhoneMaskInput";
 import { applyCpfCnpjMask } from "@/components/CpfCnpjMaskInput";
+import { PageHeader } from "@/components/ui/page-header";
 
 function calcIdade(nascimento: string): number | null {
   if (!nascimento) return null;
@@ -84,13 +85,16 @@ const Pacientes = () => {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-foreground">Pacientes</h2>
-        <Button onClick={openNew} size="sm">
-          <Plus className="h-4 w-4 mr-1" /> Novo Paciente
-        </Button>
-      </div>
-
+      <PageHeader
+        title="Pacientes"
+        subtitle="Cadastre e gerencie as informações dos pacientes."
+        actions={
+          <Button onClick={openNew} size="sm">
+            <Plus className="h-4 w-4 mr-1" />
+            Novo Paciente
+          </Button>
+        }
+      />
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />

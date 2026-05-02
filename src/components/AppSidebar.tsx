@@ -55,7 +55,7 @@ const menuStructure: { label: string; items: MenuItem[] }[] = [
       {
         title: "Financeiro",
         icon: DollarSign,
-        permission: "financeiro", // 🔥 IMPORTANTE
+        permission: "financeiro",
         children: [
           { title: "Caixa", url: "/dashboard/financeiro/caixa", icon: Wallet },
           { title: "Contas a receber", url: "/dashboard/financeiro/receber", icon: Receipt },
@@ -66,7 +66,7 @@ const menuStructure: { label: string; items: MenuItem[] }[] = [
         title: "Relatórios",
         url: "/dashboard/relatorios",
         icon: BarChart3,
-        permission: "relatorios", // 🔥
+        permission: "relatorios",
       },
     ],
   },
@@ -77,7 +77,7 @@ const menuStructure: { label: string; items: MenuItem[] }[] = [
         title: "Comunicação",
         url: "/dashboard/templates",
         icon: MessageSquare,
-        permission: "comunicacao", // 🔥
+        permission: "comunicacao",
       },
       {
         title: "Automações",
@@ -119,13 +119,13 @@ const menuStructure: { label: string; items: MenuItem[] }[] = [
         title: "Pagamentos",
         url: "/dashboard/formas-pagamento",
         icon: CreditCard,
-        permission: "pagamentos", // 🔥
+        permission: "pagamentos",
       },
       {
         title: "Notificações",
         url: "/dashboard/notificacoes",
         icon: Bell,
-        permission: "notificacoes", // 🔥
+        permission: "notificacoes",
       },
     ],
   },
@@ -169,8 +169,8 @@ function SidebarNavItem({ item, collapsed, pathname }: { item: MenuItem; collaps
       return (
         <SidebarMenuItem>
           <SidebarMenuButton asChild>
-            <button className={cn("hover:bg-sidebar-accent/50", isChildActive && "bg-sidebar-accent text-sidebar-primary font-medium")}>
-              <item.icon className="mr-2 h-4 w-4" />
+            <button className={cn("hover:bg-sidebar-accent/50 w-full", isChildActive && "bg-sidebar-accent text-sidebar-primary font-medium")}>
+              <item.icon className="h-4 w-4" />
             </button>
           </SidebarMenuButton>
         </SidebarMenuItem>
@@ -178,28 +178,33 @@ function SidebarNavItem({ item, collapsed, pathname }: { item: MenuItem; collaps
     }
 
     return (
-      <Collapsible open={open} onOpenChange={setOpen}>
+      <Collapsible open={open} onOpenChange={setOpen} className="w-full">
         <SidebarMenuItem>
           <CollapsibleTrigger asChild>
-            <SidebarMenuButton className={cn("hover:bg-sidebar-accent/50 w-full justify-between", isChildActive && "text-sidebar-primary font-medium")}>
-              <span className="flex items-center">
-                <item.icon className="mr-2 h-4 w-4" />
-                <span>{item.title}</span>
-              </span>
-              <ChevronRight className={cn("h-3.5 w-3.5 transition-transform", open && "rotate-90")} />
+            <SidebarMenuButton className="w-full">
+              <div className="flex items-center min-w-0 flex-1">
+                <item.icon className="mr-2 h-4 w-4 shrink-0" />
+                <span className="truncate">{item.title}</span>
+              </div>
+              <ChevronRight
+                className={cn(
+                  "h-3.5 w-3.5 shrink-0 transition-transform ml-auto",
+                  open && "rotate-90"
+                )}
+              />
             </SidebarMenuButton>
           </CollapsibleTrigger>
-          <CollapsibleContent>
-            <SidebarMenu className="ml-4 border-l border-sidebar-border pl-2 mt-1">
+          <CollapsibleContent className="overflow-hidden">
+            <SidebarMenu className="ml-3 border-l border-sidebar-border pl-2 mt-1">
               {item.children.map((child) => (
                 <SidebarMenuItem key={child.title}>
                   <SidebarMenuButton asChild>
                     <NavLink
                       to={child.url!}
-                      className="hover:bg-sidebar-accent/50 text-sm"
+                      className="hover:bg-sidebar-accent/50 text-sm truncate"
                       activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
                     >
-                      <span>{child.title}</span>
+                      <span className="truncate">{child.title}</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -220,8 +225,8 @@ function SidebarNavItem({ item, collapsed, pathname }: { item: MenuItem; collaps
           className="hover:bg-sidebar-accent/50"
           activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
         >
-          <item.icon className="mr-2 h-4 w-4" />
-          {!collapsed && <span>{item.title}</span>}
+          <item.icon className="mr-2 h-4 w-4 shrink-0" />
+          {!collapsed && <span className="truncate">{item.title}</span>}
         </NavLink>
       </SidebarMenuButton>
     </SidebarMenuItem>
@@ -240,10 +245,10 @@ export function AppSidebar() {
     if (item.requireClinic && clinic?.type === "solo") return false;
     if (item.adminOnly && user?.role !== "admin") return false;
 
-    // 🔐 Regra principal
+    // Regra principal de permissão
     if (item.permission && !hasPermission(item.permission)) return false;
 
-    // 🔥 REGRA EXTRA: subconfig depende de configuracoes
+    // Regra extra: subconfig depende de configuracoes
     if (
       (item.permission === "pagamentos" || item.permission === "notificacoes") &&
       !hasPermission("configuracoes")
@@ -255,7 +260,7 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar collapsible="icon" className="overflow-hidden">
       <SidebarHeader className="p-0">
         <TooltipProvider delayDuration={300} disableHoverableContent={window.innerWidth < 768}>
           <Tooltip>
@@ -266,7 +271,7 @@ export function AppSidebar() {
               >
                 <Calendar className="h-6 w-6 text-sidebar-primary shrink-0" />
                 {!collapsed && (
-                  <span className="text-lg font-bold text-sidebar-primary-foreground tracking-tight">
+                  <span className="text-lg font-bold text-sidebar-primary-foreground tracking-tight truncate">
                     Hub Agendamentos
                   </span>
                 )}
@@ -290,7 +295,7 @@ export function AppSidebar() {
             <SidebarGroup key={group.label}>
               <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
               <SidebarGroupContent>
-                <SidebarMenu>
+                <SidebarMenu className="w-full">
                   {visibleItems.map((item) => (
                     <SidebarNavItem key={item.title} item={item} collapsed={collapsed} pathname={pathname} />
                   ))}
@@ -307,15 +312,15 @@ export function AppSidebar() {
             <button className="flex items-center gap-2 w-full hover:bg-sidebar-accent/50 p-2 rounded-md transition-colors text-left outline-none">
               <Avatar className="h-8 w-8 shrink-0">
                 <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                  {user?.name.substring(0, 2).toUpperCase()}
+                  {user?.name?.substring(0, 2).toUpperCase() || "??"}
                 </AvatarFallback>
               </Avatar>
               {!collapsed && (
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{user?.name}</p>
+                  <p className="text-sm font-medium truncate">{user?.name || "Usuário"}</p>
                   <div className="flex items-center gap-1.5">
                     <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-primary/10 text-primary rounded-full px-1.5 py-0.5">
-                      {usage}/{plan.limit}
+                      {usage}/{plan?.limit || 0}
                     </span>
                   </div>
                 </div>

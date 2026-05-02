@@ -26,6 +26,7 @@ import {
 import { Appointment, AppointmentStatus } from "@/components/AppointmentModal";
 import { EncerrarAtendimentoModal } from "@/components/EncerrarAtendimentoModal";
 import { toast } from "@/hooks/use-toast";
+import { PageHeader } from "@/components/ui/page-header";
 
 const professionals = [
   { id: "p1", name: "Dr. João Silva" },
@@ -177,8 +178,8 @@ const Atendimentos = () => {
       <div
         key={apt.id}
         className={`bg-card border rounded-xl p-4 mb-3 shadow-sm hover:shadow-md transition ${apt.status === "in_progress"
-            ? "border-blue-500 ring-1 ring-blue-500/30"
-            : ""
+          ? "border-blue-500 ring-1 ring-blue-500/30"
+          : ""
           }`}
       >
         <div className="flex justify-between flex-col sm:flex-row gap-4">
@@ -275,7 +276,7 @@ const Atendimentos = () => {
                       }
 
                       handleStatusChange(apt.id, "in_progress");
-                      
+
                       startAppointment({
                         id: apt.id,
                         patientId: apt.patientId || "1",
@@ -291,7 +292,7 @@ const Atendimentos = () => {
                         content: "Atendimento iniciado.",
                         createdBy: user?.name || "Sistema",
                       });
-                      
+
                       navigate(`/dashboard/ficha-paciente/${apt.patientId || "1"}?mode=atendimento&appointmentId=${apt.id}`);
                     }}
                   >
@@ -334,15 +335,15 @@ const Atendimentos = () => {
             {apt.status === "completed" &&
               apt.status_pagamento !== "pago" &&
               hasPermission("encerrarAtendimentoFinanceiro") && (
-              <Button
-                size="sm"
-                className="bg-emerald-600 hover:bg-emerald-700 text-white"
-                onClick={() => setEncerrarApt(apt)}
-              >
-                <DollarSign className="w-3.5 h-3.5 mr-1" />
-                Encerrar
-              </Button>
-            )}
+                <Button
+                  size="sm"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                  onClick={() => setEncerrarApt(apt)}
+                >
+                  <DollarSign className="w-3.5 h-3.5 mr-1" />
+                  Encerrar
+                </Button>
+              )}
 
             {apt.status_pagamento === "pago" && (
               <span className="text-xs text-emerald-600 font-medium flex items-center gap-1 whitespace-nowrap">
@@ -385,8 +386,10 @@ const Atendimentos = () => {
 
   return (
     <div className="p-6">
-      <h1 className="text-xl font-bold mb-4">Atendimentos</h1>
-
+      <PageHeader
+        title="Atendimentos"
+        subtitle="Acompanhe o fluxo dos atendimentos e gerencie cada etapa do atendimento clínico."
+      />
       <div className="flex gap-3 mb-6">
         <div className="relative">
           <Input
@@ -426,7 +429,7 @@ const Atendimentos = () => {
           appointment={encerrarApt}
           profissionalNome={professionals.find((p) => p.id === encerrarApt.professionalId)?.name || "Profissional"}
           onConfirm={(data) => handleEncerrar(encerrarApt, data)}
-          />
+        />
       )}
     </div>
   );

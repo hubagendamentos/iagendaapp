@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Calendar as CalendarIcon, Wallet } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
 
 const formaLabels: Record<FormaPagamento, string> = {
   dinheiro: "Dinheiro",
@@ -50,24 +51,24 @@ export default function Caixa() {
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Caixa</h1>
-        <p className="text-muted-foreground">Movimentações financeiras geradas pelos atendimentos.</p>
-      </div>
+      <PageHeader
+        title="Caixa"
+        subtitle="Gestão do caixa com movimentações financeiras."
+      />
 
       {/* Filtros */}
       <div className="flex flex-wrap gap-3">
         <div className="flex items-center gap-2">
-          <CalendarIcon className="w-4 h-4 text-muted-foreground" />
+          <span className="text-muted-foreground">De</span>
           <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="w-[150px]" />
-          <span className="text-muted-foreground">até</span>
+          <span className="text-muted-foreground">Até</span>
           <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="w-[150px]" />
         </div>
 
         <Select value={formaFilter} onValueChange={setFormaFilter}>
           <SelectTrigger className="w-[160px]"><SelectValue placeholder="Pagamento" /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Todas formas</SelectItem>
+            <SelectItem value="all">Todas Formas</SelectItem>
             {Object.entries(formaLabels).map(([k, v]) => (
               <SelectItem key={k} value={k}>{v}</SelectItem>
             ))}
@@ -77,7 +78,7 @@ export default function Caixa() {
         <Select value={profFilter} onValueChange={setProfFilter}>
           <SelectTrigger className="w-[200px]"><SelectValue placeholder="Profissional" /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Todos</SelectItem>
+            <SelectItem value="all">Todos Profissionais</SelectItem>
             {professionals.map((p) => (
               <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
             ))}
@@ -87,7 +88,7 @@ export default function Caixa() {
         <Select value={planoFilter} onValueChange={setPlanoFilter}>
           <SelectTrigger className="w-[160px]"><SelectValue placeholder="Plano de contas" /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Todos</SelectItem>
+            <SelectItem value="all">Todos Planos</SelectItem>
             {planosUnicos.map((p) => (
               <SelectItem key={p} value={p}>{p}</SelectItem>
             ))}

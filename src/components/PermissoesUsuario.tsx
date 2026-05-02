@@ -250,6 +250,14 @@ export function PermissoesUsuario({
             onToggle={(v) => handleToggle("podeEditarFicha", v)}
             disabled={disabled}
           />
+          <PermissionItem
+            id="encerrarAtendimentoFinanceiro"
+            label="Encerrar Atendimento (Financeiro)"
+            description="Permite lançar pagamentos e enviar para o caixa"
+            checked={!!permissions.encerrarAtendimentoFinanceiro}
+            onToggle={(v) => handleToggle("encerrarAtendimentoFinanceiro", v)}
+            disabled={disabled}
+          />
         </div>
       </div>
     </div>
