@@ -3,6 +3,17 @@ import { createContext, useContext, useState, useCallback, type ReactNode } from
 export type TipoMovimentacao = "entrada" | "saida";
 export type FormaPagamento = "dinheiro" | "pix" | "cartao" | "convenio" | "outros";
 
+export interface PagamentoAtendimento {
+  id: string;
+  atendimentoId: string;
+  valor: number;
+  formaPagamento: FormaPagamento;
+  planoContas: string;
+  dataHora: string;
+  usuario: string;
+  origem: string;
+}
+
 export interface LancamentoCaixa {
   id: string;
   tipo: TipoMovimentacao;
@@ -21,7 +32,11 @@ export interface LancamentoCaixa {
 interface CaixaContextType {
   lancamentos: LancamentoCaixa[];
   addLancamento: (lancamento: Omit<LancamentoCaixa, "id">) => void;
-  getLancamentoByAtendimentoId: (atendimentoId: string) => LancamentoCaixa | undefined;
+  getLancamentosByAtendimentoId: (atendimentoId: string) => LancamentoCaixa[];
+  pagamentos: PagamentoAtendimento[];
+  addPagamentos: (pagamentos: Omit<PagamentoAtendimento, "id">[]) => void;
+  getPagamentosByAtendimentoId: (atendimentoId: string) => PagamentoAtendimento[];
+  getTotalPagoByAtendimentoId: (atendimentoId: string) => number;
 }
 
 const CaixaContext = createContext<CaixaContextType | null>(null);
@@ -34,6 +49,7 @@ export const useCaixa = () => {
 
 export const CaixaProvider = ({ children }: { children: ReactNode }) => {
   const [lancamentos, setLancamentos] = useState<LancamentoCaixa[]>([]);
+  const [pagamentos, setPagamentos] = useState<PagamentoAtendimento[]>([]);
 
   const addLancamento = useCallback((lancamento: Omit<LancamentoCaixa, "id">) => {
     setLancamentos((prev) => [
@@ -42,13 +58,30 @@ export const CaixaProvider = ({ children }: { children: ReactNode }) => {
     ]);
   }, []);
 
-  const getLancamentoByAtendimentoId = useCallback(
-    (atendimentoId: string) => lancamentos.find((l) => l.atendimentoId === atendimentoId),
+  const getLancamentosByAtendimentoId = useCallback(
+    (atendimentoId: string) => lancamentos.filter((l) => l.atendimentoId === atendimentoId),
     [lancamentos]
   );
 
+  const addPagamentos = useCallback((newPagamentos: Omit<PagamentoAtendimento, "id">[]) => {
+    setPagamentos((prev) => [
+      ...prev,
+      ...newPagamentos.map((p) => ({ ...p, id: crypto.randomUUID() })),
+    ]);
+  }, []);
+
+  const getPagamentosByAtendimentoId = useCallback(
+    (atendimentoId: string) => pagamentos.filter((p) => p.atendimentoId === atendimentoId),
+    [pagamentos]
+  );
+
+  const getTotalPagoByAtendimentoId = useCallback(
+    (atendimentoId: string) => pagamentos.filter((p) => p.atendimentoId === atendimentoId).reduce((s, p) => s + p.valor, 0),
+    [pagamentos]
+  );
+
   return (
-    <CaixaContext.Provider value={{ lancamentos, addLancamento, getLancamentoByAtendimentoId }}>
+    <CaixaContext.Provider value={{ lancamentos, addLancamento, getLancamentosByAtendimentoId, pagamentos, addPagamentos, getPagamentosByAtendimentoId, getTotalPagoByAtendimentoId }}>
       {children}
     </CaixaContext.Provider>
   );
