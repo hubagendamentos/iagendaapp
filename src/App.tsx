@@ -8,6 +8,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import { AppointmentsProvider } from "@/contexts/AppointmentsContext";
 import { TimelineProvider } from "@/contexts/TimelineContext";
+import { CaixaProvider } from "@/contexts/CaixaContext";
 import Login from "./pages/Login.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import DashboardHome from "./pages/DashboardHome.tsx";
@@ -21,6 +22,7 @@ import BuscaFichaPaciente from "./pages/BuscaFichaPaciente.tsx";
 import Atendimentos from "./pages/Atendimentos.tsx";
 import Assinatura from "./pages/Assinatura.tsx";
 import Usuarios from "./pages/Usuarios.tsx";
+import Caixa from "./pages/Caixa.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -32,6 +34,7 @@ const App = () => (
         <SubscriptionProvider>
           <TimelineProvider>
             <AppointmentsProvider>
+            <CaixaProvider>
               <TooltipProvider>
                 <Toaster />
                 <Sonner />
@@ -50,11 +53,13 @@ const App = () => (
                       <Route path="configuracoes" element={<Configuracoes />} />
                       <Route path="assinatura" element={<Assinatura />} />
                       <Route path="usuarios" element={<Usuarios />} />
+                      <Route path="financeiro/caixa" element={<Caixa />} />
                     </Route>
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </BrowserRouter>
               </TooltipProvider>
+            </CaixaProvider>
             </AppointmentsProvider>
           </TimelineProvider>
         </SubscriptionProvider>

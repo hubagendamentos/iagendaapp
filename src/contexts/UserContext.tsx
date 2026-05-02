@@ -33,6 +33,9 @@ export type UserPermissions = {
   podeCancelar: boolean;
   podeMarcarFalta: boolean;
   podeEditarFicha: boolean;
+
+  // 💰 FINANCEIRO
+  encerrarAtendimentoFinanceiro: boolean;
 };
 
 export type UserRole = "admin" | "staff" | "professional";

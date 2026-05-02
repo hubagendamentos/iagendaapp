@@ -4,6 +4,7 @@ import { format, isToday, parse } from "date-fns";
 import { useAppointments } from "@/contexts/AppointmentsContext";
 import { useTimeline } from "@/contexts/TimelineContext";
 import { useUser } from "@/contexts/UserContext";
+import { useCaixa } from "@/contexts/CaixaContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -20,8 +21,11 @@ import {
   XCircle,
   UserX,
   ChevronRight,
+  DollarSign,
 } from "lucide-react";
 import { Appointment, AppointmentStatus } from "@/components/AppointmentModal";
+import { EncerrarAtendimentoModal } from "@/components/EncerrarAtendimentoModal";
+import { toast } from "@/hooks/use-toast";
 
 const professionals = [
   { id: "p1", name: "Dr. João Silva" },
@@ -62,13 +66,15 @@ const statusConfig: Record<
 
 const Atendimentos = () => {
   const { hasPermission, clinic, professionalId: userProfId, user } = useUser();
-  const { getAppointmentsByDate, updateAppointmentStatus, activeAppointment, startAppointment } = useAppointments();
+  const { getAppointmentsByDate, updateAppointmentStatus, updateAppointment, activeAppointment, startAppointment } = useAppointments();
   const { addTimelineItem } = useTimeline();
+  const { addLancamento, getLancamentoByAtendimentoId } = useCaixa();
   const navigate = useNavigate();
   const isClinic = clinic?.type === "clinic";
 
   const [dateStr, setDateStr] = useState(format(new Date(), "yyyy-MM-dd"));
   const [profFilter, setProfFilter] = useState<string>("all");
+  const [encerrarApt, setEncerrarApt] = useState<Appointment | null>(null);
 
   const selectedDate = parse(dateStr, "yyyy-MM-dd", new Date());
   const allAppointments = getAppointmentsByDate(selectedDate);
@@ -102,8 +108,34 @@ const Atendimentos = () => {
       return a.time.localeCompare(b.time);
     });
 
+  // ✅ Finalizados
+  const completed = filtered.filter((a) => a.status === "completed");
+
   const handleStatusChange = (id: string, status: AppointmentStatus) => {
     updateAppointmentStatus(id, status);
+  };
+
+  const handleEncerrar = (apt: Appointment, data: { formaPagamento: any; planoContas: string; observacao: string }) => {
+    const profName = professionals.find((p) => p.id === apt.professionalId)?.name || "Profissional";
+
+    addLancamento({
+      tipo: "entrada",
+      origem: "Atendimento",
+      atendimentoId: apt.id,
+      paciente: apt.patientName,
+      profissional: profName,
+      profissionalId: apt.professionalId,
+      valor: apt.price ?? 0,
+      formaPagamento: data.formaPagamento,
+      planoContas: data.planoContas,
+      observacao: data.observacao,
+      dataHora: new Date().toISOString(),
+    });
+
+    updateAppointment(apt.id, { financeiro_encerrado: true });
+
+    toast({ title: "Financeiro encerrado", description: "Lançamento gerado no caixa com sucesso." });
+    setEncerrarApt(null);
   };
 
   const renderCard = (apt: Appointment, isNext = false) => {
@@ -275,6 +307,26 @@ const Atendimentos = () => {
                 Finalizar
               </Button>
             )}
+
+            {apt.status === "completed" &&
+              !apt.financeiro_encerrado &&
+              !getLancamentoByAtendimentoId(apt.id) &&
+              hasPermission("encerrarAtendimentoFinanceiro") && (
+              <Button
+                size="sm"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                onClick={() => setEncerrarApt(apt)}
+              >
+                <DollarSign className="w-3.5 h-3.5 mr-1" />
+                Encerrar
+              </Button>
+            )}
+
+            {apt.financeiro_encerrado && (
+              <span className="text-xs text-emerald-600 font-medium flex items-center gap-1">
+                <DollarSign className="w-3 h-3" /> Financeiro encerrado
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -337,6 +389,17 @@ const Atendimentos = () => {
 
       <Section title="🔵 Em atendimento" list={inProgress} />
       <Section title="⚪ Fila de atendimento" list={queue} />
+      <Section title="✅ Finalizados" list={completed} />
+
+      {encerrarApt && (
+        <EncerrarAtendimentoModal
+          open={!!encerrarApt}
+          onOpenChange={(open) => { if (!open) setEncerrarApt(null); }}
+          appointment={encerrarApt}
+          profissionalNome={professionals.find((p) => p.id === encerrarApt.professionalId)?.name || "Profissional"}
+          onConfirm={(data) => handleEncerrar(encerrarApt, data)}
+        />
+      )}
     </div>
   );
 };

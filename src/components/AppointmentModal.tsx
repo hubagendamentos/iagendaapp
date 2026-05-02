@@ -46,6 +46,7 @@ export interface Appointment {
   planName?: string | null;
   notes?: string;
   date?: string;
+  financeiro_encerrado?: boolean;
 }
 
 // Data types from Cadastros
