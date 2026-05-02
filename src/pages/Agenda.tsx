@@ -130,7 +130,7 @@ const Agenda = () => {
         toast.error("Você atingiu o limite do seu plano. Faça upgrade para continuar.");
         return;
       }
-      
+
       const usagePercentage = usage / plan.limit;
       if (plan.isEnterprise && usage >= plan.limit) {
         toast.info("Atenção: Será cobrado R$ 0,05 extra por este agendamento.");
@@ -254,9 +254,8 @@ const Agenda = () => {
                 return (
                   <div
                     key={prof.id}
-                    className={`border-r last:border-r-0 min-h-[3.5rem] px-1 py-0.5 transition-colors ${
-                      !appt ? "hover:bg-accent/50 cursor-pointer" : "cursor-pointer"
-                    }`}
+                    className={`border-r last:border-r-0 min-h-[3.5rem] px-1 py-0.5 transition-colors ${!appt ? "hover:bg-accent/50 cursor-pointer" : "cursor-pointer"
+                      }`}
                     onClick={() => handleSlotClick(time, prof.id)}
                   >
                     {appt && (() => {
@@ -303,9 +302,8 @@ const Agenda = () => {
             return (
               <div
                 key={time}
-                className={`flex items-center gap-3 px-4 py-3 transition-colors ${
-                  !appt ? "active:bg-accent/50" : ""
-                }`}
+                className={`flex items-center gap-3 px-4 py-3 transition-colors ${!appt ? "active:bg-accent/50" : ""
+                  }`}
                 onClick={() => mobileProfessional && handleSlotClick(time, mobileProfessional.id)}
               >
                 <span className="text-sm text-muted-foreground font-medium w-12 shrink-0">{time}</span>

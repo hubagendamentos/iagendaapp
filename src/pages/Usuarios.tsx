@@ -91,7 +91,6 @@ export default function Usuarios() {
   const handleDelete = () => {
     if (!editing?.id) return;
 
-    // 🚫 não deixar excluir usuário logado
     if (editing.id === user?.id) {
       alert("Você não pode excluir o usuário logado.");
       return;
@@ -152,13 +151,18 @@ export default function Usuarios() {
         </Table>
       </div>
 
-      <Dialog open={modalOpen} onOpenChange={(open) => {
-        setModalOpen(open);
-        if (!open) setEditing(null);
-      }}>
+      <Dialog
+        open={modalOpen}
+        onOpenChange={(open) => {
+          setModalOpen(open);
+          if (!open) setEditing(null);
+        }}
+      >
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editing?.id ? "Editar Usuário" : "Novo Usuário"}</DialogTitle>
+            <DialogTitle>
+              {editing?.id ? "Editar Usuário" : "Novo Usuário"}
+            </DialogTitle>
           </DialogHeader>
 
           <Tabs defaultValue="dados" className="mt-4">
@@ -174,7 +178,9 @@ export default function Usuarios() {
                 <Label>Nome Completo</Label>
                 <Input
                   value={editing?.name || ""}
-                  onChange={e => setEditing(prev => ({ ...prev, name: e.target.value }))}
+                  onChange={e =>
+                    setEditing(prev => ({ ...prev, name: e.target.value }))
+                  }
                 />
               </div>
 
@@ -183,7 +189,9 @@ export default function Usuarios() {
                 <Input
                   type="email"
                   value={editing?.email || ""}
-                  onChange={e => setEditing(prev => ({ ...prev, email: e.target.value }))}
+                  onChange={e =>
+                    setEditing(prev => ({ ...prev, email: e.target.value }))
+                  }
                 />
               </div>
 
@@ -191,18 +199,20 @@ export default function Usuarios() {
                 <Label>Nível de Acesso (Role)</Label>
                 <Select
                   value={editing?.role || "staff"}
-                  onValueChange={(val: UserRole) => setEditing(prev => ({
-                    ...prev,
-                    role: val,
-                    permissions: getDefaultPermissions(val)
-                  }))}
+                  onValueChange={(val: UserRole) =>
+                    setEditing(prev => ({
+                      ...prev,
+                      role: val,
+                      permissions: getDefaultPermissions(val)
+                    }))
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="admin">Administrador (Acesso Total)</SelectItem>
-                    <SelectItem value="staff">Staff (Recepção / Apoio)</SelectItem>
+                    <SelectItem value="admin">Administrador</SelectItem>
+                    <SelectItem value="staff">Staff</SelectItem>
                     <SelectItem value="professional">Profissional</SelectItem>
                   </SelectContent>
                 </Select>
@@ -213,7 +223,12 @@ export default function Usuarios() {
                   <Label>ID do Profissional Vinculado</Label>
                   <Input
                     value={editing?.professionalId || ""}
-                    onChange={e => setEditing(prev => ({ ...prev, professionalId: e.target.value }))}
+                    onChange={e =>
+                      setEditing(prev => ({
+                        ...prev,
+                        professionalId: e.target.value
+                      }))
+                    }
                   />
                 </div>
               )}
@@ -222,7 +237,15 @@ export default function Usuarios() {
             <TabsContent value="permissoes" className="pt-4">
               <PermissoesUsuario
                 permissions={editing?.permissions || {}}
-                onChange={perms => setEditing(prev => ({ ...prev, permissions: perms }))}
+                onChange={(update) =>
+                  setEditing(prev => ({
+                    ...prev,
+                    permissions:
+                      typeof update === "function"
+                        ? update(prev?.permissions || {})
+                        : update
+                  }))
+                }
                 disabled={editing?.role === "admin"}
               />
             </TabsContent>
@@ -236,10 +259,13 @@ export default function Usuarios() {
             )}
 
             <div className="flex gap-2">
-              <Button variant="outline" onClick={() => {
-                setEditing(null);
-                setModalOpen(false);
-              }}>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setEditing(null);
+                  setModalOpen(false);
+                }}
+              >
                 Cancelar
               </Button>
 
