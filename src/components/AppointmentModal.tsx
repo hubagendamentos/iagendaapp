@@ -47,6 +47,8 @@ export interface Appointment {
   notes?: string;
   date?: string;
   financeiro_encerrado?: boolean;
+  valor_pago?: number;
+  status_pagamento?: "pendente" | "parcial" | "pago";
 }
 
 // Data types from Cadastros
