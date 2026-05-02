@@ -68,7 +68,7 @@ const Atendimentos = () => {
   const { hasPermission, clinic, professionalId: userProfId, user } = useUser();
   const { getAppointmentsByDate, updateAppointmentStatus, updateAppointment, activeAppointment, startAppointment } = useAppointments();
   const { addTimelineItem } = useTimeline();
-  const { addLancamento, getLancamentoByAtendimentoId } = useCaixa();
+  const { addLancamento, addPagamentos, getTotalPagoByAtendimentoId } = useCaixa();
   const navigate = useNavigate();
   const isClinic = clinic?.type === "clinic";
 
@@ -115,26 +115,49 @@ const Atendimentos = () => {
     updateAppointmentStatus(id, status);
   };
 
-  const handleEncerrar = (apt: Appointment, data: { formaPagamento: any; planoContas: string; observacao: string }) => {
+  const handleEncerrar = (apt: Appointment, data: { pagamentos: Array<{ valor: number; formaPagamento: any; planoContas: string }> }) => {
     const profName = professionals.find((p) => p.id === apt.professionalId)?.name || "Profissional";
 
-    addLancamento({
-      tipo: "entrada",
-      origem: "Atendimento",
+    const now = new Date().toISOString();
+
+    // Create payment records
+    addPagamentos(data.pagamentos.map((p) => ({
       atendimentoId: apt.id,
-      paciente: apt.patientName,
-      profissional: profName,
-      profissionalId: apt.professionalId,
-      valor: apt.price ?? 0,
-      formaPagamento: data.formaPagamento,
-      planoContas: data.planoContas,
-      observacao: data.observacao,
-      dataHora: new Date().toISOString(),
+      valor: p.valor,
+      formaPagamento: p.formaPagamento,
+      planoContas: p.planoContas,
+      dataHora: now,
+      usuario: user?.name || "Sistema",
+      origem: "atendimento",
+    })));
+
+    // Create cash register entries (one per payment)
+    data.pagamentos.forEach((p) => {
+      addLancamento({
+        tipo: "entrada",
+        origem: "Atendimento",
+        atendimentoId: apt.id,
+        paciente: apt.patientName,
+        profissional: profName,
+        profissionalId: apt.professionalId,
+        valor: p.valor,
+        formaPagamento: p.formaPagamento,
+        planoContas: p.planoContas,
+        dataHora: now,
+      });
     });
 
-    updateAppointment(apt.id, { financeiro_encerrado: true });
+    const totalPago = (apt.valor_pago ?? 0) + data.pagamentos.reduce((s, p) => s + p.valor, 0);
+    const valorTotal = apt.price ?? 0;
+    const statusPagamento = totalPago >= valorTotal ? "pago" : totalPago > 0 ? "parcial" : "pendente";
 
-    toast({ title: "Financeiro encerrado", description: "Lançamento gerado no caixa com sucesso." });
+    updateAppointment(apt.id, {
+      valor_pago: totalPago,
+      status_pagamento: statusPagamento,
+      financeiro_encerrado: statusPagamento === "pago",
+    });
+
+    toast({ title: "Pagamento registrado", description: statusPagamento === "pago" ? "Atendimento totalmente pago." : "Pagamento parcial registrado." });
     setEncerrarApt(null);
   };
 
@@ -309,8 +332,7 @@ const Atendimentos = () => {
             )}
 
             {apt.status === "completed" &&
-              !apt.financeiro_encerrado &&
-              !getLancamentoByAtendimentoId(apt.id) &&
+              apt.status_pagamento !== "pago" &&
               hasPermission("encerrarAtendimentoFinanceiro") && (
               <Button
                 size="sm"
@@ -322,9 +344,15 @@ const Atendimentos = () => {
               </Button>
             )}
 
-            {apt.financeiro_encerrado && (
-              <span className="text-xs text-emerald-600 font-medium flex items-center gap-1">
-                <DollarSign className="w-3 h-3" /> Financeiro encerrado
+            {apt.status_pagamento === "pago" && (
+              <span className="text-xs text-emerald-600 font-medium flex items-center gap-1 whitespace-nowrap">
+                <DollarSign className="w-3 h-3" /> Pago
+              </span>
+            )}
+
+            {apt.status_pagamento === "parcial" && (
+              <span className="text-xs text-amber-600 font-medium flex items-center gap-1 whitespace-nowrap">
+                <DollarSign className="w-3 h-3" /> Parcial
               </span>
             )}
           </div>
@@ -397,7 +425,7 @@ const Atendimentos = () => {
           onOpenChange={(open) => { if (!open) setEncerrarApt(null); }}
           appointment={encerrarApt}
           profissionalNome={professionals.find((p) => p.id === encerrarApt.professionalId)?.name || "Profissional"}
-          onConfirm={(data) => handleEncerrar(encerrarApt, data)}
+          onConfirm={(data) => handleEncerrar(encerrarApt, data as any)}
         />
       )}
     </div>
