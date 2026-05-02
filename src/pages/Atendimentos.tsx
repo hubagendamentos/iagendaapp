@@ -425,7 +425,7 @@ const Atendimentos = () => {
           onOpenChange={(open) => { if (!open) setEncerrarApt(null); }}
           appointment={encerrarApt}
           profissionalNome={professionals.find((p) => p.id === encerrarApt.professionalId)?.name || "Profissional"}
-          onConfirm={(data) => handleEncerrar(encerrarApt, data as any)}
+          onConfirm={(data) => handleEncerrar(encerrarApt, data)}
           />
       )}
     </div>
