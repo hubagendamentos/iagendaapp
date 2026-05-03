@@ -9,6 +9,7 @@ import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import { AppointmentsProvider } from "@/contexts/AppointmentsContext";
 import { TimelineProvider } from "@/contexts/TimelineContext";
 import { CaixaProvider } from "@/contexts/CaixaContext";
+import { PlanoContasProvider } from "@/contexts/PlanoContasContext";
 import Login from "./pages/Login.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import DashboardHome from "./pages/DashboardHome.tsx";
@@ -35,6 +36,7 @@ const App = () => (
           <TimelineProvider>
             <AppointmentsProvider>
             <CaixaProvider>
+            <PlanoContasProvider>
               <TooltipProvider>
                 <Toaster />
                 <Sonner />
@@ -59,6 +61,7 @@ const App = () => (
                   </Routes>
                 </BrowserRouter>
               </TooltipProvider>
+            </PlanoContasProvider>
             </CaixaProvider>
             </AppointmentsProvider>
           </TimelineProvider>
