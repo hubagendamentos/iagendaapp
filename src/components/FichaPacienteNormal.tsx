@@ -89,7 +89,7 @@ export const FichaPacienteNormal = () => {
     return (
       <div className="flex flex-col items-center justify-center py-20 space-y-4">
         <p className="text-muted-foreground">Paciente não encontrado.</p>
-        <Button variant="outline" onClick={() => navigate("/dashboard/ficha-paciente")}>
+        <Button variant="outline" onClick={() => navigate("/dashboard/pacientes")}>
           <ArrowLeft className="h-4 w-4 mr-2" /> Voltar
         </Button>
       </div>
@@ -135,12 +135,12 @@ export const FichaPacienteNormal = () => {
       <div className="space-y-6">
         {/* Main Info */}
         <div className="flex items-start gap-4">
-          <Button variant="outline" size="icon" onClick={() => navigate("/dashboard/ficha-paciente")} className="shrink-0 mt-2 hidden sm:flex">
+          <Button variant="outline" size="icon" onClick={() => navigate(-1)} className="shrink-0 mt-2 hidden sm:flex">
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3 md:gap-4 mb-2">
-              <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard/ficha-paciente")} className="shrink-0 -ml-2 sm:hidden">
+              <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="shrink-0 -ml-2 sm:hidden">
                 <ArrowLeft className="h-5 w-5" />
               </Button>
               <Avatar className="h-14 w-14 sm:h-16 sm:w-16 shrink-0 border-2 border-primary/10 shadow-sm">

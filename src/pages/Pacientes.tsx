@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Plus, Mail, Pencil, MessageCircle, FileText } from "lucide-react";
+import { Search, Plus, Mail, Pencil, MessageCircle, FileText, Eye } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -198,6 +198,15 @@ const Pacientes = () => {
                       variant="outline"
                       size="icon"
                       className="h-8 w-8 rounded-full shrink-0"
+                      onClick={(e) => { e.stopPropagation(); navigate(`/dashboard/paciente/${p.id}`); }}
+                      title="Ver ficha"
+                    >
+                      <Eye className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-8 w-8 rounded-full shrink-0"
                       onClick={(e) => { e.stopPropagation(); openEdit(p); }}
                       title="Editar"
                     >
@@ -263,6 +272,14 @@ const Pacientes = () => {
                       {p.genero && <span>{p.genero}</span>}
                     </div>
                     <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8 rounded-full shrink-0"
+                        onClick={(e) => { e.stopPropagation(); navigate(`/dashboard/paciente/${p.id}`); }}
+                      >
+                        <Eye className="h-3.5 w-3.5" />
+                      </Button>
                       <Button
                         variant="outline"
                         size="icon"
