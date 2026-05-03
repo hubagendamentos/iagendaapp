@@ -116,7 +116,7 @@ const Atendimentos = () => {
     updateAppointmentStatus(id, status);
   };
 
-  const handleEncerrar = (apt: Appointment, data: { pagamentos: Array<{ valor: number; formaPagamento: any; planoContas: string }> }) => {
+  const handleEncerrar = (apt: Appointment, data: { pagamentos: Array<{ valor: number; formaPagamento: any; planoContasId: string }> }) => {
     const profName = professionals.find((p) => p.id === apt.professionalId)?.name || "Profissional";
 
     const now = new Date().toISOString();
@@ -126,7 +126,7 @@ const Atendimentos = () => {
       atendimentoId: apt.id,
       valor: p.valor,
       formaPagamento: p.formaPagamento,
-      planoContas: p.planoContas,
+      planoContas: p.planoContasId,
       dataHora: now,
       usuario: user?.name || "Sistema",
       origem: "atendimento",
@@ -143,7 +143,7 @@ const Atendimentos = () => {
         profissionalId: apt.professionalId,
         valor: p.valor,
         formaPagamento: p.formaPagamento,
-        planoContas: p.planoContas,
+        planoContas: p.planoContasId,
         dataHora: now,
       });
     });
