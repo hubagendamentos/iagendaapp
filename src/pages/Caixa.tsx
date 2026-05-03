@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { format } from "date-fns";
 import { useCaixa, type FormaPagamento } from "@/contexts/CaixaContext";
+import { usePlanoContas } from "@/contexts/PlanoContasContext";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -23,6 +24,7 @@ const professionals = [
 
 export default function Caixa() {
   const { lancamentos } = useCaixa();
+  const { getPlanoNome, planos } = usePlanoContas();
 
   const [dateFrom, setDateFrom] = useState(format(new Date(), "yyyy-MM-dd"));
   const [dateTo, setDateTo] = useState(format(new Date(), "yyyy-MM-dd"));
@@ -30,7 +32,7 @@ export default function Caixa() {
   const [profFilter, setProfFilter] = useState<string>("all");
   const [planoFilter, setPlanoFilter] = useState<string>("all");
 
-  const planosUnicos = useMemo(() => [...new Set(lancamentos.map((l) => l.planoContas))], [lancamentos]);
+  const planosUnicosIds = useMemo(() => [...new Set(lancamentos.map((l) => l.planoContas))], [lancamentos]);
 
   const filtered = useMemo(() => {
     return lancamentos.filter((l) => {
@@ -89,8 +91,8 @@ export default function Caixa() {
           <SelectTrigger className="w-[160px]"><SelectValue placeholder="Plano de contas" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todos Planos</SelectItem>
-            {planosUnicos.map((p) => (
-              <SelectItem key={p} value={p}>{p}</SelectItem>
+            {planosUnicosIds.map((p) => (
+              <SelectItem key={p} value={p}>{getPlanoNome(p)}</SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -140,7 +142,7 @@ export default function Caixa() {
                   <TableCell className="font-medium">{l.paciente}</TableCell>
                   <TableCell>{l.profissional}</TableCell>
                   <TableCell>{formaLabels[l.formaPagamento]}</TableCell>
-                  <TableCell>{l.planoContas}</TableCell>
+                  <TableCell>{getPlanoNome(l.planoContas)}</TableCell>
                   <TableCell className="text-right font-medium text-emerald-600">{currency(l.valor)}</TableCell>
                 </TableRow>
               ))
