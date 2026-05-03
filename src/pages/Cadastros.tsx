@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Search, Pencil } from "lucide-react";
 import { toast } from "sonner";
+import { usePlanoContas, type PlanoContas as PlanoContasType, type TipoPlanoContas } from "@/contexts/PlanoContasContext";
 
 // ---- Types ----
 interface Plan {
@@ -416,6 +417,67 @@ const ServiceModal = ({ open, onClose, onSave, service, appointmentTypes, specia
 };
 
 // ============ Main Page ============
+// ============ Plano de Contas Modal ============
+const PlanoContasModal = ({ open, onClose, onSave, planoContas, allPlanos }: { open: boolean; onClose: () => void; onSave: (p: Omit<PlanoContasType, "id"> & { id?: string }) => void; planoContas: PlanoContasType | null; allPlanos: PlanoContasType[] }) => {
+  const [nome, setNome] = useState("");
+  const [tipo, setTipo] = useState<TipoPlanoContas>("receita");
+  const [categoriaPaiId, setCategoriaPaiId] = useState<string | null>(null);
+  const [ativo, setAtivo] = useState(true);
+
+  useEffect(() => {
+    if (open) {
+      if (planoContas) { setNome(planoContas.nome); setTipo(planoContas.tipo); setCategoriaPaiId(planoContas.categoriaPaiId); setAtivo(planoContas.ativo); }
+      else { setNome(""); setTipo("receita"); setCategoriaPaiId(null); setAtivo(true); }
+    }
+  }, [open, planoContas]);
+
+  const possiblePais = allPlanos.filter((p) => p.categoriaPaiId === null && p.id !== planoContas?.id && p.tipo === tipo);
+
+  return (
+    <Dialog open={open} onOpenChange={() => onClose()}>
+      <DialogContent className="sm:max-w-md !inset-0 !translate-x-0 !translate-y-0 !top-0 !left-0 sm:!inset-auto sm:!left-[50%] sm:!top-[50%] sm:!translate-x-[-50%] sm:!translate-y-[-50%] rounded-none sm:rounded-lg w-full sm:w-auto max-h-[100dvh] sm:max-h-[90vh] overflow-y-auto">
+        <DialogHeader><DialogTitle>{planoContas ? "Editar Plano de Contas" : "Novo Plano de Contas"}</DialogTitle></DialogHeader>
+        <div className="space-y-4 pt-2">
+          <div className="space-y-2">
+            <Label>Nome</Label>
+            <Input value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Ex: Consulta Particular" />
+          </div>
+          <div className="space-y-2">
+            <Label>Tipo</Label>
+            <Select value={tipo} onValueChange={(v) => { setTipo(v as TipoPlanoContas); setCategoriaPaiId(null); }}>
+              <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="receita">Receita</SelectItem>
+                <SelectItem value="despesa">Despesa</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label>Categoria Pai (opcional)</Label>
+            <Select value={categoriaPaiId || "__none__"} onValueChange={(v) => setCategoriaPaiId(v === "__none__" ? null : v)}>
+              <SelectTrigger className="w-full"><SelectValue placeholder="Nenhuma" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__">Nenhuma (raiz)</SelectItem>
+                {possiblePais.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center gap-3">
+            <Switch checked={ativo} onCheckedChange={setAtivo} />
+            <Label>{ativo ? "Ativo" : "Inativo"}</Label>
+          </div>
+          <div className="flex gap-2 justify-end pt-2">
+            <Button variant="outline" onClick={onClose}>Cancelar</Button>
+            <Button disabled={!nome.trim()} onClick={() => { onSave({ id: planoContas?.id, nome: nome.trim(), tipo, categoriaPaiId, ativo }); onClose(); }}>Salvar</Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 const Cadastros = () => {
   const [plans, setPlans] = useState<Plan[]>(initialPlans);
   const [exams, setExams] = useState<Exam[]>(initialExams);
@@ -449,6 +511,24 @@ const Cadastros = () => {
   const [searchTypes, setSearchTypes] = useState("");
   const [searchSpecs, setSearchSpecs] = useState("");
   const [searchServices, setSearchServices] = useState("");
+  const [searchPlanoContas, setSearchPlanoContas] = useState("");
+
+  // Plano de Contas
+  const { planos: planosContas, addPlano, updatePlano } = usePlanoContas();
+  const [planoContasModal, setPlanoContasModal] = useState(false);
+  const [editingPlanoContas, setEditingPlanoContas] = useState<PlanoContasType | null>(null);
+
+  const savePlanoContas = (data: Omit<PlanoContasType, "id"> & { id?: string }) => {
+    if (data.id) {
+      updatePlano(data.id, { nome: data.nome, tipo: data.tipo, categoriaPaiId: data.categoriaPaiId, ativo: data.ativo });
+      toast.success("Plano de contas atualizado");
+    } else {
+      addPlano({ nome: data.nome, tipo: data.tipo, categoriaPaiId: data.categoriaPaiId, ativo: data.ativo });
+      toast.success("Plano de contas adicionado");
+    }
+  };
+
+  const filteredPlanosContas = planosContas.filter((p) => p.nome.toLowerCase().includes(searchPlanoContas.toLowerCase()));
 
   // Plan CRUD
   const savePlan = (data: Omit<Plan, "id"> & { id?: string }) => {
@@ -553,6 +633,7 @@ const Cadastros = () => {
             { id: "types", label: "Atendimentos" },
             { id: "specialties", label: "Especialidades" },
             { id: "services", label: "Serviços" },
+            { id: "planocontas", label: "Plano de Contas" },
           ]}
           selectedId={activeTab}
           onSelect={setActiveTab}
@@ -862,6 +943,68 @@ const Cadastros = () => {
             </CardContent>
           </Card>
         </TabsContent>
+
+        {/* ---- PLANO DE CONTAS TAB ---- */}
+        <TabsContent value="planocontas" className="mt-4">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex flex-col sm:flex-row gap-3 mb-4">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input placeholder="Buscar plano de contas..." value={searchPlanoContas} onChange={(e) => setSearchPlanoContas(e.target.value)} className="pl-9" />
+                </div>
+                <Button className="gap-2 shrink-0" onClick={() => { setEditingPlanoContas(null); setPlanoContasModal(true); }}>
+                  <Plus className="h-4 w-4" /> Novo Plano de Contas
+                </Button>
+              </div>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nome</TableHead>
+                      <TableHead>Tipo</TableHead>
+                      <TableHead className="hidden sm:table-cell">Categoria Pai</TableHead>
+                      <TableHead className="w-24 text-center">Status</TableHead>
+                      <TableHead className="w-20 text-center">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredPlanosContas.length === 0 && (
+                      <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">Nenhum plano de contas encontrado</TableCell></TableRow>
+                    )}
+                    {filteredPlanosContas.map((pc) => {
+                      const pai = pc.categoriaPaiId ? planosContas.find((p) => p.id === pc.categoriaPaiId) : null;
+                      return (
+                        <TableRow key={pc.id}>
+                          <TableCell className="font-medium">
+                            {pai && <span className="text-muted-foreground mr-1">└</span>}
+                            {pc.nome}
+                          </TableCell>
+                          <TableCell>
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${pc.tipo === "receita" ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"}`}>
+                              {pc.tipo === "receita" ? "Receita" : "Despesa"}
+                            </span>
+                          </TableCell>
+                          <TableCell className="hidden sm:table-cell text-sm text-muted-foreground">{pai?.nome || "—"}</TableCell>
+                          <TableCell className="text-center">
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${pc.ativo ? "bg-status-confirmed/15 text-status-confirmed" : "bg-muted text-muted-foreground"}`}>
+                              {pc.ativo ? "Ativo" : "Inativo"}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingPlanoContas(pc); setPlanoContasModal(true); }}>
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
 
       {/* Modals */}
@@ -871,6 +1014,7 @@ const Cadastros = () => {
       <AppointmentTypeModal open={typeModal} onClose={() => { setTypeModal(false); setEditingType(null); }} onSave={saveType} appointmentType={editingType} />
       <SpecialtyModal open={specModal} onClose={() => { setSpecModal(false); setEditingSpec(null); }} onSave={saveSpecialty} specialty={editingSpec} />
       <ServiceModal open={serviceModal} onClose={() => { setServiceModal(false); setEditingService(null); }} onSave={saveService} service={editingService} appointmentTypes={appointmentTypes} specialties={specialties} exams={exams} />
+      <PlanoContasModal open={planoContasModal} onClose={() => { setPlanoContasModal(false); setEditingPlanoContas(null); }} onSave={savePlanoContas} planoContas={editingPlanoContas} allPlanos={planosContas} />
     </div>
   );
 };
