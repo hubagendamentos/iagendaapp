@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import type { Appointment } from "@/components/AppointmentModal";
 import type { FormaPagamento } from "@/contexts/CaixaContext";
 import { Plus, Trash2 } from "lucide-react";
+import { usePlanoContas } from "@/contexts/PlanoContasContext";
 
 const formasPagamento: { value: FormaPagamento; label: string }[] = [
   { value: "dinheiro", label: "Dinheiro" },
@@ -16,13 +17,11 @@ const formasPagamento: { value: FormaPagamento; label: string }[] = [
   { value: "outros", label: "Outros" },
 ];
 
-const planosContas = ["Consulta", "Procedimento", "Exame", "Retorno", "Outros"];
-
 interface PagamentoLinha {
   id: string;
   valor: string;
   formaPagamento: FormaPagamento | "";
-  planoContas: string;
+  planoContasId: string;
 }
 
 interface Props {
@@ -30,16 +29,19 @@ interface Props {
   onOpenChange: (open: boolean) => void;
   appointment: Appointment;
   profissionalNome: string;
-  onConfirm: (data: { pagamentos: Array<{ valor: number; formaPagamento: FormaPagamento; planoContas: string }> }) => void;
+  onConfirm: (data: { pagamentos: Array<{ valor: number; formaPagamento: FormaPagamento; planoContasId: string }> }) => void;
 }
 
 export function EncerrarAtendimentoModal({ open, onOpenChange, appointment, profissionalNome, onConfirm }: Props) {
+  const { getPlanosReceita } = usePlanoContas();
+  const planosReceita = getPlanosReceita();
+
   const valorTotal = appointment.price ?? 0;
   const valorJaPago = appointment.valor_pago ?? 0;
   const valorRestante = valorTotal - valorJaPago;
 
   const [linhas, setLinhas] = useState<PagamentoLinha[]>([
-    { id: crypto.randomUUID(), valor: "", formaPagamento: "", planoContas: "" },
+    { id: crypto.randomUUID(), valor: "", formaPagamento: "", planoContasId: "" },
   ]);
 
   const totalInserido = useMemo(
@@ -51,7 +53,7 @@ export function EncerrarAtendimentoModal({ open, onOpenChange, appointment, prof
 
   const canSubmit =
     linhas.length > 0 &&
-    linhas.every((l) => l.formaPagamento !== "" && l.planoContas !== "" && parseFloat(l.valor) > 0) &&
+    linhas.every((l) => l.formaPagamento !== "" && l.planoContasId !== "" && parseFloat(l.valor) > 0) &&
     totalInserido > 0 &&
     totalInserido <= valorRestante + 0.01;
 
@@ -61,13 +63,13 @@ export function EncerrarAtendimentoModal({ open, onOpenChange, appointment, prof
       pagamentos: linhas.map((l) => ({
         valor: parseFloat(l.valor),
         formaPagamento: l.formaPagamento as FormaPagamento,
-        planoContas: l.planoContas,
+        planoContasId: l.planoContasId,
       })),
     });
   };
 
   const addLinha = () => {
-    setLinhas((prev) => [...prev, { id: crypto.randomUUID(), valor: "", formaPagamento: "", planoContas: "" }]);
+    setLinhas((prev) => [...prev, { id: crypto.randomUUID(), valor: "", formaPagamento: "", planoContasId: "" }]);
   };
 
   const removeLinha = (id: string) => {
@@ -145,13 +147,13 @@ export function EncerrarAtendimentoModal({ open, onOpenChange, appointment, prof
                   </div>
                   <div>
                     <Label className="text-xs text-muted-foreground">Plano *</Label>
-                    <Select value={linha.planoContas} onValueChange={(v) => updateLinha(linha.id, "planoContas", v)}>
+                    <Select value={linha.planoContasId} onValueChange={(v) => updateLinha(linha.id, "planoContasId", v)}>
                       <SelectTrigger className="h-9">
                         <SelectValue placeholder="Selecione" />
                       </SelectTrigger>
                       <SelectContent>
-                        {planosContas.map((p) => (
-                          <SelectItem key={p} value={p}>{p}</SelectItem>
+                        {planosReceita.map((p) => (
+                          <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
