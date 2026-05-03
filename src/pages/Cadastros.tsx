@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Search, Pencil } from "lucide-react";
 import { toast } from "sonner";
+import { usePlanoContas, type PlanoContas as PlanoContasType, type TipoPlanoContas } from "@/contexts/PlanoContasContext";
 
 // ---- Types ----
 interface Plan {
@@ -449,6 +450,24 @@ const Cadastros = () => {
   const [searchTypes, setSearchTypes] = useState("");
   const [searchSpecs, setSearchSpecs] = useState("");
   const [searchServices, setSearchServices] = useState("");
+  const [searchPlanoContas, setSearchPlanoContas] = useState("");
+
+  // Plano de Contas
+  const { planos: planosContas, addPlano, updatePlano } = usePlanoContas();
+  const [planoContasModal, setPlanoContasModal] = useState(false);
+  const [editingPlanoContas, setEditingPlanoContas] = useState<PlanoContasType | null>(null);
+
+  const savePlanoContas = (data: Omit<PlanoContasType, "id"> & { id?: string }) => {
+    if (data.id) {
+      updatePlano(data.id, { nome: data.nome, tipo: data.tipo, categoriaPaiId: data.categoriaPaiId, ativo: data.ativo });
+      toast.success("Plano de contas atualizado");
+    } else {
+      addPlano({ nome: data.nome, tipo: data.tipo, categoriaPaiId: data.categoriaPaiId, ativo: data.ativo });
+      toast.success("Plano de contas adicionado");
+    }
+  };
+
+  const filteredPlanosContas = planosContas.filter((p) => p.nome.toLowerCase().includes(searchPlanoContas.toLowerCase()));
 
   // Plan CRUD
   const savePlan = (data: Omit<Plan, "id"> & { id?: string }) => {
@@ -553,6 +572,7 @@ const Cadastros = () => {
             { id: "types", label: "Atendimentos" },
             { id: "specialties", label: "Especialidades" },
             { id: "services", label: "Serviços" },
+            { id: "planocontas", label: "Plano de Contas" },
           ]}
           selectedId={activeTab}
           onSelect={setActiveTab}
@@ -862,6 +882,68 @@ const Cadastros = () => {
             </CardContent>
           </Card>
         </TabsContent>
+
+        {/* ---- PLANO DE CONTAS TAB ---- */}
+        <TabsContent value="planocontas" className="mt-4">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex flex-col sm:flex-row gap-3 mb-4">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input placeholder="Buscar plano de contas..." value={searchPlanoContas} onChange={(e) => setSearchPlanoContas(e.target.value)} className="pl-9" />
+                </div>
+                <Button className="gap-2 shrink-0" onClick={() => { setEditingPlanoContas(null); setPlanoContasModal(true); }}>
+                  <Plus className="h-4 w-4" /> Novo Plano de Contas
+                </Button>
+              </div>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nome</TableHead>
+                      <TableHead>Tipo</TableHead>
+                      <TableHead className="hidden sm:table-cell">Categoria Pai</TableHead>
+                      <TableHead className="w-24 text-center">Status</TableHead>
+                      <TableHead className="w-20 text-center">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredPlanosContas.length === 0 && (
+                      <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">Nenhum plano de contas encontrado</TableCell></TableRow>
+                    )}
+                    {filteredPlanosContas.map((pc) => {
+                      const pai = pc.categoriaPaiId ? planosContas.find((p) => p.id === pc.categoriaPaiId) : null;
+                      return (
+                        <TableRow key={pc.id}>
+                          <TableCell className="font-medium">
+                            {pai && <span className="text-muted-foreground mr-1">└</span>}
+                            {pc.nome}
+                          </TableCell>
+                          <TableCell>
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${pc.tipo === "receita" ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"}`}>
+                              {pc.tipo === "receita" ? "Receita" : "Despesa"}
+                            </span>
+                          </TableCell>
+                          <TableCell className="hidden sm:table-cell text-sm text-muted-foreground">{pai?.nome || "—"}</TableCell>
+                          <TableCell className="text-center">
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${pc.ativo ? "bg-status-confirmed/15 text-status-confirmed" : "bg-muted text-muted-foreground"}`}>
+                              {pc.ativo ? "Ativo" : "Inativo"}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingPlanoContas(pc); setPlanoContasModal(true); }}>
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
 
       {/* Modals */}
@@ -871,6 +953,7 @@ const Cadastros = () => {
       <AppointmentTypeModal open={typeModal} onClose={() => { setTypeModal(false); setEditingType(null); }} onSave={saveType} appointmentType={editingType} />
       <SpecialtyModal open={specModal} onClose={() => { setSpecModal(false); setEditingSpec(null); }} onSave={saveSpecialty} specialty={editingSpec} />
       <ServiceModal open={serviceModal} onClose={() => { setServiceModal(false); setEditingService(null); }} onSave={saveService} service={editingService} appointmentTypes={appointmentTypes} specialties={specialties} exams={exams} />
+      <PlanoContasModal open={planoContasModal} onClose={() => { setPlanoContasModal(false); setEditingPlanoContas(null); }} onSave={savePlanoContas} planoContas={editingPlanoContas} allPlanos={planosContas} />
     </div>
   );
 };
