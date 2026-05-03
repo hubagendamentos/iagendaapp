@@ -417,6 +417,67 @@ const ServiceModal = ({ open, onClose, onSave, service, appointmentTypes, specia
 };
 
 // ============ Main Page ============
+// ============ Plano de Contas Modal ============
+const PlanoContasModal = ({ open, onClose, onSave, planoContas, allPlanos }: { open: boolean; onClose: () => void; onSave: (p: Omit<PlanoContasType, "id"> & { id?: string }) => void; planoContas: PlanoContasType | null; allPlanos: PlanoContasType[] }) => {
+  const [nome, setNome] = useState("");
+  const [tipo, setTipo] = useState<TipoPlanoContas>("receita");
+  const [categoriaPaiId, setCategoriaPaiId] = useState<string | null>(null);
+  const [ativo, setAtivo] = useState(true);
+
+  useEffect(() => {
+    if (open) {
+      if (planoContas) { setNome(planoContas.nome); setTipo(planoContas.tipo); setCategoriaPaiId(planoContas.categoriaPaiId); setAtivo(planoContas.ativo); }
+      else { setNome(""); setTipo("receita"); setCategoriaPaiId(null); setAtivo(true); }
+    }
+  }, [open, planoContas]);
+
+  const possiblePais = allPlanos.filter((p) => p.categoriaPaiId === null && p.id !== planoContas?.id && p.tipo === tipo);
+
+  return (
+    <Dialog open={open} onOpenChange={() => onClose()}>
+      <DialogContent className="sm:max-w-md !inset-0 !translate-x-0 !translate-y-0 !top-0 !left-0 sm:!inset-auto sm:!left-[50%] sm:!top-[50%] sm:!translate-x-[-50%] sm:!translate-y-[-50%] rounded-none sm:rounded-lg w-full sm:w-auto max-h-[100dvh] sm:max-h-[90vh] overflow-y-auto">
+        <DialogHeader><DialogTitle>{planoContas ? "Editar Plano de Contas" : "Novo Plano de Contas"}</DialogTitle></DialogHeader>
+        <div className="space-y-4 pt-2">
+          <div className="space-y-2">
+            <Label>Nome</Label>
+            <Input value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Ex: Consulta Particular" />
+          </div>
+          <div className="space-y-2">
+            <Label>Tipo</Label>
+            <Select value={tipo} onValueChange={(v) => { setTipo(v as TipoPlanoContas); setCategoriaPaiId(null); }}>
+              <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="receita">Receita</SelectItem>
+                <SelectItem value="despesa">Despesa</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label>Categoria Pai (opcional)</Label>
+            <Select value={categoriaPaiId || "__none__"} onValueChange={(v) => setCategoriaPaiId(v === "__none__" ? null : v)}>
+              <SelectTrigger className="w-full"><SelectValue placeholder="Nenhuma" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__">Nenhuma (raiz)</SelectItem>
+                {possiblePais.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center gap-3">
+            <Switch checked={ativo} onCheckedChange={setAtivo} />
+            <Label>{ativo ? "Ativo" : "Inativo"}</Label>
+          </div>
+          <div className="flex gap-2 justify-end pt-2">
+            <Button variant="outline" onClick={onClose}>Cancelar</Button>
+            <Button disabled={!nome.trim()} onClick={() => { onSave({ id: planoContas?.id, nome: nome.trim(), tipo, categoriaPaiId, ativo }); onClose(); }}>Salvar</Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 const Cadastros = () => {
   const [plans, setPlans] = useState<Plan[]>(initialPlans);
   const [exams, setExams] = useState<Exam[]>(initialExams);
