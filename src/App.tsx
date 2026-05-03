@@ -24,6 +24,7 @@ import Atendimentos from "./pages/Atendimentos.tsx";
 import Assinatura from "./pages/Assinatura.tsx";
 import Usuarios from "./pages/Usuarios.tsx";
 import Caixa from "./pages/Caixa.tsx";
+import FichaAtendimentoPage from "./pages/FichaAtendimentoPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -49,7 +50,8 @@ const App = () => (
                       <Route path="agenda" element={<Agenda />} />
                       <Route path="pacientes" element={<Pacientes />} />
                       <Route path="ficha-paciente" element={<BuscaFichaPaciente />} />
-                      <Route path="ficha-paciente/:id" element={<FichaPaciente />} />
+                      <Route path="paciente/:id" element={<FichaPaciente />} />
+                      <Route path="atendimento/:patientId/:appointmentId" element={<FichaAtendimentoPage />} />
                       <Route path="profissionais" element={<Profissionais />} />
                       <Route path="cadastros" element={<Cadastros />} />
                       <Route path="configuracoes" element={<Configuracoes />} />

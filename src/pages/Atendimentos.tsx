@@ -22,6 +22,7 @@ import {
   UserX,
   ChevronRight,
   DollarSign,
+  FileText,
 } from "lucide-react";
 import { Appointment, AppointmentStatus } from "@/components/AppointmentModal";
 import { EncerrarAtendimentoModal } from "@/components/EncerrarAtendimentoModal";
@@ -277,23 +278,28 @@ const Atendimentos = () => {
 
                       handleStatusChange(apt.id, "in_progress");
 
+                      if (!apt.patientId) {
+                        alert("Erro: paciente não vinculado ao agendamento.");
+                        return;
+                      }
+
                       startAppointment({
                         id: apt.id,
-                        patientId: apt.patientId || "1",
+                        patientId: apt.patientId,
                         professionalId: apt.professionalId,
                         patientName: apt.patientName,
                         startedAt: new Date().toISOString()
                       });
 
                       addTimelineItem({
-                        patientId: apt.patientId || "1",
+                        patientId: apt.patientId,
                         appointmentId: apt.id,
                         type: "status",
                         content: "Atendimento iniciado.",
                         createdBy: user?.name || "Sistema",
                       });
 
-                      navigate(`/dashboard/ficha-paciente/${apt.patientId || "1"}?mode=atendimento&appointmentId=${apt.id}`);
+                      navigate(`/dashboard/atendimento/${apt.patientId}/${apt.id}`);
                     }}
                   >
                     Iniciar
@@ -355,6 +361,17 @@ const Atendimentos = () => {
               <span className="text-xs text-amber-600 font-medium flex items-center gap-1 whitespace-nowrap">
                 <DollarSign className="w-3 h-3" /> Parcial
               </span>
+            )}
+
+            {apt.patientId && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => navigate(`/dashboard/paciente/${apt.patientId}`)}
+              >
+                <FileText className="w-3.5 h-3.5 mr-1" />
+                Ver ficha
+              </Button>
             )}
           </div>
         </div>
