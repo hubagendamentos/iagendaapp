@@ -8,7 +8,7 @@ export type ActiveAppointment = {
   professionalId: string;
   clinicId?: string;
   startedAt: string;
-  patientName: string; // Adicionado para exibição no banner
+  patientName: string;
 };
 
 interface AppointmentsContextType {
@@ -24,28 +24,46 @@ interface AppointmentsContextType {
   clearActiveAppointment: () => void;
 }
 
+// Criar o contexto
 const AppointmentsContext = createContext<AppointmentsContextType | null>(null);
 
-export const useAppointments = () => {
+// Hook useAppointments
+export function useAppointments() {
   const ctx = useContext(AppointmentsContext);
   if (!ctx) throw new Error("useAppointments must be used within AppointmentsProvider");
   return ctx;
-};
+}
 
 const todayStr = format(new Date(), "yyyy-MM-dd");
 
 const initialAppointments: Appointment[] = [
-  { id: "1", patientId: "3", patientName: "Ana Oliveira", time: "09:00", duration: 30, professionalId: "p1", status: "confirmed", type: "Consulta", serviceId: "1", serviceName: "Consulta Clínica", price: 150.00, date: todayStr },
-  { id: "2", patientId: "1", patientName: "Carlos Mendes", time: "10:00", duration: 30, professionalId: "p1", status: "scheduled", type: "Consulta", serviceId: "1", serviceName: "Consulta Clínica", price: 150.00, date: todayStr },
-  { id: "3", patientId: "2", patientName: "Juliana Costa", time: "09:30", duration: 30, professionalId: "p2", status: "cancelled", type: "Consulta", serviceId: "1", serviceName: "Consulta Clínica", price: 150.00, date: todayStr },
-  { id: "4", patientId: "1", patientName: "Roberto Alves", time: "11:00", duration: 30, professionalId: "p2", status: "confirmed", type: "Exame", serviceId: "3", serviceName: "Ultrassom Abdominal", price: 200.00, date: todayStr },
-  { id: "5", patientId: "2", patientName: "Fernanda Lima", time: "14:00", duration: 30, professionalId: "p3", status: "missed", type: "Consulta", serviceId: "1", serviceName: "Consulta Clínica", price: 150.00, date: todayStr },
-  { id: "6", patientId: "3", patientName: "Lucas Barbosa", time: "08:00", duration: 30, professionalId: "p1", status: "confirmed", type: "Procedimento", serviceId: "2", serviceName: "Sessão de Fisioterapia", price: 120.00, date: todayStr },
-  { id: "7", patientId: "1", patientName: "Patrícia Souza", time: "15:30", duration: 30, professionalId: "p3", status: "scheduled", type: "Procedimento", serviceId: "2", serviceName: "Sessão de Fisioterapia", price: 120.00, date: todayStr },
-  { id: "8", patientId: "2", patientName: "Marcos Vieira", time: "13:00", duration: 30, professionalId: "p2", status: "confirmed", type: "Consulta", serviceId: "1", serviceName: "Consulta Clínica", price: 150.00, date: todayStr },
+  // Paciente 1: Carlos Mendes
+  { id: "1", patientId: "1", patientName: "Carlos Mendes", time: "09:00", duration: 30, professionalId: "p1", status: "confirmed", type: "Consulta", serviceId: "1", serviceName: "Consulta Clínica", price: 150.00, date: todayStr },
+
+  // Paciente 2: Ana Oliveira
+  { id: "2", patientId: "2", patientName: "Ana Oliveira", time: "10:00", duration: 30, professionalId: "p1", status: "scheduled", type: "Consulta", serviceId: "1", serviceName: "Consulta Clínica", price: 150.00, date: todayStr },
+
+  // Paciente 3: Juliana Costa
+  { id: "3", patientId: "3", patientName: "Juliana Costa", time: "09:30", duration: 30, professionalId: "p2", status: "cancelled", type: "Consulta", serviceId: "1", serviceName: "Consulta Clínica", price: 150.00, date: todayStr },
+
+  // Paciente 4: Roberto Alves
+  { id: "4", patientId: "4", patientName: "Roberto Alves", time: "11:00", duration: 30, professionalId: "p2", status: "confirmed", type: "Exame", serviceId: "3", serviceName: "Ultrassom Abdominal", price: 200.00, date: todayStr },
+
+  // Paciente 5: Fernanda Lima
+  { id: "5", patientId: "5", patientName: "Fernanda Lima", time: "14:00", duration: 30, professionalId: "p3", status: "missed", type: "Consulta", serviceId: "1", serviceName: "Consulta Clínica", price: 150.00, date: todayStr },
+
+  // Paciente 6: Lucas Barbosa
+  { id: "6", patientId: "6", patientName: "Lucas Barbosa", time: "08:00", duration: 30, professionalId: "p1", status: "confirmed", type: "Procedimento", serviceId: "2", serviceName: "Sessão de Fisioterapia", price: 120.00, date: todayStr },
+
+  // Paciente 7: Patrícia Souza
+  { id: "7", patientId: "7", patientName: "Patrícia Souza", time: "15:30", duration: 30, professionalId: "p3", status: "scheduled", type: "Procedimento", serviceId: "2", serviceName: "Sessão de Fisioterapia", price: 120.00, date: todayStr },
+
+  // Paciente 8: Marcos Vieira
+  { id: "8", patientId: "8", patientName: "Marcos Vieira", time: "13:00", duration: 30, professionalId: "p2", status: "confirmed", type: "Consulta", serviceId: "1", serviceName: "Consulta Clínica", price: 150.00, date: todayStr },
 ];
 
-export const AppointmentsProvider = ({ children }: { children: ReactNode }) => {
+// Provider component
+export function AppointmentsProvider({ children }: { children: ReactNode }) {
   const [appointments, setAppointments] = useState<Appointment[]>(initialAppointments);
   const [activeAppointment, setActiveAppointment] = useState<ActiveAppointment | null>(() => {
     const stored = localStorage.getItem("activeAppointment");
@@ -88,22 +106,22 @@ export const AppointmentsProvider = ({ children }: { children: ReactNode }) => {
     return appointments.filter((a) => a.date === dateStr && a.professionalId === professionalId);
   }, [appointments]);
 
+  const value = {
+    appointments,
+    addAppointment,
+    updateAppointment,
+    deleteAppointment,
+    updateAppointmentStatus,
+    getAppointmentsByDate,
+    getAppointmentsByProfessional,
+    activeAppointment,
+    startAppointment,
+    clearActiveAppointment,
+  };
+
   return (
-    <AppointmentsContext.Provider
-      value={{
-        appointments,
-        addAppointment,
-        updateAppointment,
-        deleteAppointment,
-        updateAppointmentStatus,
-        getAppointmentsByDate,
-        getAppointmentsByProfessional,
-        activeAppointment,
-        startAppointment,
-        clearActiveAppointment,
-      }}
-    >
+    <AppointmentsContext.Provider value={value}>
       {children}
     </AppointmentsContext.Provider>
   );
-};
+}

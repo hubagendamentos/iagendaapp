@@ -33,6 +33,7 @@ export type UserPermissions = {
   podeCancelar: boolean;
   podeMarcarFalta: boolean;
   podeEditarFicha: boolean;
+  podeVerProntuario: boolean;
 
   // 💰 FINANCEIRO
   encerrarAtendimentoFinanceiro: boolean;

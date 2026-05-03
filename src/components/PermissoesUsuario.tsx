@@ -258,6 +258,14 @@ export function PermissoesUsuario({
             onToggle={(v) => handleToggle("encerrarAtendimentoFinanceiro", v)}
             disabled={disabled}
           />
+          <PermissionItem
+            id="podeVerProntuario"
+            label="Ver Prontuário"
+            description="Permite abrir o prontuário do paciente"
+            checked={!!permissions.podeVerProntuario}
+            onToggle={(v) => handleToggle("podeVerProntuario", v)}
+            disabled={disabled}
+          />
         </div>
       </div>
     </div>

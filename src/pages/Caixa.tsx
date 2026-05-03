@@ -5,7 +5,7 @@ import { usePlanoContas } from "@/contexts/PlanoContasContext";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Calendar as CalendarIcon, Wallet } from "lucide-react";
+import { Calendar as CalendarIcon, Wallet, CreditCard, User, BookOpen } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 
 const formaLabels: Record<FormaPagamento, string> = {
@@ -32,7 +32,9 @@ export default function Caixa() {
   const [profFilter, setProfFilter] = useState<string>("all");
   const [planoFilter, setPlanoFilter] = useState<string>("all");
 
-  const planosUnicosIds = useMemo(() => [...new Set(lancamentos.map((l) => l.planoContas))], [lancamentos]);
+  const todosPlanos = useMemo(() => {
+    return planos.filter((p) => p.ativo);
+  }, [planos]);
 
   const filtered = useMemo(() => {
     return lancamentos.filter((l) => {
@@ -59,18 +61,36 @@ export default function Caixa() {
       />
 
       {/* Filtros */}
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap gap-3 items-end">
         <div className="flex items-center gap-2">
-          <span className="text-muted-foreground">De</span>
-          <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="w-[150px]" />
-          <span className="text-muted-foreground">Até</span>
-          <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="w-[150px]" />
+          <div className="relative">
+            <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+              className="w-[160px] pl-9"
+            />
+          </div>
+          <span className="text-muted-foreground text-sm">até</span>
+          <div className="relative">
+            <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              type="date"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+              className="w-[160px] pl-9"
+            />
+          </div>
         </div>
 
         <Select value={formaFilter} onValueChange={setFormaFilter}>
-          <SelectTrigger className="w-[160px]"><SelectValue placeholder="Pagamento" /></SelectTrigger>
+          <SelectTrigger className="w-[180px]">
+            <CreditCard className="w-4 h-4 mr-2 text-muted-foreground" />
+            <SelectValue placeholder="Forma de pagamento" />
+          </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Todas Formas</SelectItem>
+            <SelectItem value="all">Todas as Formas</SelectItem>
             {Object.entries(formaLabels).map(([k, v]) => (
               <SelectItem key={k} value={k}>{v}</SelectItem>
             ))}
@@ -78,9 +98,12 @@ export default function Caixa() {
         </Select>
 
         <Select value={profFilter} onValueChange={setProfFilter}>
-          <SelectTrigger className="w-[200px]"><SelectValue placeholder="Profissional" /></SelectTrigger>
+          <SelectTrigger className="w-[220px]">
+            <User className="w-4 h-4 mr-2 text-muted-foreground" />
+            <SelectValue placeholder="Profissional" />
+          </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Todos Profissionais</SelectItem>
+            <SelectItem value="all">Todos os Profissionais</SelectItem>
             {professionals.map((p) => (
               <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
             ))}
@@ -88,11 +111,14 @@ export default function Caixa() {
         </Select>
 
         <Select value={planoFilter} onValueChange={setPlanoFilter}>
-          <SelectTrigger className="w-[160px]"><SelectValue placeholder="Plano de contas" /></SelectTrigger>
+          <SelectTrigger className="w-[240px]">
+            <BookOpen className="w-4 h-4 mr-2 text-muted-foreground" />
+            <SelectValue placeholder="Plano de contas" />
+          </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Todos Planos</SelectItem>
-            {planosUnicosIds.map((p) => (
-              <SelectItem key={p} value={p}>{getPlanoNome(p)}</SelectItem>
+            <SelectItem value="all">Todos os Planos</SelectItem>
+            {todosPlanos.map((p) => (
+              <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -152,4 +178,4 @@ export default function Caixa() {
       </div>
     </div>
   );
-}
+};

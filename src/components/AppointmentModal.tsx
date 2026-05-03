@@ -107,9 +107,18 @@ interface AppointmentModalProps {
 }
 
 const mockPatients = [
-  "Ana Oliveira", "Carlos Mendes", "Juliana Costa", "Roberto Alves",
-  "Fernanda Lima", "Lucas Barbosa", "Patrícia Souza", "Marcos Vieira",
-  "Beatriz Rocha", "Rafael Martins", "Camila Ferreira", "Diego Nascimento",
+  { id: "1", name: "Carlos Mendes" },
+  { id: "2", name: "Ana Oliveira" },
+  { id: "3", name: "Juliana Costa" },
+  { id: "4", name: "Roberto Alves" },
+  { id: "5", name: "Fernanda Lima" },
+  { id: "6", name: "Lucas Barbosa" },
+  { id: "7", name: "Patrícia Souza" },
+  { id: "8", name: "Marcos Vieira" },
+  { id: "9", name: "Beatriz Rocha" },
+  { id: "10", name: "Rafael Martins" },
+  { id: "11", name: "Camila Ferreira" },
+  { id: "12", name: "Diego Nascimento" },
 ];
 
 const fallbackTypes = [
@@ -159,6 +168,7 @@ const AppointmentModal = ({
   const { hasPermission } = useUser();
   const isEditing = !!appointment;
 
+  const [patientId, setPatientId] = useState("");
   const [patientName, setPatientName] = useState("");
   const [professionalId, setProfessionalId] = useState("");
   const [date, setDate] = useState<Date>(new Date());
@@ -188,7 +198,7 @@ const AppointmentModal = ({
   const activeServices = services.filter((s) => s.active);
 
   const filteredPatients = patientSearch.length > 0
-    ? mockPatients.filter((p) => p.toLowerCase().includes(patientSearch.toLowerCase()))
+    ? mockPatients.filter((p) => p.name.toLowerCase().includes(patientSearch.toLowerCase()))
     : [];
 
   // Logic 1: Filter services by selected type
@@ -204,6 +214,7 @@ const AppointmentModal = ({
   useEffect(() => {
     if (open) {
       if (appointment) {
+        setPatientId(appointment.patientId || "");
         setPatientName(appointment.patientName);
         setPatientSearch(appointment.patientName);
         setProfessionalId(appointment.professionalId);
@@ -219,6 +230,7 @@ const AppointmentModal = ({
         setPlanId(appointment.planId || null);
         if (defaultDate) setDate(defaultDate);
       } else {
+        setPatientId("");
         setPatientName("");
         setPatientSearch("");
         setProfessionalId(defaultProfessionalId || "");
@@ -242,6 +254,7 @@ const AppointmentModal = ({
     const selectedPlan = plans.find((p) => p.id === planId);
     onSave({
       ...(appointment ? { id: appointment.id } : {}),
+      patientId: patientId || undefined, // Include patientId
       patientName,
       time,
       duration: Number(duration),
@@ -259,9 +272,10 @@ const AppointmentModal = ({
     onClose();
   };
 
-  const handleSelectPatient = (name: string) => {
-    setPatientName(name);
-    setPatientSearch(name);
+  const handleSelectPatient = (patient: { id: string; name: string }) => {
+    setPatientId(patient.id);
+    setPatientName(patient.name);
+    setPatientSearch(patient.name);
     setShowSuggestions(false);
   };
 
@@ -270,7 +284,7 @@ const AppointmentModal = ({
     setServiceSearch(service.name);
     setPrice(service.price);
     setShowServiceSuggestions(false);
-    
+
     // Auto-fill and lock type
     const matchedType = appointmentTypes.find((t) => t.id === service.appointmentTypeId);
     if (matchedType) setType(matchedType.name);
@@ -282,7 +296,6 @@ const AppointmentModal = ({
     return `${String(h).padStart(2, "0")}:${m}`;
   });
 
-  const isExam = type === "Exame";
   const isPlan = paymentType === "plan";
 
   return (
@@ -305,6 +318,7 @@ const AppointmentModal = ({
                   onChange={(e) => {
                     setPatientSearch(e.target.value);
                     setPatientName(e.target.value);
+                    setPatientId(""); // Clear ID when typing manually
                     setShowSuggestions(true);
                   }}
                   onFocus={() => setShowSuggestions(true)}
@@ -315,12 +329,12 @@ const AppointmentModal = ({
                   <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-popover border rounded-md shadow-md max-h-40 overflow-y-auto">
                     {filteredPatients.map((p) => (
                       <button
-                        key={p}
+                        key={p.id}
                         type="button"
                         className="w-full text-left px-3 py-2 text-sm hover:bg-accent transition-colors"
                         onMouseDown={() => handleSelectPatient(p)}
                       >
-                        {p}
+                        {p.name}
                       </button>
                     ))}
                   </div>

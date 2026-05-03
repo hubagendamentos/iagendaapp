@@ -17,12 +17,11 @@ import {
 import {
   Calendar as CalendarIcon,
   CheckCircle2,
-  PlayCircle,
-  XCircle,
-  UserX,
   ChevronRight,
   DollarSign,
   FileText,
+  Filter,
+  User,
 } from "lucide-react";
 import { Appointment, AppointmentStatus } from "@/components/AppointmentModal";
 import { EncerrarAtendimentoModal } from "@/components/EncerrarAtendimentoModal";
@@ -66,16 +65,19 @@ const statusConfig: Record<
   },
 };
 
+type FilterView = "all" | "in_progress" | "queue" | "completed";
+
 const Atendimentos = () => {
   const { hasPermission, clinic, professionalId: userProfId, user } = useUser();
-  const { getAppointmentsByDate, updateAppointmentStatus, updateAppointment, activeAppointment, startAppointment } = useAppointments();
+  const { getAppointmentsByDate, updateAppointmentStatus, updateAppointment, activeAppointment, startAppointment, appointments, clearActiveAppointment } = useAppointments();
   const { addTimelineItem } = useTimeline();
-  const { addLancamento, addPagamentos, getTotalPagoByAtendimentoId } = useCaixa();
+  const { addLancamento, addPagamentos } = useCaixa();
   const navigate = useNavigate();
   const isClinic = clinic?.type === "clinic";
 
   const [dateStr, setDateStr] = useState(format(new Date(), "yyyy-MM-dd"));
   const [profFilter, setProfFilter] = useState<string>("all");
+  const [viewFilter, setViewFilter] = useState<FilterView>("all");
   const [encerrarApt, setEncerrarApt] = useState<Appointment | null>(null);
 
   const selectedDate = parse(dateStr, "yyyy-MM-dd", new Date());
@@ -122,7 +124,6 @@ const Atendimentos = () => {
 
     const now = new Date().toISOString();
 
-    // Create payment records
     addPagamentos(data.pagamentos.map((p) => ({
       atendimentoId: apt.id,
       valor: p.valor,
@@ -133,7 +134,6 @@ const Atendimentos = () => {
       origem: "atendimento",
     })));
 
-    // Create cash register entries (one per payment)
     data.pagamentos.forEach((p) => {
       addLancamento({
         tipo: "entrada",
@@ -276,30 +276,33 @@ const Atendimentos = () => {
                         return;
                       }
 
-                      handleStatusChange(apt.id, "in_progress");
+                      const appointmentCompleto = appointments.find(a => a.id === apt.id) || apt;
 
-                      if (!apt.patientId) {
+                      if (!appointmentCompleto.patientId) {
+                        console.error("Appointment sem patientId:", appointmentCompleto);
                         alert("Erro: paciente não vinculado ao agendamento.");
                         return;
                       }
 
+                      handleStatusChange(apt.id, "in_progress");
+
                       startAppointment({
-                        id: apt.id,
-                        patientId: apt.patientId,
-                        professionalId: apt.professionalId,
-                        patientName: apt.patientName,
+                        id: appointmentCompleto.id,
+                        patientId: appointmentCompleto.patientId,
+                        professionalId: appointmentCompleto.professionalId,
+                        patientName: appointmentCompleto.patientName,
                         startedAt: new Date().toISOString()
                       });
 
                       addTimelineItem({
-                        patientId: apt.patientId,
-                        appointmentId: apt.id,
+                        patientId: appointmentCompleto.patientId,
+                        appointmentId: appointmentCompleto.id,
                         type: "status",
                         content: "Atendimento iniciado.",
                         createdBy: user?.name || "Sistema",
                       });
 
-                      navigate(`/dashboard/atendimento/${apt.patientId}/${apt.id}`);
+                      navigate(`/dashboard/atendimento/${appointmentCompleto.patientId}/${appointmentCompleto.id}`);
                     }}
                   >
                     Iniciar
@@ -328,14 +331,42 @@ const Atendimentos = () => {
               </>
             )}
 
-            {apt.status === "in_progress" && hasPermission("podeFinalizar") && (
-              <Button
-                size="sm"
-                className="bg-blue-700 hover:bg-blue-800 text-white"
-                onClick={() => handleStatusChange(apt.id, "completed")}
-              >
-                Finalizar
-              </Button>
+            {apt.status === "in_progress" && (
+              <>
+                {hasPermission("podeVerProntuario") && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-blue-700 border-blue-300 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-800 dark:hover:bg-blue-950"
+                    onClick={() => {
+                      if (apt.patientId) {
+                        navigate(`/dashboard/atendimento/${apt.patientId}/${apt.id}`);
+                      }
+                    }}
+                  >
+                    <FileText className="w-3.5 h-3.5 mr-1" />
+                    Prontuário
+                  </Button>
+                )}
+
+                {hasPermission("podeFinalizar") && (
+                  <Button
+                    size="sm"
+                    className="bg-blue-700 hover:bg-blue-800 text-white"
+                    onClick={() => {
+                      handleStatusChange(apt.id, "completed");
+                      clearActiveAppointment();
+                      toast({
+                        title: "Atendimento finalizado",
+                        description: "Disponível para encerramento financeiro."
+                      });
+                    }}
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
+                    Finalizar
+                  </Button>
+                )}
+              </>
             )}
 
             {apt.status === "completed" &&
@@ -361,17 +392,6 @@ const Atendimentos = () => {
               <span className="text-xs text-amber-600 font-medium flex items-center gap-1 whitespace-nowrap">
                 <DollarSign className="w-3 h-3" /> Parcial
               </span>
-            )}
-
-            {apt.patientId && (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => navigate(`/dashboard/paciente/${apt.patientId}`)}
-              >
-                <FileText className="w-3.5 h-3.5 mr-1" />
-                Ver ficha
-              </Button>
             )}
           </div>
         </div>
@@ -407,7 +427,7 @@ const Atendimentos = () => {
         title="Atendimentos"
         subtitle="Acompanhe o fluxo dos atendimentos e gerencie cada etapa do atendimento clínico."
       />
-      <div className="flex gap-3 mb-6">
+      <div className="flex gap-3 mb-6 flex-wrap">
         <div className="relative">
           <Input
             type="date"
@@ -421,10 +441,11 @@ const Atendimentos = () => {
         {isClinic && (
           <Select value={profFilter} onValueChange={setProfFilter}>
             <SelectTrigger className="w-[220px]">
-              <SelectValue placeholder="Profissional" />
+              <User className="w-4 h-4 mr-2 text-muted-foreground" />
+              <SelectValue placeholder="Filtrar por Profissional" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todos</SelectItem>
+              <SelectItem value="all">Todos os Profissionais</SelectItem>
               {professionals.map((p) => (
                 <SelectItem key={p.id} value={p.id}>
                   {p.name}
@@ -433,11 +454,40 @@ const Atendimentos = () => {
             </SelectContent>
           </Select>
         )}
+
+        <Select value={viewFilter} onValueChange={(value) => setViewFilter(value as FilterView)}>
+          <SelectTrigger className="w-[200px]">
+            <Filter className="w-4 h-4 mr-2" />
+            <SelectValue placeholder="Filtrar por status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos os status</SelectItem>
+            <SelectItem value="in_progress">🔵 Em atendimento</SelectItem>
+            <SelectItem value="queue">⚪ Fila de atendimento</SelectItem>
+            <SelectItem value="completed">✅ Finalizados</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
-      <Section title="🔵 Em atendimento" list={inProgress} />
-      <Section title="⚪ Fila de atendimento" list={queue} />
-      <Section title="✅ Finalizados" list={completed} />
+      {viewFilter === "all" && (
+        <>
+          <Section title="🔵 Em atendimento" list={inProgress} />
+          <Section title="⚪ Fila de atendimento" list={queue} />
+          <Section title="✅ Finalizados" list={completed} />
+        </>
+      )}
+
+      {viewFilter === "in_progress" && (
+        <Section title="🔵 Em atendimento" list={inProgress} />
+      )}
+
+      {viewFilter === "queue" && (
+        <Section title="⚪ Fila de atendimento" list={queue} />
+      )}
+
+      {viewFilter === "completed" && (
+        <Section title="✅ Finalizados" list={completed} />
+      )}
 
       {encerrarApt && (
         <EncerrarAtendimentoModal

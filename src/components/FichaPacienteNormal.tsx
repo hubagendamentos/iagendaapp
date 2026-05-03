@@ -54,9 +54,14 @@ const statusConfig: Record<AppointmentStatus, { label: string; dotClass: string;
 };
 
 export const mockPacientes: Paciente[] = [
-  { id: "1", nome: "Maria Silva", celular: "(11) 99999-0001", nascimento: "1985-03-15", observacoes: "", ultimaConsulta: "20/03/2026", cpf: "12345678901", email: "maria@email.com", genero: "Feminino", ativo: true },
-  { id: "2", nome: "João Santos", celular: "(11) 99999-0002", nascimento: "1990-07-22", observacoes: "Alérgico a dipirona", ultimaConsulta: "18/03/2026", cpf: "98765432100", genero: "Masculino", ativo: true },
-  { id: "3", nome: "Ana Oliveira", celular: "(11) 99999-0003", nascimento: "1978-11-10", observacoes: "", ultimaConsulta: "15/03/2026", genero: "Feminino", ativo: false },
+  { id: "1", nome: "Carlos Mendes", celular: "(11) 99999-0001", nascimento: "1985-03-15", observacoes: "", ultimaConsulta: "20/03/2026", cpf: "12345678901", email: "carlos@email.com", genero: "Masculino", ativo: true },
+  { id: "2", nome: "Ana Oliveira", celular: "(11) 99999-0002", nascimento: "1990-07-22", observacoes: "Alérgica a dipirona", ultimaConsulta: "18/03/2026", cpf: "98765432100", genero: "Feminino", ativo: true },
+  { id: "3", nome: "Juliana Costa", celular: "(11) 99999-0003", nascimento: "1978-11-10", observacoes: "", ultimaConsulta: "15/03/2026", genero: "Feminino", ativo: true },
+  { id: "4", nome: "Roberto Alves", celular: "(11) 99999-0004", nascimento: "1982-05-20", observacoes: "", ultimaConsulta: "10/03/2026", cpf: "45678912300", genero: "Masculino", ativo: true },
+  { id: "5", nome: "Fernanda Lima", celular: "(11) 99999-0005", nascimento: "1995-01-15", observacoes: "Hipertensa", ultimaConsulta: "05/03/2026", genero: "Feminino", ativo: true },
+  { id: "6", nome: "Lucas Barbosa", celular: "(11) 99999-0006", nascimento: "1988-09-30", observacoes: "", ultimaConsulta: "01/03/2026", cpf: "78912345600", genero: "Masculino", ativo: true },
+  { id: "7", nome: "Patrícia Souza", celular: "(11) 99999-0007", nascimento: "1992-12-25", observacoes: "Prefere atendimento à tarde", ultimaConsulta: "25/02/2026", genero: "Feminino", ativo: true },
+  { id: "8", nome: "Marcos Vieira", celular: "(11) 99999-0008", nascimento: "1975-04-18", observacoes: "", ultimaConsulta: "20/02/2026", cpf: "32165498700", genero: "Masculino", ativo: true },
 ];
 
 export const mockHistory: HistoryItem[] = [
@@ -172,7 +177,7 @@ export const FichaPacienteNormal = () => {
         {/* Summary Cards */}
         <div className="relative -mx-5 px-5 sm:mx-0 sm:px-0">
           <div className="flex gap-3 sm:gap-4 overflow-x-auto pb-4 snap-x snap-mandatory pt-1 px-1 -mx-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-            
+
             {/* Card: Próximo Atendimento */}
             <div className="shrink-0 w-[240px] sm:w-auto sm:flex-1 p-4 rounded-xl border bg-card flex flex-col justify-between snap-start shadow-sm hover:shadow transition-shadow">
               <div>
@@ -221,7 +226,7 @@ export const FichaPacienteNormal = () => {
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <div className="h-7 w-7 rounded-md bg-rose-100 text-rose-600 flex items-center justify-center dark:bg-rose-900/30 dark:text-rose-400 shrink-0">
-                     <CalendarX2 className="h-4 w-4" />
+                    <CalendarX2 className="h-4 w-4" />
                   </div>
                   <p className="text-[13px] font-bold text-muted-foreground whitespace-nowrap">Faltas</p>
                 </div>
@@ -234,8 +239,8 @@ export const FichaPacienteNormal = () => {
 
             {/* Card: Último Atendimento */}
             <div className="shrink-0 w-[240px] sm:w-auto sm:flex-1 p-4 rounded-xl border bg-card flex flex-col justify-between snap-start shadow-sm hover:shadow transition-shadow">
-               <div>
-                 <div className="flex items-center gap-2 mb-2">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
                   <div className="h-7 w-7 rounded-md bg-indigo-100 text-indigo-600 flex items-center justify-center dark:bg-indigo-900/30 dark:text-indigo-400 shrink-0">
                     <Clock className="h-4 w-4" />
                   </div>
