@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams, useSearchParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import {
   ArrowLeft, CheckCircle2, User, Phone,
@@ -42,10 +42,8 @@ function calcIdade(nascimento?: string): number | null {
 }
 
 export const FichaAtendimento = () => {
-  const { id } = useParams<{ id: string }>();
-  const [searchParams] = useSearchParams();
+  const { patientId, appointmentId } = useParams<{ patientId: string; appointmentId: string }>();
   const navigate = useNavigate();
-  const appointmentId = searchParams.get("appointmentId");
 
   const { user, hasPermission } = useUser();
   const { getTimelineByPatient, addTimelineItem } = useTimeline();
@@ -53,13 +51,24 @@ export const FichaAtendimento = () => {
 
   const [noteContent, setNoteContent] = useState("");
 
-  const paciente = mockPacientes.find(p => p.id === id);
+  if (!patientId || !appointmentId) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 space-y-4">
+        <p className="text-muted-foreground">Dados do atendimento inválidos.</p>
+        <Button variant="outline" onClick={() => navigate("/dashboard/atendimentos")}>
+          <ArrowLeft className="h-4 w-4 mr-2" /> Voltar
+        </Button>
+      </div>
+    );
+  }
+
+  const paciente = mockPacientes.find(p => p.id === patientId);
 
   if (!paciente) {
     return (
       <div className="flex flex-col items-center justify-center py-20 space-y-4">
         <p className="text-muted-foreground">Paciente não encontrado.</p>
-        <Button variant="outline" onClick={() => navigate("/dashboard/ficha-paciente")}>
+        <Button variant="outline" onClick={() => navigate("/dashboard/atendimentos")}>
           <ArrowLeft className="h-4 w-4 mr-2" /> Voltar
         </Button>
       </div>
@@ -94,6 +103,10 @@ export const FichaAtendimento = () => {
     }
 
     navigate(`/dashboard/atendimentos`);
+  };
+
+  const handleVerFicha = () => {
+    navigate(`/dashboard/paciente/${patientId}`);
   };
 
   const handleAddNote = () => {
@@ -146,6 +159,9 @@ export const FichaAtendimento = () => {
               <CheckCircle2 className="h-4 w-4 mr-2" /> Finalizar Atendimento
             </Button>
           )}
+          <Button variant="outline" onClick={handleVerFicha}>
+            <FileText className="h-4 w-4 mr-2" /> Ver Ficha
+          </Button>
         </div>
 
         {/* DADOS */}

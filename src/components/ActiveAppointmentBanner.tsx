@@ -27,7 +27,7 @@ export const ActiveAppointmentBanner = () => {
 
       <button
         onClick={() =>
-          navigate(`/dashboard/ficha-paciente/${activeAppointment.patientId}?mode=atendimento&appointmentId=${activeAppointment.id}`)
+          navigate(`/dashboard/atendimento/${activeAppointment.patientId}/${activeAppointment.id}`)
         }
         className="text-xs font-semibold underline hover:text-blue-200 transition"
       >
