@@ -54,7 +54,7 @@ export default function Caixa() {
   const currency = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-6">
       <PageHeader
         title="Caixa"
         subtitle="Gestão do caixa com movimentações financeiras."

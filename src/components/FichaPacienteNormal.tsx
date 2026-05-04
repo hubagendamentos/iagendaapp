@@ -135,7 +135,7 @@ export const FichaPacienteNormal = () => {
   const missedAppts = patientHistory.filter(h => h.status === "missed").length;
 
   return (
-    <div className="space-y-6 pb-6">
+    <div className="p-4 sm:p-6 space-y-6">
       {/* Header and Summary */}
       <div className="space-y-6">
         {/* Main Info */}

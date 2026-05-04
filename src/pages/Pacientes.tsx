@@ -84,7 +84,7 @@ const Pacientes = () => {
   ];
 
   return (
-    <div className="space-y-4">
+    <div className="p-4 sm:p-6 space-y-4">
       <PageHeader
         title="Pacientes"
         subtitle="Cadastre e gerencie as informações dos pacientes."

@@ -124,7 +124,7 @@ export const FichaAtendimento = () => {
   };
 
   return (
-    <div className="min-h-[calc(100vh-8rem)] flex flex-col px-4 sm:px-0">
+    <div className="min-h-[calc(100vh-8rem)] flex flex-col p-4 sm:p-6">
 
       {/* HEADER */}
       <div className="flex flex-col gap-3 p-4 mb-6 rounded-xl border bg-card shadow-sm sticky top-0 z-20">

@@ -72,7 +72,7 @@ const Configuracoes = () => {
   const handleSave = () => toast.success("Configurações salvas com sucesso!");
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="p-4 sm:p-6 space-y-6 max-w-4xl mx-auto w-full">
       <div>
         <h2 className="text-xl sm:text-2xl font-semibold text-foreground">Configurações</h2>
         <p className="text-muted-foreground mt-1 text-sm">

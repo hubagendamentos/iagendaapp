@@ -163,7 +163,7 @@ const Agenda = () => {
   const mobileProfessional = visibleProfessionals[mobileProfIdx] || visibleProfessionals[0];
 
   return (
-    <div className="flex flex-col h-full -m-4 sm:-m-6">
+    <div className="flex flex-col flex-1 p-4 sm:p-6">
       {/* Top bar */}
       <div className="flex flex-wrap items-center justify-between gap-2 px-4 sm:px-6 py-3 border-b bg-card">
         <div className="flex items-center gap-2">

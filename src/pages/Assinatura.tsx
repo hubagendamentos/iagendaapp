@@ -20,7 +20,7 @@ const Assinatura = () => {
   };
 
   return (
-    <div className="flex-1 space-y-6 max-w-5xl mx-auto w-full pb-8">
+    <div className="flex-1 p-4 sm:p-6 space-y-6 max-w-5xl mx-auto w-full pb-8">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Assinatura e Planos</h1>
         <p className="text-muted-foreground mt-1">Gerencie seu plano atual e acompanhe o uso da sua conta.</p>

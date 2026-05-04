@@ -321,23 +321,23 @@ const ServiceModal = ({ open, onClose, onSave, service, appointmentTypes, specia
 
   useEffect(() => {
     if (open) {
-      if (service) { 
-        setName(service.name); 
+      if (service) {
+        setName(service.name);
         setAppointmentTypeId(service.appointmentTypeId);
         setSpecialtyId(service.specialtyId);
         setExamId(service.examId || null);
         setPrice(service.price);
         setPriceStr(formatCurrency(service.price));
-        setActive(service.active); 
+        setActive(service.active);
       }
-      else { 
-        setName(""); 
+      else {
+        setName("");
         setAppointmentTypeId("");
         setSpecialtyId(null);
         setExamId(null);
         setPrice(0);
         setPriceStr("R$ 0,00");
-        setActive(true); 
+        setActive(true);
       }
     }
   }, [open, service]);
@@ -357,44 +357,44 @@ const ServiceModal = ({ open, onClose, onSave, service, appointmentTypes, specia
             <Label>Nome do serviço</Label>
             <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex: Consulta Médica" />
           </div>
-          
+
           <div className="space-y-2">
-             <Label>Tipo de atendimento</Label>
-             <Select value={appointmentTypeId || "__none__"} onValueChange={(v) => setAppointmentTypeId(v === "__none__" ? "" : v)}>
-               <SelectTrigger className="w-full"><SelectValue placeholder="Selecione um tipo" /></SelectTrigger>
-               <SelectContent>
-                 <SelectItem value="__none__" disabled>Selecione um tipo</SelectItem>
-                 {appointmentTypes.filter((t) => t.active).map((t) => (
-                   <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
-                 ))}
-               </SelectContent>
-             </Select>
+            <Label>Tipo de atendimento</Label>
+            <Select value={appointmentTypeId || "__none__"} onValueChange={(v) => setAppointmentTypeId(v === "__none__" ? "" : v)}>
+              <SelectTrigger className="w-full"><SelectValue placeholder="Selecione um tipo" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__" disabled>Selecione um tipo</SelectItem>
+                {appointmentTypes.filter((t) => t.active).map((t) => (
+                  <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">
-             <Label>Especialidade (Opcional)</Label>
-             <Select value={specialtyId || "__none__"} onValueChange={(v) => setSpecialtyId(v === "__none__" ? null : v)}>
-               <SelectTrigger className="w-full"><SelectValue placeholder="Nenhuma" /></SelectTrigger>
-               <SelectContent>
-                 <SelectItem value="__none__">Nenhuma</SelectItem>
-                 {specialties.filter((s) => s.active).map((s) => (
-                   <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-                 ))}
-               </SelectContent>
-             </Select>
+            <Label>Especialidade (Opcional)</Label>
+            <Select value={specialtyId || "__none__"} onValueChange={(v) => setSpecialtyId(v === "__none__" ? null : v)}>
+              <SelectTrigger className="w-full"><SelectValue placeholder="Nenhuma" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__">Nenhuma</SelectItem>
+                {specialties.filter((s) => s.active).map((s) => (
+                  <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">
-             <Label>Exame Vinculado (Opcional)</Label>
-             <Select value={examId || "__none__"} onValueChange={(v) => setExamId(v === "__none__" ? null : v)}>
-               <SelectTrigger className="w-full"><SelectValue placeholder="Nenhum exame" /></SelectTrigger>
-               <SelectContent>
-                 <SelectItem value="__none__">Nenhum exame</SelectItem>
-                 {exams.filter((e) => e.active).map((e) => (
-                   <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>
-                 ))}
-               </SelectContent>
-             </Select>
+            <Label>Exame Vinculado (Opcional)</Label>
+            <Select value={examId || "__none__"} onValueChange={(v) => setExamId(v === "__none__" ? null : v)}>
+              <SelectTrigger className="w-full"><SelectValue placeholder="Nenhum exame" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__">Nenhum exame</SelectItem>
+                {exams.filter((e) => e.active).map((e) => (
+                  <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">
@@ -618,7 +618,7 @@ const Cadastros = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
+    <div className="p-4 sm:p-6 space-y-6">
       <div>
         <h2 className="text-xl sm:text-2xl font-semibold text-foreground">Cadastros</h2>
         <p className="text-muted-foreground mt-1 text-sm">Gerencie planos, exames, preparos, tipos de atendimento e especialidades</p>
@@ -919,10 +919,10 @@ const Cadastros = () => {
                       <TableRow key={s.id}>
                         <TableCell className="font-medium">{s.name}</TableCell>
                         <TableCell className="hidden sm:table-cell text-sm">
-                           <div className="flex flex-col gap-0.5">
-                             <span className="text-foreground">{getAppointmentTypeName(s.appointmentTypeId)}</span>
-                             <span className="text-muted-foreground text-xs">{getSpecialtyName(s.specialtyId)}</span>
-                           </div>
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-foreground">{getAppointmentTypeName(s.appointmentTypeId)}</span>
+                            <span className="text-muted-foreground text-xs">{getSpecialtyName(s.specialtyId)}</span>
+                          </div>
                         </TableCell>
                         <TableCell className="text-right whitespace-nowrap">{formatCurrency(s.price)}</TableCell>
                         <TableCell className="text-center">

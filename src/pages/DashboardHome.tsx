@@ -43,7 +43,7 @@ const DashboardHome = () => {
     : upcomingAppointments;
 
   return (
-    <div className="space-y-6">
+    <div className="p-4 sm:p-6 space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h2 className="text-xl sm:text-2xl font-semibold text-foreground">Bem-vindo de volta!</h2>
