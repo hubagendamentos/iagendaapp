@@ -271,11 +271,6 @@ const Atendimentos = () => {
                     size="sm"
                     className="bg-blue-600 hover:bg-blue-700 text-white"
                     onClick={() => {
-                      if (activeAppointment && activeAppointment.id !== apt.id) {
-                        alert("Finalize o atendimento atual antes de iniciar outro.");
-                        return;
-                      }
-
                       const appointmentCompleto = appointments.find(a => a.id === apt.id) || apt;
 
                       if (!appointmentCompleto.patientId) {
@@ -283,24 +278,6 @@ const Atendimentos = () => {
                         alert("Erro: paciente não vinculado ao agendamento.");
                         return;
                       }
-
-                      handleStatusChange(apt.id, "in_progress");
-
-                      startAppointment({
-                        id: appointmentCompleto.id,
-                        patientId: appointmentCompleto.patientId,
-                        professionalId: appointmentCompleto.professionalId,
-                        patientName: appointmentCompleto.patientName,
-                        startedAt: new Date().toISOString()
-                      });
-
-                      addTimelineItem({
-                        patientId: appointmentCompleto.patientId,
-                        appointmentId: appointmentCompleto.id,
-                        type: "status",
-                        content: "Atendimento iniciado.",
-                        createdBy: user?.name || "Sistema",
-                      });
 
                       navigate(`/dashboard/atendimento/${appointmentCompleto.patientId}/${appointmentCompleto.id}`);
                     }}
