@@ -168,7 +168,6 @@ const FichaAtendimentoPage = () => {
 
         <TimelineCompacta items={timelineItems} currentAppointmentId={appointmentId} />
         <PainelEvolucao onSave={handleSaveEvolucao} />
-        </div>
       </div>
     </div>
   );
