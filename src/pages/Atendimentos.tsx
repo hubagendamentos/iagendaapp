@@ -68,7 +68,7 @@ type FilterView = "all" | "in_progress" | "queue" | "completed";
 
 const Atendimentos = () => {
   const { hasPermission, clinic, professionalId: userProfId, user } = useUser();
-  const { getAppointmentsByDate, updateAppointmentStatus, updateAppointment, appointments, clearActiveAppointment } = useAppointments();
+  const { getAppointmentsByDate, updateAppointmentStatus, updateAppointment, appointments, clearActiveAppointment, activeAppointment } = useAppointments();
   const { addLancamento, addPagamentos } = useCaixa();
   const navigate = useNavigate();
   const isClinic = clinic?.type === "clinic";
@@ -272,8 +272,25 @@ const Atendimentos = () => {
                       const appointmentCompleto = appointments.find(a => a.id === apt.id) || apt;
 
                       if (!appointmentCompleto.patientId) {
-                        console.error("Appointment sem patientId:", appointmentCompleto);
-                        alert("Erro: paciente não vinculado ao agendamento.");
+                        toast({
+                          variant: "destructive",
+                          title: "Erro",
+                          description: "Paciente não vinculado ao agendamento."
+                        });
+                        return;
+                      }
+
+                      // Verificar se o profissional já tem atendimento em andamento
+                      const profTemAberto = appointments.some(
+                        (a) => a.status === "in_progress" && a.professionalId === apt.professionalId && a.id !== apt.id
+                      );
+
+                      if (profTemAberto) {
+                        toast({
+                          variant: "destructive",
+                          title: "Atenção",
+                          description: "Este profissional já possui um atendimento em andamento."
+                        });
                         return;
                       }
 

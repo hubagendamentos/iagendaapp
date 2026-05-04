@@ -5,6 +5,7 @@ import { Search, X, FileText, Pill, Paperclip, PlayCircle, ChevronDown, ChevronU
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import type { TimelineItem } from "@/contexts/TimelineContext";
 
 const typeConfig: Record<string, { icon: React.ReactNode; label: string; color: string }> = {
@@ -19,9 +20,12 @@ type Periodo = "hoje" | "7dias" | "mes" | "tudo";
 interface Props {
   items: TimelineItem[];
   currentAppointmentId?: string;
+  selectionMode?: boolean;
+  selectedIds?: string[];
+  onToggleSelect?: (id: string) => void;
 }
 
-export function TimelineCompacta({ items, currentAppointmentId }: Props) {
+export function TimelineCompacta({ items, currentAppointmentId, selectionMode, selectedIds = [], onToggleSelect }: Props) {
   const [busca, setBusca] = useState("");
   const [periodo, setPeriodo] = useState<Periodo>("tudo");
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -74,7 +78,7 @@ export function TimelineCompacta({ items, currentAppointmentId }: Props) {
   ];
 
   return (
-    <div className="flex flex-col rounded-xl border bg-card">
+    <div className="flex flex-col h-auto md:h-full rounded-xl border bg-card">
       {/* Filters */}
       <div className="p-3 border-b space-y-2">
         <div className="relative">
@@ -107,7 +111,7 @@ export function TimelineCompacta({ items, currentAppointmentId }: Props) {
       </div>
 
       {/* Items */}
-      <div className="flex-1 overflow-y-auto max-h-[400px] divide-y">
+      <div className="flex-1 md:overflow-y-auto overflow-x-hidden divide-y">
         {grouped.length === 0 && (
           <p className="text-xs text-muted-foreground text-center py-6">Nenhum registro encontrado.</p>
         )}
@@ -128,20 +132,29 @@ export function TimelineCompacta({ items, currentAppointmentId }: Props) {
               return (
                 <div
                   key={item.id}
-                  className={`flex items-start gap-2 px-3 py-2 hover:bg-muted/50 cursor-pointer transition-colors ${isCurrent ? "bg-blue-50/50 dark:bg-blue-900/10" : ""}`}
-                  onClick={() => contentLong && setExpandedId(isExpanded ? null : item.id)}
+                  className={`flex items-start gap-2 px-3 py-2 hover:bg-muted/50 transition-colors ${isCurrent ? "bg-blue-50/50 dark:bg-blue-900/10" : ""} ${selectionMode && selectedIds.includes(item.id) ? "bg-primary/5 border-l-2 border-l-primary" : ""}`}
                 >
-                  <span className="font-mono text-[11px] text-muted-foreground w-[36px] shrink-0 pt-0.5">{time}</span>
-                  <span className={`shrink-0 pt-0.5 ${cfg.color}`}>{cfg.icon}</span>
-                  <div className="flex-1 min-w-0">
+                  {selectionMode && (
+                    <div className="pt-0.5 shrink-0 mr-1">
+                      <Checkbox 
+                        checked={selectedIds.includes(item.id)} 
+                        onCheckedChange={() => onToggleSelect && onToggleSelect(item.id)} 
+                      />
+                    </div>
+                  )}
+                  <span className="font-mono text-[11px] text-muted-foreground w-[36px] shrink-0 pt-0.5 cursor-pointer" onClick={() => contentLong && setExpandedId(isExpanded ? null : item.id)}>{time}</span>
+                  <span className={`shrink-0 pt-0.5 ${cfg.color} cursor-pointer`} onClick={() => contentLong && setExpandedId(isExpanded ? null : item.id)}>{cfg.icon}</span>
+                  <div className="flex-1 min-w-0 cursor-pointer" onClick={() => contentLong && setExpandedId(isExpanded ? null : item.id)}>
                     <div className="flex items-center gap-1.5">
                       <span className="text-xs font-medium truncate">{item.createdBy}</span>
                       <Badge variant="outline" className="text-[10px] px-1 py-0 h-4">{cfg.label}</Badge>
                     </div>
                     {item.content && (
-                      <p className={`text-xs text-muted-foreground mt-0.5 ${isExpanded ? "" : "line-clamp-1"}`}>
-                        {item.content}
-                      </p>
+                      <div className="flex min-w-0 w-full mt-0.5">
+                        <p className={`text-xs text-muted-foreground break-words whitespace-normal w-full ${isExpanded ? "" : "line-clamp-1"}`}>
+                          {item.content}
+                        </p>
+                      </div>
                     )}
                   </div>
                   {contentLong && (

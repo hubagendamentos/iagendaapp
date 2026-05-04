@@ -69,16 +69,19 @@ export function PainelEvolucao({ onSave }: Props) {
           value={content}
           onChange={(e) => setContent(e.target.value)}
         />
-        <div className="flex items-center gap-2">
-          <Button onClick={handleSave} disabled={!content.trim()} size="sm">
+        <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 mt-3">
+          <Button className="w-full md:w-auto" onClick={handleSave} disabled={!content.trim()} size="sm">
             <FileText className="h-3.5 w-3.5 mr-1.5" /> Salvar Evolução
           </Button>
-          <Button variant="outline" size="sm" onClick={() => toast.info("Módulo de receitas em breve")}>
-            <Pill className="h-3.5 w-3.5 mr-1.5" /> Receita
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => toast.info("Módulo de anexos em breve")}>
-            <Paperclip className="h-3.5 w-3.5 mr-1.5" /> Anexo
-          </Button>
+          
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" className="flex-1 md:flex-none" onClick={() => toast.info("Módulo de receitas em breve")}>
+              <Pill className="h-3.5 w-3.5 mr-1.5" /> Receita
+            </Button>
+            <Button variant="outline" size="sm" className="flex-1 md:flex-none" onClick={() => toast.info("Módulo de anexos em breve")}>
+              <Paperclip className="h-3.5 w-3.5 mr-1.5" /> Anexo
+            </Button>
+          </div>
         </div>
       </div>
     </div>

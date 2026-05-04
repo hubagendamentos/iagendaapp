@@ -9,6 +9,7 @@ import {
 import { NavLink } from "@/components/NavLink";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useUser, type UserPermissions } from "@/contexts/UserContext";
+import { useAppointments } from "@/contexts/AppointmentsContext";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -152,8 +153,13 @@ function MobileMenuItem({
 export function AppHeader() {
     const { pathname } = useLocation();
     const navigate = useNavigate();
-    const { hasPermission, clinic, user, usersList, setUser } = useUser();
+    const { hasPermission, clinic, user, usersList, setUser, professionalId } = useUser();
+    const { getAppointmentsByProfessional } = useAppointments();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+    // Calcula agendamentos pendentes para hoje
+    const agendamentosHoje = getAppointmentsByProfessional(new Date(), professionalId);
+    const pendentes = agendamentosHoje.filter(a => a.status === 'scheduled' || a.status === 'in_progress').length;
 
     const canShow = (item: MenuItem): boolean => {
         if (item.requireClinic && clinic?.type === "solo") return false;
@@ -236,12 +242,19 @@ export function AppHeader() {
                 <div className="flex items-center gap-2 ml-auto shrink-0">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <button className="flex items-center gap-2 hover:bg-accent p-1.5 rounded-md transition-colors">
-                                <Avatar className="h-7 w-7">
-                                    <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                                        {user?.name?.substring(0, 2).toUpperCase() || "??"}
-                                    </AvatarFallback>
-                                </Avatar>
+                            <button className="flex items-center gap-2 hover:bg-accent p-1.5 rounded-md transition-colors relative">
+                                <div className="relative">
+                                    <Avatar className="h-7 w-7">
+                                        <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                                            {user?.name?.substring(0, 2).toUpperCase() || "??"}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    {pendentes > 0 && (
+                                        <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white border-2 border-background">
+                                            {pendentes}
+                                        </span>
+                                    )}
+                                </div>
                                 <span className="hidden sm:inline text-sm font-medium truncate max-w-[120px]">{user?.name}</span>
                                 <ChevronDown className="h-3 w-3 opacity-50 hidden sm:block" />
                             </button>
