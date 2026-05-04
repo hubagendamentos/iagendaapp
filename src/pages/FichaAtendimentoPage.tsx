@@ -122,28 +122,10 @@ const FichaAtendimentoPage = () => {
   const handleImprimir = () => window.print();
 
   return (
-    <div className="flex flex-col gap-4 p-4 sm:p-6 min-h-[calc(100vh-4rem)]">
-      {/* Header */}
-      <FichaAtendimentoHeader
-        paciente={paciente}
-        profissionalNome={user?.name || ""}
-        status={status}
-      />
-
-      {/* Ações extras */}
-      <div className="flex gap-2 print:hidden">
-        <Button variant="outline" size="sm" onClick={handleCompartilhar}>
-          <Share2 className="h-3.5 w-3.5 mr-1.5" /> Compartilhar
-        </Button>
-        <Button variant="outline" size="sm" onClick={handleImprimir}>
-          <Printer className="h-3.5 w-3.5 mr-1.5" /> Imprimir
-        </Button>
-      </div>
-
-      {/* Layout 2 colunas */}
-      <div className={`flex gap-4 flex-1 ${isMobile ? "flex-col" : ""}`}>
-        {/* Painel lateral */}
-        {!isMobile && (
+    <div className="flex p-4 sm:p-6 min-h-[calc(100vh-4rem)] gap-4">
+      {/* Painel lateral - sticky no topo, alinhado com header */}
+      {!isMobile && (
+        <div className="sticky top-4 self-start">
           <PainelAtendimento
             appointmentId={appointmentId}
             status={status}
@@ -151,7 +133,25 @@ const FichaAtendimentoPage = () => {
             onIniciar={handleIniciar}
             onFinalizar={handleFinalizar}
           />
-        )}
+        </div>
+      )}
+
+      {/* Área direita: header + ações + timeline + evolução */}
+      <div className="flex-1 flex flex-col gap-4 min-w-0">
+        <FichaAtendimentoHeader
+          paciente={paciente}
+          profissionalNome={user?.name || ""}
+          status={status}
+        />
+
+        <div className="flex gap-2 print:hidden">
+          <Button variant="outline" size="sm" onClick={handleCompartilhar}>
+            <Share2 className="h-3.5 w-3.5 mr-1.5" /> Compartilhar
+          </Button>
+          <Button variant="outline" size="sm" onClick={handleImprimir}>
+            <Printer className="h-3.5 w-3.5 mr-1.5" /> Imprimir
+          </Button>
+        </div>
 
         {/* Mobile: painel como barra horizontal */}
         {isMobile && (
@@ -166,10 +166,8 @@ const FichaAtendimentoPage = () => {
           </div>
         )}
 
-        {/* Área principal: timeline + evolução */}
-        <div className="flex-1 flex flex-col gap-4 min-w-0">
-          <TimelineCompacta items={timelineItems} currentAppointmentId={appointmentId} />
-          <PainelEvolucao onSave={handleSaveEvolucao} />
+        <TimelineCompacta items={timelineItems} currentAppointmentId={appointmentId} />
+        <PainelEvolucao onSave={handleSaveEvolucao} />
         </div>
       </div>
     </div>
