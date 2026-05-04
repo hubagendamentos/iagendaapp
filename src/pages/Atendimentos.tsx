@@ -2,7 +2,6 @@ import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { format, isToday, parse } from "date-fns";
 import { useAppointments } from "@/contexts/AppointmentsContext";
-import { useTimeline } from "@/contexts/TimelineContext";
 import { useUser } from "@/contexts/UserContext";
 import { useCaixa } from "@/contexts/CaixaContext";
 import { Button } from "@/components/ui/button";
@@ -69,8 +68,7 @@ type FilterView = "all" | "in_progress" | "queue" | "completed";
 
 const Atendimentos = () => {
   const { hasPermission, clinic, professionalId: userProfId, user } = useUser();
-  const { getAppointmentsByDate, updateAppointmentStatus, updateAppointment, activeAppointment, startAppointment, appointments, clearActiveAppointment } = useAppointments();
-  const { addTimelineItem } = useTimeline();
+  const { getAppointmentsByDate, updateAppointmentStatus, updateAppointment, appointments, clearActiveAppointment } = useAppointments();
   const { addLancamento, addPagamentos } = useCaixa();
   const navigate = useNavigate();
   const isClinic = clinic?.type === "clinic";
