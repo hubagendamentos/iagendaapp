@@ -2,7 +2,6 @@ import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { format, isToday, parse } from "date-fns";
 import { useAppointments } from "@/contexts/AppointmentsContext";
-import { useTimeline } from "@/contexts/TimelineContext";
 import { useUser } from "@/contexts/UserContext";
 import { useCaixa } from "@/contexts/CaixaContext";
 import { Button } from "@/components/ui/button";
@@ -69,8 +68,7 @@ type FilterView = "all" | "in_progress" | "queue" | "completed";
 
 const Atendimentos = () => {
   const { hasPermission, clinic, professionalId: userProfId, user } = useUser();
-  const { getAppointmentsByDate, updateAppointmentStatus, updateAppointment, activeAppointment, startAppointment, appointments, clearActiveAppointment } = useAppointments();
-  const { addTimelineItem } = useTimeline();
+  const { getAppointmentsByDate, updateAppointmentStatus, updateAppointment, appointments, clearActiveAppointment } = useAppointments();
   const { addLancamento, addPagamentos } = useCaixa();
   const navigate = useNavigate();
   const isClinic = clinic?.type === "clinic";
@@ -271,11 +269,6 @@ const Atendimentos = () => {
                     size="sm"
                     className="bg-blue-600 hover:bg-blue-700 text-white"
                     onClick={() => {
-                      if (activeAppointment && activeAppointment.id !== apt.id) {
-                        alert("Finalize o atendimento atual antes de iniciar outro.");
-                        return;
-                      }
-
                       const appointmentCompleto = appointments.find(a => a.id === apt.id) || apt;
 
                       if (!appointmentCompleto.patientId) {
@@ -283,24 +276,6 @@ const Atendimentos = () => {
                         alert("Erro: paciente não vinculado ao agendamento.");
                         return;
                       }
-
-                      handleStatusChange(apt.id, "in_progress");
-
-                      startAppointment({
-                        id: appointmentCompleto.id,
-                        patientId: appointmentCompleto.patientId,
-                        professionalId: appointmentCompleto.professionalId,
-                        patientName: appointmentCompleto.patientName,
-                        startedAt: new Date().toISOString()
-                      });
-
-                      addTimelineItem({
-                        patientId: appointmentCompleto.patientId,
-                        appointmentId: appointmentCompleto.id,
-                        type: "status",
-                        content: "Atendimento iniciado.",
-                        createdBy: user?.name || "Sistema",
-                      });
 
                       navigate(`/dashboard/atendimento/${appointmentCompleto.patientId}/${appointmentCompleto.id}`);
                     }}
