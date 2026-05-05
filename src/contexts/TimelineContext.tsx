@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
 
-export type TimelineItemType = "note" | "prescription" | "attachment" | "status";
+export type TimelineItemType = "note" | "prescription" | "attachment" | "status" | "receita";
 
 export type TimelineItem = {
   id: string;
@@ -11,6 +11,7 @@ export type TimelineItem = {
   createdBy: string;
   createdAt: Date;
   statusLabel?: string;
+  receitaId?: string;
 };
 
 interface TimelineContextType {

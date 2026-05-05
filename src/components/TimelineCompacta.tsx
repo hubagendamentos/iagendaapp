@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { format, isToday, subDays, startOfMonth } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Search, X, FileText, Pill, Paperclip, PlayCircle, ChevronDown, ChevronUp } from "lucide-react";
+import { Search, X, FileText, Pill, Paperclip, PlayCircle, ChevronDown, ChevronUp, ClipboardList } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +13,7 @@ const typeConfig: Record<string, { icon: React.ReactNode; label: string; color: 
   prescription: { icon: <Pill className="h-3.5 w-3.5" />, label: "Receita", color: "text-purple-600" },
   attachment: { icon: <Paperclip className="h-3.5 w-3.5" />, label: "Anexo", color: "text-amber-600" },
   status: { icon: <PlayCircle className="h-3.5 w-3.5" />, label: "Status", color: "text-blue-600" },
+  receita: { icon: <ClipboardList className="h-3.5 w-3.5" />, label: "Receita", color: "text-indigo-600" },
 };
 
 type Periodo = "hoje" | "7dias" | "mes" | "tudo";
@@ -23,9 +24,10 @@ interface Props {
   selectionMode?: boolean;
   selectedIds?: string[];
   onToggleSelect?: (id: string) => void;
+  onReceitaClick?: (receitaId: string) => void;
 }
 
-export function TimelineCompacta({ items, currentAppointmentId, selectionMode, selectedIds = [], onToggleSelect }: Props) {
+export function TimelineCompacta({ items, currentAppointmentId, selectionMode, selectedIds = [], onToggleSelect, onReceitaClick }: Props) {
   const [busca, setBusca] = useState("");
   const [periodo, setPeriodo] = useState<Periodo>("tudo");
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -143,8 +145,20 @@ export function TimelineCompacta({ items, currentAppointmentId, selectionMode, s
                     </div>
                   )}
                   <span className="font-mono text-[11px] text-muted-foreground w-[36px] shrink-0 pt-0.5 cursor-pointer" onClick={() => contentLong && setExpandedId(isExpanded ? null : item.id)}>{time}</span>
-                  <span className={`shrink-0 pt-0.5 ${cfg.color} cursor-pointer`} onClick={() => contentLong && setExpandedId(isExpanded ? null : item.id)}>{cfg.icon}</span>
-                  <div className="flex-1 min-w-0 cursor-pointer" onClick={() => contentLong && setExpandedId(isExpanded ? null : item.id)}>
+                  <span className={`shrink-0 pt-0.5 ${cfg.color} cursor-pointer`} onClick={() => {
+                    if (item.type === "receita" && item.receitaId && onReceitaClick) {
+                      onReceitaClick(item.receitaId);
+                    } else if (contentLong) {
+                      setExpandedId(isExpanded ? null : item.id);
+                    }
+                  }}>{cfg.icon}</span>
+                  <div className="flex-1 min-w-0 cursor-pointer" onClick={() => {
+                    if (item.type === "receita" && item.receitaId && onReceitaClick) {
+                      onReceitaClick(item.receitaId);
+                    } else if (contentLong) {
+                      setExpandedId(isExpanded ? null : item.id);
+                    }
+                  }}>
                     <div className="flex items-center gap-1.5">
                       <span className="text-xs font-medium truncate">{item.createdBy}</span>
                       <Badge variant="outline" className="text-[10px] px-1 py-0 h-4">{cfg.label}</Badge>
