@@ -23,6 +23,7 @@ export function typeLabel(type: string): string {
     case "prescription": return "Prescrição";
     case "attachment": return "Anexo";
     case "status": return "Status";
+    case "receita": return "Receita";
     default: return "Registro";
   }
 }

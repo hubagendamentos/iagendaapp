@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { PhoneMaskInput } from "@/components/PhoneMaskInput";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Building2, User, Clock, Upload, Moon } from "lucide-react";
+import { Printer } from "lucide-react";
 import { toast } from "sonner";
 
 const weekDays = [
@@ -55,6 +56,40 @@ const Configuracoes = () => {
   const [endTime, setEndTime] = useState("18:00");
   const [interval, setInterval] = useState("30");
 
+  // Print config
+  const [paperSize, setPaperSize] = useState(() => {
+    const saved = localStorage.getItem("print_config");
+    return saved ? JSON.parse(saved).paperSize || "A4" : "A4";
+  });
+  const [customWidth, setCustomWidth] = useState(() => {
+    const saved = localStorage.getItem("print_config");
+    return saved ? JSON.parse(saved).width || "210" : "210";
+  });
+  const [customHeight, setCustomHeight] = useState(() => {
+    const saved = localStorage.getItem("print_config");
+    return saved ? JSON.parse(saved).height || "297" : "297";
+  });
+  const [orientation, setOrientation] = useState(() => {
+    const saved = localStorage.getItem("print_config");
+    return saved ? JSON.parse(saved).orientation || "portrait" : "portrait";
+  });
+  const [marginTop, setMarginTop] = useState(() => {
+    const saved = localStorage.getItem("print_config");
+    return saved ? JSON.parse(saved).marginTop || "10" : "10";
+  });
+  const [marginBottom, setMarginBottom] = useState(() => {
+    const saved = localStorage.getItem("print_config");
+    return saved ? JSON.parse(saved).marginBottom || "10" : "10";
+  });
+  const [marginLeft, setMarginLeft] = useState(() => {
+    const saved = localStorage.getItem("print_config");
+    return saved ? JSON.parse(saved).marginLeft || "10" : "10";
+  });
+  const [marginRight, setMarginRight] = useState(() => {
+    const saved = localStorage.getItem("print_config");
+    return saved ? JSON.parse(saved).marginRight || "10" : "10";
+  });
+
   const toggleDay = (key: string) => setActiveDays((prev) => ({ ...prev, [key]: !prev[key] }));
 
   const handlePhotoClick = () => fileInputRef.current?.click();
@@ -69,7 +104,13 @@ const Configuracoes = () => {
     }
   };
 
-  const handleSave = () => toast.success("Configurações salvas com sucesso!");
+  const handleSave = () => {
+    localStorage.setItem("print_config", JSON.stringify({
+      paperSize, width: customWidth, height: customHeight, orientation,
+      marginTop, marginBottom, marginLeft, marginRight,
+    }));
+    toast.success("Configurações salvas com sucesso!");
+  };
 
   return (
     <div className="p-4 sm:p-6 space-y-6 max-w-4xl mx-auto w-full">
@@ -216,6 +257,72 @@ const Configuracoes = () => {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* === THEME === */}
+      {/* === IMPRESSÃO === */}
+      <Card>
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Printer className="h-5 w-5 text-primary" />
+            Impressão
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Tamanho do papel</Label>
+              <Select value={paperSize} onValueChange={setPaperSize}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="A4">A4</SelectItem>
+                  <SelectItem value="A5">A5</SelectItem>
+                  <SelectItem value="custom">Personalizado</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Orientação</Label>
+              <Select value={orientation} onValueChange={setOrientation}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="portrait">Retrato</SelectItem>
+                  <SelectItem value="landscape">Paisagem</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          {paperSize === "custom" && (
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Largura (mm)</Label>
+                <Input type="number" value={customWidth} onChange={(e) => setCustomWidth(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label>Altura (mm)</Label>
+                <Input type="number" value={customHeight} onChange={(e) => setCustomHeight(e.target.value)} />
+              </div>
+            </div>
+          )}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="space-y-2">
+              <Label>Margem superior (mm)</Label>
+              <Input type="number" value={marginTop} onChange={(e) => setMarginTop(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>Margem inferior (mm)</Label>
+              <Input type="number" value={marginBottom} onChange={(e) => setMarginBottom(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>Margem esquerda (mm)</Label>
+              <Input type="number" value={marginLeft} onChange={(e) => setMarginLeft(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>Margem direita (mm)</Label>
+              <Input type="number" value={marginRight} onChange={(e) => setMarginRight(e.target.value)} />
             </div>
           </div>
         </CardContent>
