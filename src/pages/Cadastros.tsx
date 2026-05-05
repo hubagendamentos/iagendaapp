@@ -1028,14 +1028,6 @@ const Cadastros = () => {
             </CardContent>
           </Card>
         </TabsContent>
-      </Tabs>
-
-        {/* ---- MODELOS CLÍNICOS TAB ---- */}
-        <TabsContent value="modelos" className="mt-4">
-  {/* DEAD — moved inside Tabs below */}
-        </TabsContent>
-
-      {/* Modals */}
         {/* ---- MODELOS CLÍNICOS TAB ---- */}
         <TabsContent value="modelos" className="mt-4">
           <Card>
