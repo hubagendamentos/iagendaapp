@@ -13,6 +13,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Search, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { usePlanoContas, type PlanoContas as PlanoContasType, type TipoPlanoContas } from "@/contexts/PlanoContasContext";
+import { useReceitas, type TemplateClinico } from "@/contexts/ReceitasContext";
+import { ModeloClinicoModal } from "@/components/ModeloClinicoModal";
+import { Trash2 } from "lucide-react";
 
 // ---- Types ----
 interface Plan {
@@ -512,6 +515,7 @@ const Cadastros = () => {
   const [searchSpecs, setSearchSpecs] = useState("");
   const [searchServices, setSearchServices] = useState("");
   const [searchPlanoContas, setSearchPlanoContas] = useState("");
+  const [searchModelos, setSearchModelos] = useState("");
 
   // Plano de Contas
   const { planos: planosContas, addPlano, updatePlano } = usePlanoContas();
@@ -529,6 +533,24 @@ const Cadastros = () => {
   };
 
   const filteredPlanosContas = planosContas.filter((p) => p.nome.toLowerCase().includes(searchPlanoContas.toLowerCase()));
+
+  // Plan CRUD
+  // Modelos Clínicos
+  const { templates, addTemplate, updateTemplate, deleteTemplate } = useReceitas();
+  const [modeloModal, setModeloModal] = useState(false);
+  const [editingModelo, setEditingModelo] = useState<TemplateClinico | null>(null);
+
+  const saveModelo = (data: Omit<TemplateClinico, "id" | "createdAt"> & { id?: string }) => {
+    if (data.id) {
+      updateTemplate(data.id, { nome: data.nome, especialidade: data.especialidade, campos: data.campos });
+      toast.success("Modelo atualizado");
+    } else {
+      addTemplate({ nome: data.nome, tipo: "receita", especialidade: data.especialidade, campos: data.campos, clinicId: data.clinicId });
+      toast.success("Modelo adicionado");
+    }
+  };
+
+  const filteredModelos = templates.filter((t) => t.nome.toLowerCase().includes(searchModelos.toLowerCase()));
 
   // Plan CRUD
   const savePlan = (data: Omit<Plan, "id"> & { id?: string }) => {
@@ -634,6 +656,7 @@ const Cadastros = () => {
             { id: "specialties", label: "Especialidades" },
             { id: "services", label: "Serviços" },
             { id: "planocontas", label: "Plano de Contas" },
+            { id: "modelos", label: "Modelos Clínicos" },
           ]}
           selectedId={activeTab}
           onSelect={setActiveTab}
@@ -1007,6 +1030,57 @@ const Cadastros = () => {
         </TabsContent>
       </Tabs>
 
+        {/* ---- MODELOS CLÍNICOS TAB ---- */}
+        <TabsContent value="modelos" className="mt-4">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex flex-col sm:flex-row gap-3 mb-4">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input placeholder="Buscar modelo..." value={searchModelos} onChange={(e) => setSearchModelos(e.target.value)} className="pl-9" />
+                </div>
+                <Button className="gap-2 shrink-0" onClick={() => { setEditingModelo(null); setModeloModal(true); }}>
+                  <Plus className="h-4 w-4" /> Novo Modelo
+                </Button>
+              </div>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nome</TableHead>
+                      <TableHead>Especialidade</TableHead>
+                      <TableHead className="text-center">Campos</TableHead>
+                      <TableHead className="w-24 text-center">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredModelos.length === 0 && (
+                      <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground py-8">Nenhum modelo encontrado</TableCell></TableRow>
+                    )}
+                    {filteredModelos.map((tpl) => (
+                      <TableRow key={tpl.id}>
+                        <TableCell className="font-medium">{tpl.nome}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground">{tpl.especialidade}</TableCell>
+                        <TableCell className="text-center text-sm">{tpl.campos.length}</TableCell>
+                        <TableCell className="text-center">
+                          <div className="flex items-center justify-center gap-1">
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingModelo(tpl); setModeloModal(true); }}>
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => { deleteTemplate(tpl.id); toast.success("Modelo excluído"); }}>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
       {/* Modals */}
       <PlanModal open={planModal} onClose={() => { setPlanModal(false); setEditingPlan(null); }} onSave={savePlan} plan={editingPlan} />
       <ExamModal open={examModal} onClose={() => { setExamModal(false); setEditingExam(null); }} onSave={saveExam} exam={editingExam} preparations={preparations} />
@@ -1015,6 +1089,7 @@ const Cadastros = () => {
       <SpecialtyModal open={specModal} onClose={() => { setSpecModal(false); setEditingSpec(null); }} onSave={saveSpecialty} specialty={editingSpec} />
       <ServiceModal open={serviceModal} onClose={() => { setServiceModal(false); setEditingService(null); }} onSave={saveService} service={editingService} appointmentTypes={appointmentTypes} specialties={specialties} exams={exams} />
       <PlanoContasModal open={planoContasModal} onClose={() => { setPlanoContasModal(false); setEditingPlanoContas(null); }} onSave={savePlanoContas} planoContas={editingPlanoContas} allPlanos={planosContas} />
+      <ModeloClinicoModal open={modeloModal} onClose={() => { setModeloModal(false); setEditingModelo(null); }} onSave={saveModelo} template={editingModelo} />
     </div>
   );
 };
