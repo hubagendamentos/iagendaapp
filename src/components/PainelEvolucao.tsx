@@ -1,3 +1,6 @@
+// ============================================================
+// PainelEvolucao.tsx (CORRIGIDO)
+// ============================================================
 import { useState, useRef } from "react";
 import { FileText, Pill, Paperclip } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,9 +17,10 @@ const soapButtons = [
 
 interface Props {
   onSave: (content: string) => void;
+  onReceitaClick: () => void;
 }
 
-export function PainelEvolucao({ onSave }: Props) {
+export function PainelEvolucao({ onSave, onReceitaClick }: Props) {
   const { hasPermission } = useUser();
   const [content, setContent] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -73,9 +77,9 @@ export function PainelEvolucao({ onSave }: Props) {
           <Button className="w-full md:w-auto" onClick={handleSave} disabled={!content.trim()} size="sm">
             <FileText className="h-3.5 w-3.5 mr-1.5" /> Salvar Evolução
           </Button>
-          
+
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" className="flex-1 md:flex-none" onClick={() => toast.info("Módulo de receitas em breve")}>
+            <Button variant="outline" size="sm" className="flex-1 md:flex-none" onClick={onReceitaClick}>
               <Pill className="h-3.5 w-3.5 mr-1.5" /> Receita
             </Button>
             <Button variant="outline" size="sm" className="flex-1 md:flex-none" onClick={() => toast.info("Módulo de anexos em breve")}>

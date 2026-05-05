@@ -1,8 +1,9 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Printer, Download } from "lucide-react";
+import { Printer, Download, FileText } from "lucide-react";
 import { useReceitas } from "@/contexts/ReceitasContext";
 import { toast } from "sonner";
+import html2pdf from "html2pdf.js";
 
 interface Props {
   open: boolean;
@@ -16,8 +17,12 @@ export function ReceitaPreviewModal({ open, onClose, receitaId }: Props) {
 
   if (!receita) return null;
 
+  // =============================
+  // 🔥 PRINT (mantém seu padrão)
+  // =============================
   const handlePrint = () => {
     const printConfig = localStorage.getItem("print_config");
+
     let pageSize = "A4";
     let orientation = "portrait";
     let margins = "10mm";
@@ -38,48 +43,126 @@ export function ReceitaPreviewModal({ open, onClose, receitaId }: Props) {
       `@page { size: ${pageSize} ${orientation}; margin: ${margins}; }</style>`
     );
 
-    const win = window.open("", "_blank");
-    if (win) {
-      win.document.write(htmlWithPageStyle);
-      win.document.close();
+    // Criar iframe invisível (sem abrir janela)
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = 'none';
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentWindow?.document;
+    if (doc) {
+      doc.open();
+      doc.write(htmlWithPageStyle);
+      doc.close();
+
+      iframe.contentWindow?.focus();
+      iframe.contentWindow?.print();
+
+      iframe.contentWindow!.onafterprint = () => {
+        document.body.removeChild(iframe);
+      };
+
+      // Fallback: remover após 60s se onafterprint não disparar
       setTimeout(() => {
-        win.print();
-        setTimeout(() => { if (!win.closed) win.close(); }, 1000);
-      }, 300);
+        if (document.body.contains(iframe)) {
+          document.body.removeChild(iframe);
+        }
+      }, 60000);
     }
   };
 
-  const handleDownload = () => {
-    const blob = new Blob([receita.html], { type: "text/html;charset=utf-8" });
+  // =============================
+  // 📥 DOWNLOAD HTML (original)
+  // =============================
+  const handleDownloadHTML = () => {
+    const blob = new Blob([receita.html], {
+      type: "text/html;charset=utf-8",
+    });
+
     const url = URL.createObjectURL(blob);
+
     const a = document.createElement("a");
     a.href = url;
     a.download = `receita_${receita.templateNome.replace(/\s/g, "_")}.html`;
     a.click();
+
     URL.revokeObjectURL(url);
-    toast.success("Receita baixada!");
+
+    toast.success("Receita HTML baixada!");
+  };
+
+  // =============================
+  // 🆕 DOWNLOAD PDF
+  // =============================
+  const handleDownloadPDF = async () => {
+    try {
+      toast.loading("Gerando PDF...");
+
+      const element = document.createElement("div");
+      element.innerHTML = receita.html;
+
+      const opt = {
+        margin: [5, 5, 5, 5],
+        filename: `receita_${receita.templateNome.replace(/\s/g, "_")}.pdf`,
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: {
+          unit: "mm",
+          format: "a5", // 🔥 melhor para receitas médicas
+          orientation: "portrait",
+        },
+      };
+
+      await html2pdf().set(opt).from(element).save();
+
+      toast.dismiss();
+      toast.success("PDF gerado com sucesso!");
+    } catch (e) {
+      toast.dismiss();
+      toast.error("Erro ao gerar PDF");
+    }
   };
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-3xl !inset-0 !translate-x-0 !translate-y-0 !top-0 !left-0 sm:!inset-auto sm:!left-[50%] sm:!top-[50%] sm:!translate-x-[-50%] sm:!translate-y-[-50%] rounded-none sm:rounded-lg w-full sm:w-auto max-h-[100dvh] sm:max-h-[90vh] overflow-y-auto">
+      <DialogContent
+        className="
+          w-[98vw] max-w-[1100px]
+          h-[92vh]
+          p-4
+          flex flex-col
+        "
+      >
+        {/* HEADER */}
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
-            <span>{receita.templateNome}</span>
+            <span className="truncate">{receita.templateNome}</span>
+
             <div className="flex gap-2">
               <Button variant="outline" size="sm" onClick={handlePrint}>
-                <Printer className="h-3.5 w-3.5 mr-1.5" /> Imprimir
+                <Printer className="h-3.5 w-3.5 mr-1.5" />
+                Imprimir
               </Button>
-              <Button variant="outline" size="sm" onClick={handleDownload}>
-                <Download className="h-3.5 w-3.5 mr-1.5" /> Baixar
+
+              <Button variant="outline" size="sm" onClick={handleDownloadPDF}>
+                <FileText className="h-3.5 w-3.5 mr-1.5" />
+                PDF
               </Button>
+
+
             </div>
           </DialogTitle>
         </DialogHeader>
-        <div className="border rounded-lg overflow-hidden mt-2">
+
+        {/* PREVIEW GRANDE */}
+        <div className="flex-1 border rounded-lg overflow-hidden mt-2 bg-white">
           <iframe
             srcDoc={receita.html}
-            className="w-full h-[60vh] border-0"
+            className="w-full h-full border-0"
             title="Preview da receita"
           />
         </div>
