@@ -1036,6 +1036,59 @@ const Cadastros = () => {
         </TabsContent>
 
       {/* Modals */}
+        {/* ---- MODELOS CLÍNICOS TAB ---- */}
+        <TabsContent value="modelos" className="mt-4">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex flex-col sm:flex-row gap-3 mb-4">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input placeholder="Buscar modelo..." value={searchModelos} onChange={(e) => setSearchModelos(e.target.value)} className="pl-9" />
+                </div>
+                <Button className="gap-2 shrink-0" onClick={() => { setEditingModelo(null); setModeloModal(true); }}>
+                  <Plus className="h-4 w-4" /> Novo Modelo
+                </Button>
+              </div>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nome</TableHead>
+                      <TableHead>Especialidade</TableHead>
+                      <TableHead className="text-center">Campos</TableHead>
+                      <TableHead className="w-24 text-center">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredModelos.length === 0 && (
+                      <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground py-8">Nenhum modelo encontrado</TableCell></TableRow>
+                    )}
+                    {filteredModelos.map((tpl) => (
+                      <TableRow key={tpl.id}>
+                        <TableCell className="font-medium">{tpl.nome}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground">{tpl.especialidade}</TableCell>
+                        <TableCell className="text-center text-sm">{tpl.campos.length}</TableCell>
+                        <TableCell className="text-center">
+                          <div className="flex items-center justify-center gap-1">
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingModelo(tpl); setModeloModal(true); }}>
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => { deleteTemplate(tpl.id); toast.success("Modelo excluído"); }}>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
+      {/* Modals */}
       <PlanModal open={planModal} onClose={() => { setPlanModal(false); setEditingPlan(null); }} onSave={savePlan} plan={editingPlan} />
       <ExamModal open={examModal} onClose={() => { setExamModal(false); setEditingExam(null); }} onSave={saveExam} exam={editingExam} preparations={preparations} />
       <PreparationModal open={prepModal} onClose={() => { setPrepModal(false); setEditingPrep(null); }} onSave={savePrep} preparation={editingPrep} />
