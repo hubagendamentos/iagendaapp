@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Printer, Share2 } from "lucide-react";
+import { ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FichaAtendimentoHeader } from "@/components/FichaAtendimentoHeader";
 import { PainelAtendimento } from "@/components/PainelAtendimento";
@@ -19,6 +20,8 @@ import { toast } from "sonner";
 import html2canvas from "html2canvas";
 import html2pdf from "html2pdf.js";
 import { CompartilharProntuarioModal, PrintPreferences } from "@/components/CompartilharProntuarioModal";
+import { ReceitaModal } from "@/components/ReceitaModal";
+import { ReceitaPreviewModal } from "@/components/ReceitaPreviewModal";
 
 const FichaAtendimentoPage = () => {
   const { patientId, appointmentId } = useParams<{ patientId: string; appointmentId: string }>();
@@ -33,6 +36,8 @@ const FichaAtendimentoPage = () => {
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedTimelineIds, setSelectedTimelineIds] = useState<string[]>([]);
   const [pendingPrefs, setPendingPrefs] = useState<PrintPreferences | null>(null);
+  const [receitaModalOpen, setReceitaModalOpen] = useState(false);
+  const [previewReceitaId, setPreviewReceitaId] = useState<string | null>(null);
 
   if (!patientId || !appointmentId) {
     return (
@@ -323,6 +328,10 @@ const FichaAtendimentoPage = () => {
 
           {/* DIREITA (BOTÕES AGORA NO LUGAR CERTO) */}
           <div className="flex gap-2 print:hidden">
+            <Button variant="outline" size="sm" onClick={() => setReceitaModalOpen(true)}>
+              <ClipboardList className="h-3.5 w-3.5 mr-1.5" />
+              Receita
+            </Button>
             <Button variant="outline" size="sm" onClick={handleCompartilhar}>
               <Share2 className="h-3.5 w-3.5 mr-1.5" />
               Compartilhar
@@ -362,6 +371,7 @@ const FichaAtendimentoPage = () => {
                   prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
                 );
               }}
+              onReceitaClick={(receitaId) => setPreviewReceitaId(receitaId)}
             />
           </div>
 
@@ -381,6 +391,31 @@ const FichaAtendimentoPage = () => {
           </div>
         )}
       </div>
+
+      <ReceitaModal
+        open={receitaModalOpen}
+        onClose={() => setReceitaModalOpen(false)}
+        patientId={patientId}
+        appointmentId={appointmentId}
+        patientName={paciente.nome}
+        onSaved={(receitaId, templateNome) => {
+          addTimelineItem({
+            patientId: paciente.id,
+            appointmentId,
+            type: "receita",
+            content: `Receita: ${templateNome}`,
+            createdBy: user?.name || "Sistema",
+            receitaId,
+          });
+          setPreviewReceitaId(receitaId);
+        }}
+      />
+
+      <ReceitaPreviewModal
+        open={!!previewReceitaId}
+        onClose={() => setPreviewReceitaId(null)}
+        receitaId={previewReceitaId}
+      />
     </div>
   );
 };
