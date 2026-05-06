@@ -270,7 +270,7 @@ export function ReceitaModal({ open, onClose, patientId, appointmentId, patientN
 // ============================================================
 // FUNÇÃO gerarHtmlReceita
 // ============================================================
-function gerarHtmlReceita(
+export function gerarHtmlReceita(
   template: TemplateClinico,
   data: Record<string, any>,
   pacienteNome: string,
