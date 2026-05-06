@@ -14,7 +14,7 @@ import { Plus, Search, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { usePlanoContas, type PlanoContas as PlanoContasType, type TipoPlanoContas } from "@/contexts/PlanoContasContext";
 import { useReceitas, type TemplateClinico } from "@/contexts/ReceitasContext";
-import { ModeloClinicoModal } from "@/components/ModeloClinicoModal";
+import { TemplateEditorModal } from "@/components/TemplateEditorModal";
 import { Trash2 } from "lucide-react";
 
 // ---- Types ----
@@ -542,10 +542,10 @@ const Cadastros = () => {
 
   const saveModelo = (data: Omit<TemplateClinico, "id" | "createdAt"> & { id?: string }) => {
     if (data.id) {
-      updateTemplate(data.id, { nome: data.nome, especialidade: data.especialidade, campos: data.campos });
+      updateTemplate(data.id, { nome: data.nome, tipo: data.tipo, especialidade: data.especialidade, campos: data.campos, printConfig: data.printConfig });
       toast.success("Modelo atualizado");
     } else {
-      addTemplate({ nome: data.nome, tipo: "receita", especialidade: data.especialidade, campos: data.campos, clinicId: data.clinicId });
+      addTemplate({ nome: data.nome, tipo: data.tipo, especialidade: data.especialidade, campos: data.campos, clinicId: data.clinicId, printConfig: data.printConfig });
       toast.success("Modelo adicionado");
     }
   };
@@ -1088,7 +1088,7 @@ const Cadastros = () => {
       <SpecialtyModal open={specModal} onClose={() => { setSpecModal(false); setEditingSpec(null); }} onSave={saveSpecialty} specialty={editingSpec} />
       <ServiceModal open={serviceModal} onClose={() => { setServiceModal(false); setEditingService(null); }} onSave={saveService} service={editingService} appointmentTypes={appointmentTypes} specialties={specialties} exams={exams} />
       <PlanoContasModal open={planoContasModal} onClose={() => { setPlanoContasModal(false); setEditingPlanoContas(null); }} onSave={savePlanoContas} planoContas={editingPlanoContas} allPlanos={planosContas} />
-      <ModeloClinicoModal open={modeloModal} onClose={() => { setModeloModal(false); setEditingModelo(null); }} onSave={saveModelo} template={editingModelo} />
+      <TemplateEditorModal open={modeloModal} onClose={() => { setModeloModal(false); setEditingModelo(null); }} onSave={saveModelo} template={editingModelo} />
     </div>
   );
 };
