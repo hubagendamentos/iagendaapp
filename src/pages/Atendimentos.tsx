@@ -117,7 +117,10 @@ const Atendimentos = () => {
     updateAppointmentStatus(id, status);
   };
 
-  const handleEncerrar = (apt: Appointment, data: { pagamentos: Array<{ valor: number; formaPagamento: any; planoContasId: string }> }) => {
+  const handleEncerrar = (apt: Appointment, data: {
+    pagamentos: Array<{ valor: number; formaPagamento: any; planoContasId: string }>;
+    totalComDesconto?: number;
+  }) => {
     const profName = professionals.find((p) => p.id === apt.professionalId)?.name || "Profissional";
 
     const now = new Date().toISOString();
@@ -148,8 +151,12 @@ const Atendimentos = () => {
     });
 
     const totalPago = (apt.valor_pago ?? 0) + data.pagamentos.reduce((s, p) => s + p.valor, 0);
-    const valorTotal = apt.price ?? 0;
-    const statusPagamento = totalPago >= valorTotal ? "pago" : totalPago > 0 ? "parcial" : "pendente";
+
+    // USAR totalComDesconto se veio do modal, senão o valor original
+    const valorReferencia = data.totalComDesconto !== undefined ? data.totalComDesconto : (apt.price ?? 0);
+
+    // Se pagou o valor com desconto, está PAGO
+    const statusPagamento = totalPago >= valorReferencia ? "pago" : totalPago > 0 ? "parcial" : "pendente";
 
     updateAppointment(apt.id, {
       valor_pago: totalPago,
@@ -157,7 +164,10 @@ const Atendimentos = () => {
       financeiro_encerrado: statusPagamento === "pago",
     });
 
-    toast({ title: "Pagamento registrado", description: statusPagamento === "pago" ? "Atendimento totalmente pago." : "Pagamento parcial registrado." });
+    toast({
+      title: statusPagamento === "pago" ? "Pagamento concluído" : "Pagamento registrado",
+      description: statusPagamento === "pago" ? "Atendimento totalmente pago." : "Pagamento registrado."
+    });
     setEncerrarApt(null);
   };
 

@@ -1,3 +1,6 @@
+// ============================================================
+// 2. TemplateEditorModal.tsx - COMPLETO
+// ============================================================
 import { useState, useEffect, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -7,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Trash2, ArrowUp, ArrowDown, Eye, X } from "lucide-react";
+import { Plus, Trash2, ArrowUp, ArrowDown, Eye, X, Printer } from "lucide-react";
 import {
   type TemplateClinico,
   type CampoTemplate,
@@ -66,6 +69,7 @@ export function TemplateEditorModal({ open, onClose, onSave, template }: Props) 
         setPrintConfig({ ...defaultPrintConfig });
       }
       setEditorTab("campos");
+      setShowPreview(false);
     }
   }, [open, template]);
 
@@ -154,6 +158,33 @@ export function TemplateEditorModal({ open, onClose, onSave, template }: Props) 
   };
 
   const canSave = nome.trim() && campos.length > 0 && campos.every((c) => c.label.trim());
+
+  // ============================================================
+  // ABRIR JANELA DE IMPRESSÃO REAL
+  // ============================================================
+  const handlePrintPreview = () => {
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = 'none';
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentWindow?.document;
+    if (doc) {
+      doc.open();
+      doc.write(previewHtml);
+      doc.close();
+      iframe.contentWindow?.focus();
+      iframe.contentWindow?.print();
+      iframe.contentWindow!.onafterprint = () => document.body.removeChild(iframe);
+      setTimeout(() => {
+        if (document.body.contains(iframe)) document.body.removeChild(iframe);
+      }, 60000);
+    }
+  };
 
   return (
     <>
@@ -385,12 +416,15 @@ export function TemplateEditorModal({ open, onClose, onSave, template }: Props) 
 
             {/* Footer */}
             <div className="px-5 py-3 border-t flex gap-2 justify-between shrink-0">
-              <Button variant="outline" onClick={() => setShowPreview(true)} className="gap-1.5">
-                <Eye className="h-4 w-4" /> Visualizar Impressão
-              </Button>
               <div className="flex gap-2">
-                <Button variant="outline" onClick={onClose}>Cancelar</Button>
-                <Button disabled={!canSave} onClick={handleSave}>Salvar</Button>
+
+                <Button variant="outline" size="sm" onClick={handlePrintPreview} className="gap-1.5">
+                  <Printer className="h-4 w-4" /> Visualizar impressão
+                </Button>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={onClose}>Cancelar</Button>
+                <Button size="sm" disabled={!canSave} onClick={handleSave}>Salvar</Button>
               </div>
             </div>
           </div>
@@ -406,9 +440,14 @@ export function TemplateEditorModal({ open, onClose, onSave, template }: Props) 
                 <Eye className="h-4 w-4" />
                 <span>Preview — {printConfig.paperSize.toUpperCase()} • {printConfig.orientation === "portrait" ? "Retrato" : "Paisagem"} • {paperDims.w}×{paperDims.h}mm</span>
               </div>
-              <Button variant="ghost" size="icon" onClick={() => setShowPreview(false)}>
-                <X className="h-4 w-4" />
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" onClick={handlePrintPreview} className="gap-1.5">
+                  <Printer className="h-4 w-4" /> Imprimir
+                </Button>
+                <Button variant="ghost" size="icon" onClick={() => setShowPreview(false)}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
             <div className="flex-1 overflow-auto bg-muted/40 flex justify-center p-6">
               <div

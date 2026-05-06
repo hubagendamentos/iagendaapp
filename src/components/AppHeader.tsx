@@ -28,7 +28,7 @@ const menuStructure: { label: string; items: MenuItem[] }[] = [
     {
         label: "Principal",
         items: [
-            { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
+            { title: "Painel", url: "/dashboard", icon: LayoutDashboard },
             { title: "Agenda", url: "/dashboard/agenda", icon: Calendar, permission: "agenda" },
             { title: "Atendimentos", url: "/dashboard/atendimentos", icon: ListChecks, permission: "atendimentos" },
             { title: "Pacientes", url: "/dashboard/pacientes", icon: Users, permission: "pacientes" },
@@ -223,7 +223,7 @@ export function AppHeader() {
                         <DropdownMenu>
                             <DropdownMenuTrigger className="flex items-center gap-1.5 px-2.5 py-2 text-sm font-medium rounded-md hover:bg-accent transition-colors whitespace-nowrap">
                                 <Settings className="h-4 w-4" />
-                                <span className="hidden lg:inline">Mais</span>
+                                <span className="hidden lg:inline">Outros</span>
                                 <ChevronDown className="h-3 w-3 opacity-50 hidden lg:block" />
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="start" className="w-48">
