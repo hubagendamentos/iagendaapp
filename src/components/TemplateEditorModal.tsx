@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Trash2, ArrowUp, ArrowDown, Eye } from "lucide-react";
+import { Plus, Trash2, ArrowUp, ArrowDown, Eye, X } from "lucide-react";
 import {
   type TemplateClinico,
   type CampoTemplate,
@@ -48,7 +48,7 @@ export function TemplateEditorModal({ open, onClose, onSave, template }: Props) 
   const [campos, setCampos] = useState<CampoTemplate[]>([]);
   const [printConfig, setPrintConfig] = useState<PrintConfig>({ ...defaultPrintConfig });
   const [editorTab, setEditorTab] = useState("campos");
-  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [showPreview, setShowPreview] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -155,26 +155,20 @@ export function TemplateEditorModal({ open, onClose, onSave, template }: Props) 
 
   const canSave = nome.trim() && campos.length > 0 && campos.every((c) => c.label.trim());
 
-  // Scale factor: fit paper preview in ~320px width
-  const previewMaxW = 320;
-  const scale = previewMaxW / paperDims.w;
-  const scaledH = paperDims.h * scale;
-
   return (
-    <Dialog open={open} onOpenChange={() => onClose()}>
-      <DialogContent className="!inset-0 !translate-x-0 !translate-y-0 !top-0 !left-0 sm:!inset-auto sm:!left-[50%] sm:!top-[50%] sm:!translate-x-[-50%] sm:!translate-y-[-50%] rounded-none sm:rounded-lg w-full sm:w-auto sm:max-w-[95vw] sm:min-w-[900px] max-h-[100dvh] sm:max-h-[92vh] overflow-hidden p-0">
-        <div className="flex flex-col h-[100dvh] sm:h-[92vh]">
-          {/* Header */}
-          <div className="px-5 py-4 border-b shrink-0">
-            <DialogHeader>
-              <DialogTitle>{template ? "Editar Modelo Clínico" : "Novo Modelo Clínico"}</DialogTitle>
-            </DialogHeader>
-          </div>
+    <>
+      <Dialog open={open} onOpenChange={() => onClose()}>
+        <DialogContent className="!inset-0 !translate-x-0 !translate-y-0 !top-0 !left-0 sm:!inset-auto sm:!left-[50%] sm:!top-[50%] sm:!translate-x-[-50%] sm:!translate-y-[-50%] rounded-none sm:rounded-lg w-full sm:w-auto sm:max-w-[700px] max-h-[100dvh] sm:max-h-[92vh] overflow-hidden p-0">
+          <div className="flex flex-col h-[100dvh] sm:h-[92vh]">
+            {/* Header */}
+            <div className="px-5 py-4 border-b shrink-0">
+              <DialogHeader>
+                <DialogTitle>{template ? "Editar Modelo Clínico" : "Novo Modelo Clínico"}</DialogTitle>
+              </DialogHeader>
+            </div>
 
-          {/* Body: 2 columns */}
-          <div className="flex-1 flex flex-col sm:flex-row overflow-hidden">
-            {/* LEFT: Configuration */}
-            <div className="flex-1 overflow-y-auto p-5 space-y-5 border-r">
+            {/* Body: single column */}
+            <div className="flex-1 overflow-y-auto p-5 space-y-5">
               {/* Name & Type */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="space-y-1.5 sm:col-span-1">
@@ -389,42 +383,49 @@ export function TemplateEditorModal({ open, onClose, onSave, template }: Props) 
               </Tabs>
             </div>
 
-            {/* RIGHT: Preview */}
-            <div className="hidden sm:flex flex-col w-[360px] shrink-0 bg-muted/30 p-4 items-center overflow-y-auto">
-              <div className="flex items-center gap-2 mb-3 text-sm text-muted-foreground">
-                <Eye className="h-4 w-4" />
-                <span>Preview em tempo real</span>
+            {/* Footer */}
+            <div className="px-5 py-3 border-t flex gap-2 justify-between shrink-0">
+              <Button variant="outline" onClick={() => setShowPreview(true)} className="gap-1.5">
+                <Eye className="h-4 w-4" /> Visualizar Impressão
+              </Button>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={onClose}>Cancelar</Button>
+                <Button disabled={!canSave} onClick={handleSave}>Salvar</Button>
               </div>
-              <div
-                className="bg-white rounded shadow-md overflow-hidden border"
-                style={{ width: previewMaxW, height: scaledH }}
-              >
-                <iframe
-                  ref={iframeRef}
-                  srcDoc={previewHtml}
-                  className="border-0"
-                  title="Preview do modelo"
-                  style={{
-                    width: paperDims.w,
-                    height: paperDims.h,
-                    transform: `scale(${scale})`,
-                    transformOrigin: "top left",
-                  }}
-                />
-              </div>
-              <p className="text-[10px] text-muted-foreground mt-2">
-                {printConfig.paperSize.toUpperCase()} • {printConfig.orientation === "portrait" ? "Retrato" : "Paisagem"} • {paperDims.w}×{paperDims.h}mm
-              </p>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
 
-          {/* Footer */}
-          <div className="px-5 py-3 border-t flex gap-2 justify-end shrink-0">
-            <Button variant="outline" onClick={onClose}>Cancelar</Button>
-            <Button disabled={!canSave} onClick={handleSave}>Salvar</Button>
+      {/* Fullscreen Preview Modal */}
+      <Dialog open={showPreview} onOpenChange={() => setShowPreview(false)}>
+        <DialogContent className="!inset-0 !translate-x-0 !translate-y-0 !top-0 !left-0 rounded-none w-full h-[100dvh] max-w-none p-0">
+          <div className="flex flex-col h-full">
+            <div className="px-5 py-3 border-b flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Eye className="h-4 w-4" />
+                <span>Preview — {printConfig.paperSize.toUpperCase()} • {printConfig.orientation === "portrait" ? "Retrato" : "Paisagem"} • {paperDims.w}×{paperDims.h}mm</span>
+              </div>
+              <Button variant="ghost" size="icon" onClick={() => setShowPreview(false)}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="flex-1 overflow-auto bg-muted/40 flex justify-center p-6">
+              <div
+                className="bg-white shadow-lg border rounded"
+                style={{ width: paperDims.w * 3.78, minHeight: paperDims.h * 3.78 }}
+              >
+                <iframe
+                  srcDoc={previewHtml}
+                  className="border-0 w-full h-full"
+                  title="Preview do modelo"
+                  style={{ minHeight: paperDims.h * 3.78 }}
+                />
+              </div>
+            </div>
           </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
