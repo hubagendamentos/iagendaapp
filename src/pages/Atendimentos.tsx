@@ -1,7 +1,11 @@
+// ============================================================
+// Atendimentos.tsx (COMPLETO - com botão Atestado)
+// ============================================================
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { format, isToday, parse } from "date-fns";
 import { useAppointments } from "@/contexts/AppointmentsContext";
+import { useTimeline } from "@/contexts/TimelineContext";
 import { useUser } from "@/contexts/UserContext";
 import { useCaixa } from "@/contexts/CaixaContext";
 import { Button } from "@/components/ui/button";
@@ -21,9 +25,13 @@ import {
   FileText,
   Filter,
   User,
+  PlayCircle,
 } from "lucide-react";
 import { Appointment, AppointmentStatus } from "@/components/AppointmentModal";
 import { EncerrarAtendimentoModal } from "@/components/EncerrarAtendimentoModal";
+import { ReceitaModal } from "@/components/ReceitaModal";
+import { ReceitaPreviewModal } from "@/components/ReceitaPreviewModal";
+import { mockPacientes } from "@/components/FichaPacienteNormal";
 import { toast } from "@/hooks/use-toast";
 import { PageHeader } from "@/components/ui/page-header";
 
@@ -68,7 +76,8 @@ type FilterView = "all" | "in_progress" | "queue" | "completed";
 
 const Atendimentos = () => {
   const { hasPermission, clinic, professionalId: userProfId, user } = useUser();
-  const { getAppointmentsByDate, updateAppointmentStatus, updateAppointment, appointments, clearActiveAppointment, activeAppointment } = useAppointments();
+  const { getAppointmentsByDate, updateAppointmentStatus, updateAppointment, appointments, clearActiveAppointment, activeAppointment, startAppointment } = useAppointments();
+  const { addTimelineItem } = useTimeline();
   const { addLancamento, addPagamentos } = useCaixa();
   const navigate = useNavigate();
   const isClinic = clinic?.type === "clinic";
@@ -77,6 +86,12 @@ const Atendimentos = () => {
   const [profFilter, setProfFilter] = useState<string>("all");
   const [viewFilter, setViewFilter] = useState<FilterView>("all");
   const [encerrarApt, setEncerrarApt] = useState<Appointment | null>(null);
+
+  // Estados para o modal de documento (atestado/declaração)
+  const [documentoModalOpen, setDocumentoModalOpen] = useState(false);
+  const [documentoPaciente, setDocumentoPaciente] = useState<{ id: string; nome: string; cpf?: string; celular?: string; nascimento?: string } | null>(null);
+  const [documentoTipo, setDocumentoTipo] = useState<"atestado" | "declaracao" | "solicitacao">("atestado");
+  const [previewDocumentoId, setPreviewDocumentoId] = useState<string | null>(null);
 
   const selectedDate = parse(dateStr, "yyyy-MM-dd", new Date());
   const allAppointments = getAppointmentsByDate(selectedDate);
@@ -96,21 +111,17 @@ const Atendimentos = () => {
     return list.sort((a, b) => a.time.localeCompare(b.time));
   }, [allAppointments, isClinic, userProfId, profFilter]);
 
-  // 🔵 Em atendimento
   const inProgress = filtered.filter((a) => a.status === "in_progress");
 
-  // ⚪ Fila com prioridade
   const queue = filtered
     .filter((a) => a.status === "scheduled" || a.status === "confirmed")
     .sort((a, b) => {
       const aLate = a.time < currentTimeStr ? 1 : 0;
       const bLate = b.time < currentTimeStr ? 1 : 0;
-
       if (aLate !== bLate) return bLate - aLate;
       return a.time.localeCompare(b.time);
     });
 
-  // ✅ Finalizados
   const completed = filtered.filter((a) => a.status === "completed");
 
   const handleStatusChange = (id: string, status: AppointmentStatus) => {
@@ -122,7 +133,6 @@ const Atendimentos = () => {
     totalComDesconto?: number;
   }) => {
     const profName = professionals.find((p) => p.id === apt.professionalId)?.name || "Profissional";
-
     const now = new Date().toISOString();
 
     addPagamentos(data.pagamentos.map((p) => ({
@@ -151,11 +161,7 @@ const Atendimentos = () => {
     });
 
     const totalPago = (apt.valor_pago ?? 0) + data.pagamentos.reduce((s, p) => s + p.valor, 0);
-
-    // USAR totalComDesconto se veio do modal, senão o valor original
     const valorReferencia = data.totalComDesconto !== undefined ? data.totalComDesconto : (apt.price ?? 0);
-
-    // Se pagou o valor com desconto, está PAGO
     const statusPagamento = totalPago >= valorReferencia ? "pago" : totalPago > 0 ? "parcial" : "pendente";
 
     updateAppointment(apt.id, {
@@ -169,6 +175,20 @@ const Atendimentos = () => {
       description: statusPagamento === "pago" ? "Atendimento totalmente pago." : "Pagamento registrado."
     });
     setEncerrarApt(null);
+  };
+
+  // Abrir modal de documento (atestado)
+  const handleAbrirDocumento = (apt: Appointment, tipo: "atestado" | "declaracao" | "solicitacao") => {
+    const pacienteMock = mockPacientes.find(p => p.id === apt.patientId);
+    setDocumentoPaciente({
+      id: apt.patientId || "",
+      nome: apt.patientName,
+      cpf: pacienteMock?.cpf,
+      celular: pacienteMock?.celular,
+      nascimento: pacienteMock?.nascimento,
+    });
+    setDocumentoTipo(tipo);
+    setDocumentoModalOpen(true);
   };
 
   const renderCard = (apt: Appointment, isNext = false) => {
@@ -290,7 +310,6 @@ const Atendimentos = () => {
                         return;
                       }
 
-                      // Verificar se o profissional já tem atendimento em andamento
                       const profTemAberto = appointments.some(
                         (a) => a.status === "in_progress" && a.professionalId === apt.professionalId && a.id !== apt.id
                       );
@@ -307,6 +326,7 @@ const Atendimentos = () => {
                       navigate(`/dashboard/atendimento/${appointmentCompleto.patientId}/${appointmentCompleto.id}`);
                     }}
                   >
+                    <PlayCircle className="w-3.5 h-3.5 mr-1" />
                     Iniciar
                   </Button>
                 )}
@@ -371,18 +391,30 @@ const Atendimentos = () => {
               </>
             )}
 
-            {apt.status === "completed" &&
-              apt.status_pagamento !== "pago" &&
-              hasPermission("encerrarAtendimentoFinanceiro") && (
+            {apt.status === "completed" && (
+              <>
+                {apt.status_pagamento !== "pago" && hasPermission("encerrarAtendimentoFinanceiro") && (
+                  <Button
+                    size="sm"
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                    onClick={() => setEncerrarApt(apt)}
+                  >
+                    <DollarSign className="w-3.5 h-3.5 mr-1" />
+                    Encerrar
+                  </Button>
+                )}
+
+                {/* BOTÃO ATESTADO */}
                 <Button
                   size="sm"
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
-                  onClick={() => setEncerrarApt(apt)}
+                  variant="outline"
+                  onClick={() => handleAbrirDocumento(apt, "atestado")}
                 >
-                  <DollarSign className="w-3.5 h-3.5 mr-1" />
-                  Encerrar
+                  <FileText className="w-3.5 h-3.5 mr-1" />
+                  Atestado
                 </Button>
-              )}
+              </>
+            )}
 
             {apt.status_pagamento === "pago" && (
               <span className="text-xs text-emerald-600 font-medium flex items-center gap-1 whitespace-nowrap">
@@ -429,22 +461,22 @@ const Atendimentos = () => {
         title="Atendimentos"
         subtitle="Acompanhe o fluxo dos atendimentos e gerencie cada etapa do atendimento clínico."
       />
-      <div className="flex gap-3 mb-6 flex-wrap">
+      <div className="flex gap-3 mb-6 flex-wrap items-end">
         <div className="relative">
+          <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             type="date"
             value={dateStr}
             onChange={(e) => setDateStr(e.target.value)}
-            className="pl-9"
+            className="pl-9 w-[160px]"
           />
-          <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" />
         </div>
 
         {isClinic && (
           <Select value={profFilter} onValueChange={setProfFilter}>
             <SelectTrigger className="w-[220px]">
               <User className="w-4 h-4 mr-2 text-muted-foreground" />
-              <SelectValue placeholder="Filtrar por Profissional" />
+              <SelectValue placeholder="Profissional" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos os Profissionais</SelectItem>
@@ -459,7 +491,7 @@ const Atendimentos = () => {
 
         <Select value={viewFilter} onValueChange={(value) => setViewFilter(value as FilterView)}>
           <SelectTrigger className="w-[200px]">
-            <Filter className="w-4 h-4 mr-2" />
+            <Filter className="w-4 h-4 mr-2 text-muted-foreground" />
             <SelectValue placeholder="Filtrar por status" />
           </SelectTrigger>
           <SelectContent>
@@ -491,6 +523,7 @@ const Atendimentos = () => {
         <Section title="✅ Finalizados" list={completed} />
       )}
 
+      {/* MODAL ENCERRAMENTO FINANCEIRO */}
       {encerrarApt && (
         <EncerrarAtendimentoModal
           open={!!encerrarApt}
@@ -500,6 +533,38 @@ const Atendimentos = () => {
           onConfirm={(data) => handleEncerrar(encerrarApt, data)}
         />
       )}
+
+      {/* MODAL DE DOCUMENTO (ATESTADO) */}
+      {documentoPaciente && (
+        <ReceitaModal
+          open={documentoModalOpen}
+          onClose={() => { setDocumentoModalOpen(false); setDocumentoPaciente(null); }}
+          patientId={documentoPaciente.id}
+          appointmentId=""
+          patientName={documentoPaciente.nome}
+          filterTipo={documentoTipo}
+          paciente={{
+            nome: documentoPaciente.nome,
+            cpf: documentoPaciente.cpf,
+            nascimento: documentoPaciente.nascimento,
+            celular: documentoPaciente.celular,
+          }}
+          onSaved={(id, nome) => {
+            setPreviewDocumentoId(id);
+            toast({
+              title: "Documento gerado",
+              description: `${nome} salvo com sucesso.`
+            });
+          }}
+        />
+      )}
+
+      {/* PREVIEW DO DOCUMENTO */}
+      <ReceitaPreviewModal
+        open={!!previewDocumentoId}
+        onClose={() => setPreviewDocumentoId(null)}
+        receitaId={previewDocumentoId}
+      />
     </div>
   );
 };

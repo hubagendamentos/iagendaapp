@@ -28,7 +28,7 @@ const upcomingAppointments = [
 ];
 
 const DashboardHome = () => {
-  const { userType } = useUser();
+  const { userType, hasPermission } = useUser();
   const navigate = useNavigate();
 
   const stats = [
@@ -52,14 +52,18 @@ const DashboardHome = () => {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button size="sm" onClick={() => navigate("/dashboard/agenda")} variant="outline" className="gap-1.5">
-            <Calendar className="h-4 w-4" />
-            Ver Agenda
-          </Button>
-          <Button size="sm" onClick={() => navigate("/dashboard/agenda")} className="gap-1.5">
-            <Plus className="h-4 w-4" />
-            Novo Agendamento
-          </Button>
+          {hasPermission("agenda") && (
+            <Button size="sm" onClick={() => navigate("/dashboard/agenda")} variant="outline" className="gap-1.5">
+              <Calendar className="h-4 w-4" />
+              Ver Agenda
+            </Button>
+          )}
+          {hasPermission("agenda") && (
+            <Button size="sm" onClick={() => navigate("/dashboard/agenda")} className="gap-1.5">
+              <Plus className="h-4 w-4" />
+              Novo Agendamento
+            </Button>
+          )}
         </div>
       </div>
 
@@ -84,9 +88,11 @@ const DashboardHome = () => {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-3">
           <CardTitle className="text-base font-semibold">Próximos Atendimentos</CardTitle>
-          <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard/agenda")} className="gap-1 text-xs text-muted-foreground">
-            Ver todos <ArrowRight className="h-3 w-3" />
-          </Button>
+          {hasPermission("agenda") && (
+            <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard/agenda")} className="gap-1 text-xs text-muted-foreground">
+              Ver todos <ArrowRight className="h-3 w-3" />
+            </Button>
+          )}
         </CardHeader>
         <CardContent className="p-0">
           <div className="divide-y divide-border">
