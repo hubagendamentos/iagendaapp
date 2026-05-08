@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar } from "lucide-react";
 import { useUser, type UserType } from "@/contexts/UserContext";
+import { LogoMark } from "@/components/Logo";
 
 const Login = () => {
   const [tab, setTab] = useState("login");
