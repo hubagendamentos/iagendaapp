@@ -9,7 +9,6 @@ import { DashboardMetrics } from "@/components/dashboard/DashboardMetrics";
 import { DashboardCharts } from "@/components/dashboard/DashboardCharts";
 import { UpcomingAppointmentsSidebar } from "@/components/dashboard/UpcomingAppointmentsSidebar";
 import { DashboardProfessionalRanking } from "@/components/dashboard/DashboardProfessionalRanking";
-import { DashboardAttendanceStats } from "@/components/dashboard/DashboardAttendanceStats";
 
 const DashboardHome = () => {
   const { userType, hasPermission } = useUser();
@@ -24,14 +23,14 @@ const DashboardHome = () => {
   const m = useDashboardMetrics(filters);
 
   return (
-    <div className="p-4 sm:p-6 space-y-4 animate-fade-in">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6 animate-fade-in max-w-[1600px] mx-auto">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h2 className="text-xl sm:text-2xl font-semibold text-foreground tracking-tight">
+          <h2 className="text-2xl font-semibold text-foreground tracking-tight">
             Visão geral
           </h2>
-          <p className="text-muted-foreground mt-1 text-sm">
+          <p className="text-muted-foreground mt-0.5 text-sm">
             {userType === "clinic"
               ? "Indicadores e desempenho da sua clínica em tempo real."
               : "Acompanhe seus atendimentos e métricas do dia."}
@@ -56,41 +55,17 @@ const DashboardHome = () => {
       {/* Filters */}
       <DashboardFilters filters={filters} onChange={setFilters} showProfessional={userType === "clinic"} />
 
-      {/* Main 2-column layout */}
-      <div className="grid grid-cols-1 xl:grid-cols-[280px_1fr] gap-4">
-        {/* Sidebar — upcoming appointments */}
-        <div className="xl:max-h-[calc(100vh-220px)] xl:sticky xl:top-4">
-          <UpcomingAppointmentsSidebar appointments={m.upcoming} />
+      {/* KPIs principais */}
+      <DashboardMetrics kpis={m.kpis} showProfessionals={userType === "clinic"} />
+
+      {/* Operação + Sidebar */}
+      <div className="grid grid-cols-1 xl:grid-cols-[1fr_300px] gap-6">
+        <div className="space-y-6 min-w-0">
+          <DashboardCharts dailySeries={m.dailySeries} statusPie={m.statusPie} />
+          <DashboardProfessionalRanking data={m.byProfessional} />
         </div>
-
-        {/* Main analytics */}
-        <div className="space-y-4 min-w-0">
-          <DashboardMetrics
-            kpis={m.kpis}
-            showProfessionals={userType === "clinic"}
-          />
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-            <div className="lg:col-span-2">
-              <DashboardAttendanceStats
-                total={m.kpis.total}
-                confirmed={m.kpis.confirmed}
-                scheduled={m.kpis.scheduled}
-                cancelled={m.kpis.cancelled}
-                missed={m.kpis.missed}
-              />
-            </div>
-            <DashboardProfessionalRanking data={m.byProfessional} />
-          </div>
-
-          <DashboardCharts
-            dailySeries={m.dailySeries}
-            statusPie={m.statusPie}
-            byProfessional={m.byProfessional}
-            byHour={m.byHour}
-            revenueSeries={m.revenueSeries}
-            avgTimeSeries={m.avgTimeSeries}
-          />
+        <div className="xl:max-h-[calc(100vh-260px)] xl:sticky xl:top-4">
+          <UpcomingAppointmentsSidebar appointments={m.upcoming} />
         </div>
       </div>
     </div>
