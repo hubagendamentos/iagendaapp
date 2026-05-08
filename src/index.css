@@ -6,93 +6,101 @@
 
 @layer base {
   :root {
-    --background: 210 20% 98%;
-    --foreground: 215 25% 15%;
+    /* Mais Clínica — Light */
+    --background: 210 40% 98%;          /* #F8FAFC */
+    --foreground: 217 13% 25%;          /* deeper slate */
 
-    --card: 0 0% 100%;
-    --card-foreground: 215 25% 15%;
+    --card: 0 0% 100%;                  /* #FFFFFF */
+    --card-foreground: 217 13% 25%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 15%;
+    --popover-foreground: 217 13% 25%;
 
-    --primary: 213 70% 50%;
+    --primary: 215 90% 44%;             /* #0B5ED7 */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 214 20% 94%;
-    --secondary-foreground: 215 25% 15%;
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 212 64% 23%;/* #163A5F */
 
-    --muted: 214 15% 93%;
-    --muted-foreground: 215 12% 50%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 217 13% 45%;    /* #4B5563-ish */
 
-    --accent: 213 60% 95%;
-    --accent-foreground: 213 70% 40%;
+    --accent: 155 78% 95%;
+    --accent-foreground: 155 78% 28%;   /* dark green */
+
+    --success: 155 78% 43%;             /* #19C37D */
+    --success-foreground: 0 0% 100%;
 
     --destructive: 0 72% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 214 20% 90%;
-    --input: 214 20% 90%;
-    --ring: 213 70% 50%;
+    --border: 220 13% 91%;              /* #E5E7EB */
+    --input: 220 13% 91%;
+    --ring: 215 90% 44%;
 
-    --radius: 0.625rem;
+    --radius: 0.875rem;                 /* 14px */
 
-    --status-scheduled: 215 15% 65%;
-    --status-confirmed: 152 60% 42%;
+    --status-scheduled: 220 9% 65%;
+    --status-confirmed: 155 78% 43%;
     --status-cancelled: 0 72% 55%;
     --status-missed: 30 85% 55%;
 
-    --sidebar-background: 215 25% 15%;
-    --sidebar-foreground: 214 15% 85%;
-    --sidebar-primary: 213 70% 55%;
+    --sidebar-background: 222 47% 8%;   /* #0B1120 */
+    --sidebar-foreground: 220 14% 90%;
+    --sidebar-primary: 215 90% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 215 20% 22%;
-    --sidebar-accent-foreground: 214 15% 90%;
-    --sidebar-border: 215 18% 25%;
-    --sidebar-ring: 213 70% 55%;
+    --sidebar-accent: 220 39% 14%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 215 28% 17%;
+    --sidebar-ring: 215 90% 50%;
   }
 
   .dark {
-    --background: 220 20% 10%;
-    --foreground: 210 15% 90%;
+    /* Mais Clínica — Dark */
+    --background: 222 47% 11%;          /* #0F172A */
+    --foreground: 220 14% 96%;          /* #F3F4F6 */
 
-    --card: 220 18% 13%;
-    --card-foreground: 210 15% 90%;
+    --card: 220 39% 11%;                /* #111827 */
+    --card-foreground: 220 14% 96%;
 
-    --popover: 220 18% 13%;
-    --popover-foreground: 210 15% 90%;
+    --popover: 220 39% 11%;
+    --popover-foreground: 220 14% 96%;
 
-    --primary: 213 70% 55%;
+    --primary: 215 90% 54%;             /* slightly brighter for contrast */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 15% 18%;
-    --secondary-foreground: 210 15% 85%;
+    --secondary: 215 28% 17%;
+    --secondary-foreground: 220 14% 96%;
 
-    --muted: 220 12% 18%;
-    --muted-foreground: 215 10% 55%;
+    --muted: 215 28% 17%;               /* #1F2937 */
+    --muted-foreground: 218 11% 65%;    /* #9CA3AF */
 
-    --accent: 213 40% 20%;
-    --accent-foreground: 213 60% 70%;
+    --accent: 155 60% 22%;
+    --accent-foreground: 155 78% 75%;
 
-    --destructive: 0 65% 50%;
+    --success: 155 78% 48%;
+    --success-foreground: 0 0% 100%;
+
+    --destructive: 0 65% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 12% 22%;
-    --input: 220 12% 22%;
-    --ring: 213 70% 55%;
+    --border: 215 28% 17%;              /* #1F2937 */
+    --input: 215 28% 17%;
+    --ring: 215 90% 54%;
 
-    --status-scheduled: 215 15% 55%;
-    --status-confirmed: 152 50% 40%;
-    --status-cancelled: 0 65% 50%;
-    --status-missed: 30 75% 50%;
+    --status-scheduled: 218 11% 55%;
+    --status-confirmed: 155 78% 45%;
+    --status-cancelled: 0 65% 55%;
+    --status-missed: 30 75% 55%;
 
-    --sidebar-background: 220 22% 8%;
-    --sidebar-foreground: 214 15% 80%;
-    --sidebar-primary: 213 70% 55%;
+    --sidebar-background: 222 47% 8%;   /* #0B1120 */
+    --sidebar-foreground: 220 14% 90%;
+    --sidebar-primary: 215 90% 54%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 18% 15%;
-    --sidebar-accent-foreground: 214 15% 85%;
-    --sidebar-border: 220 15% 18%;
-    --sidebar-ring: 213 70% 55%;
+    --sidebar-accent: 215 28% 17%;
+    --sidebar-accent-foreground: 220 14% 96%;
+    --sidebar-border: 215 28% 17%;
+    --sidebar-ring: 215 90% 54%;
   }
 }
 

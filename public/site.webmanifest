@@ -1,0 +1,10 @@
+{
+  "name": "Mais Clínica",
+  "short_name": "Mais Clínica",
+  "description": "Mais controle. Mais organização. Mais clínica.",
+  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }],
+  "theme_color": "#0B5ED7",
+  "background_color": "#F8FAFC",
+  "display": "standalone",
+  "start_url": "/"
+}

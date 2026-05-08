@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar } from "lucide-react";
 import { useUser, type UserType } from "@/contexts/UserContext";
+import { LogoMark } from "@/components/Logo";
 
 const Login = () => {
   const [tab, setTab] = useState("login");
@@ -80,12 +81,14 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <Card className="w-full max-w-md shadow-lg border-border/50">
         <CardHeader className="text-center space-y-3 pb-2">
-          <div className="flex items-center justify-center gap-2 text-primary">
-            <Calendar className="h-8 w-8" />
-            <span className="text-2xl font-bold tracking-tight">Hub Agendamentos</span>
+          <div className="flex items-center justify-center gap-2">
+            <LogoMark className="h-9 w-9" />
+            <span className="text-2xl font-bold tracking-tight text-foreground">
+              Mais <span className="text-[#19C37D]">Clínica</span>
+            </span>
           </div>
           <p className="text-muted-foreground text-sm">
-            Sistema de agendamento para clínicas e profissionais
+            Mais controle. Mais organização. Mais clínica.
           </p>
         </CardHeader>
 

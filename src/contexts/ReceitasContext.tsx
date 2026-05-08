@@ -41,7 +41,7 @@ export const defaultPrintConfig: PrintConfig = {
   showHeader: true,
   headerText: "Clínica Saúde Total",
   showFooter: true,
-  footerText: "Documento gerado eletronicamente por Hub Agendamentos",
+  footerText: "Documento gerado eletronicamente por Mais Clínica",
   fontSize: 12,
   lineSpacing: 1.5,
 };

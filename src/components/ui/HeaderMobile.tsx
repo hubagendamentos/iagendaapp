@@ -1,5 +1,6 @@
 import { Menu } from "lucide-react";
 import { useSidebar } from "@/components/ui/sidebar";
+import { LogoMark } from "@/components/Logo";
 
 export function HeaderMobile() {
     const { toggleSidebar } = useSidebar();
@@ -10,8 +11,9 @@ export function HeaderMobile() {
                 <Menu className="h-6 w-6" />
             </button>
 
-            <span className="font-semibold text-sm">
-                Hub Agendamentos
+            <span className="inline-flex items-center gap-1.5 font-semibold text-sm">
+                <LogoMark className="h-5 w-5" />
+                Mais <span className="text-[#19C37D]">Clínica</span>
             </span>
 
             <div className="w-6" /> {/* espaço pra centralizar */}
