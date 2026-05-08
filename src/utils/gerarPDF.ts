@@ -87,7 +87,7 @@ export function gerarConteudoImpressao(dados: DadosPDF): string {
 
       <!-- Rodapé -->
       <div class="footer">
-        <p>Documento gerado eletronicamente por Hub Agendamentos</p>
+        <p>Documento gerado eletronicamente por Mais Clínica</p>
       </div>
     </body>
     </html>
