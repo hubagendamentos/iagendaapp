@@ -1,125 +1,98 @@
-import { Calendar, Users, UserCog, Clock, Plus, ArrowRight } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState } from "react";
+import { Calendar, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { useUser } from "@/contexts/UserContext";
 import { useNavigate } from "react-router-dom";
-
-const statusColors: Record<string, string> = {
-  confirmed: "bg-green-100 text-green-700 border-green-200",
-  scheduled: "bg-muted text-muted-foreground border-border",
-  cancelled: "bg-red-100 text-red-700 border-red-200",
-  missed: "bg-orange-100 text-orange-700 border-orange-200",
-};
-
-const statusLabels: Record<string, string> = {
-  confirmed: "Confirmado",
-  scheduled: "Agendado",
-  cancelled: "Cancelado",
-  missed: "Faltou",
-};
-
-const upcomingAppointments = [
-  { id: "1", patientName: "Ana Oliveira", time: "09:00", professional: "Dr. João Silva", status: "confirmed", type: "Consulta" },
-  { id: "2", patientName: "Carlos Mendes", time: "10:00", professional: "Dr. João Silva", status: "scheduled", type: "Retorno" },
-  { id: "3", patientName: "Roberto Alves", time: "11:00", professional: "Dra. Maria Santos", status: "confirmed", type: "Exame" },
-  { id: "4", patientName: "Fernanda Lima", time: "14:00", professional: "Dr. Pedro Lima", status: "scheduled", type: "Consulta" },
-  { id: "5", patientName: "Patrícia Souza", time: "15:30", professional: "Dr. Pedro Lima", status: "scheduled", type: "Procedimento" },
-];
+import { useDashboardMetrics, type DashboardFilters as Filters } from "@/hooks/useDashboardMetrics";
+import { DashboardFilters } from "@/components/dashboard/DashboardFilters";
+import { DashboardMetrics } from "@/components/dashboard/DashboardMetrics";
+import { DashboardCharts } from "@/components/dashboard/DashboardCharts";
+import { UpcomingAppointmentsSidebar } from "@/components/dashboard/UpcomingAppointmentsSidebar";
+import { DashboardProfessionalRanking } from "@/components/dashboard/DashboardProfessionalRanking";
+import { DashboardAttendanceStats } from "@/components/dashboard/DashboardAttendanceStats";
 
 const DashboardHome = () => {
   const { userType, hasPermission } = useUser();
   const navigate = useNavigate();
 
-  const stats = [
-    { label: "Agendamentos Hoje", value: "12", icon: Calendar, show: true },
-    { label: "Pacientes Cadastrados", value: "248", icon: Users, show: true },
-    { label: "Profissionais", value: "8", icon: UserCog, show: userType === "clinic" },
-    { label: "Próxima Consulta", value: "09:00", icon: Clock, show: true },
-  ].filter((s) => s.show);
+  const [filters, setFilters] = useState<Filters>({
+    period: "today",
+    professionalId: "all",
+    status: "all",
+  });
 
-  const visibleAppointments = userType === "professional"
-    ? upcomingAppointments.filter((a) => a.professional === "Dr. João Silva")
-    : upcomingAppointments;
+  const m = useDashboardMetrics(filters);
 
   return (
-    <div className="p-4 sm:p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-4 animate-fade-in">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h2 className="text-xl sm:text-2xl font-semibold text-foreground">Bem-vindo de volta!</h2>
+          <h2 className="text-xl sm:text-2xl font-semibold text-foreground tracking-tight">
+            Visão geral
+          </h2>
           <p className="text-muted-foreground mt-1 text-sm">
-            {userType === "clinic" ? "Aqui está o resumo da sua clínica." : "Aqui está o resumo do seu dia."}
+            {userType === "clinic"
+              ? "Indicadores e desempenho da sua clínica em tempo real."
+              : "Acompanhe seus atendimentos e métricas do dia."}
           </p>
         </div>
         <div className="flex gap-2">
           {hasPermission("agenda") && (
-            <Button size="sm" onClick={() => navigate("/dashboard/agenda")} variant="outline" className="gap-1.5">
+            <Button size="sm" onClick={() => navigate("/dashboard/agenda")} variant="outline" className="gap-1.5 rounded-xl">
               <Calendar className="h-4 w-4" />
-              Ver Agenda
+              Agenda
             </Button>
           )}
           {hasPermission("agenda") && (
-            <Button size="sm" onClick={() => navigate("/dashboard/agenda")} className="gap-1.5">
+            <Button size="sm" onClick={() => navigate("/dashboard/agenda")} className="gap-1.5 rounded-xl">
               <Plus className="h-4 w-4" />
-              Novo Agendamento
+              Novo
             </Button>
           )}
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className={`grid grid-cols-1 sm:grid-cols-2 ${userType === "clinic" ? "lg:grid-cols-4" : "lg:grid-cols-3"} gap-4`}>
-        {stats.map((stat) => (
-          <Card key={stat.label} className="border-border/50">
-            <CardContent className="flex items-center gap-4 p-5">
-              <div className="h-11 w-11 rounded-lg bg-accent flex items-center justify-center shrink-0">
-                <stat.icon className="h-5 w-5 text-accent-foreground" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-foreground">{stat.value}</p>
-                <p className="text-xs text-muted-foreground">{stat.label}</p>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {/* Filters */}
+      <DashboardFilters filters={filters} onChange={setFilters} showProfessional={userType === "clinic"} />
 
-      {/* Upcoming Appointments */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-3">
-          <CardTitle className="text-base font-semibold">Próximos Atendimentos</CardTitle>
-          {hasPermission("agenda") && (
-            <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard/agenda")} className="gap-1 text-xs text-muted-foreground">
-              Ver todos <ArrowRight className="h-3 w-3" />
-            </Button>
-          )}
-        </CardHeader>
-        <CardContent className="p-0">
-          <div className="divide-y divide-border">
-            {visibleAppointments.map((apt) => (
-              <div key={apt.id} className="flex items-center justify-between gap-3 px-6 py-3">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="h-9 w-9 rounded-full bg-accent flex items-center justify-center shrink-0">
-                    <span className="text-xs font-medium text-accent-foreground">
-                      {apt.patientName.split(" ").map((w) => w[0]).join("").slice(0, 2)}
-                    </span>
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">{apt.patientName}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {apt.time} · {apt.type}
-                      {userType === "clinic" && ` · ${apt.professional}`}
-                    </p>
-                  </div>
-                </div>
-                <Badge variant="outline" className={`shrink-0 text-[10px] ${statusColors[apt.status]}`}>
-                  {statusLabels[apt.status]}
-                </Badge>
-              </div>
-            ))}
+      {/* Main 2-column layout */}
+      <div className="grid grid-cols-1 xl:grid-cols-[280px_1fr] gap-4">
+        {/* Sidebar — upcoming appointments */}
+        <div className="xl:max-h-[calc(100vh-220px)] xl:sticky xl:top-4">
+          <UpcomingAppointmentsSidebar appointments={m.upcoming} />
+        </div>
+
+        {/* Main analytics */}
+        <div className="space-y-4 min-w-0">
+          <DashboardMetrics
+            kpis={m.kpis}
+            showProfessionals={userType === "clinic"}
+          />
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+            <div className="lg:col-span-2">
+              <DashboardAttendanceStats
+                total={m.kpis.total}
+                confirmed={m.kpis.confirmed}
+                scheduled={m.kpis.scheduled}
+                cancelled={m.kpis.cancelled}
+                missed={m.kpis.missed}
+              />
+            </div>
+            <DashboardProfessionalRanking data={m.byProfessional} />
           </div>
-        </CardContent>
-      </Card>
+
+          <DashboardCharts
+            dailySeries={m.dailySeries}
+            statusPie={m.statusPie}
+            byProfessional={m.byProfessional}
+            byHour={m.byHour}
+            revenueSeries={m.revenueSeries}
+            avgTimeSeries={m.avgTimeSeries}
+          />
+        </div>
+      </div>
     </div>
   );
 };
