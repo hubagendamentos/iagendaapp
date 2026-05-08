@@ -181,9 +181,12 @@ export function AppHeader() {
                 <button
                     onClick={() => navigate("/dashboard")}
                     className="flex items-center gap-2 font-bold text-lg shrink-0 hover:opacity-80"
+                    aria-label="Mais Clínica"
                 >
-                    <Calendar className="h-6 w-6 text-primary" />
-                    <span className="hidden lg:inline">Hub Atendimentos</span>
+                    <LogoMark className="h-7 w-7" />
+                    <span className="hidden lg:inline">
+                      Mais <span className="text-[#19C37D]">Clínica</span>
+                    </span>
                 </button>
 
                 {/* Desktop Navigation */}
