@@ -84,8 +84,8 @@
     --destructive: 0 65% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 215 28% 17%;              /* #1F2937 */
-    --input: 215 28% 17%;
+    --border: 215 20% 20%;              /* softer divider */
+    --input: 215 20% 20%;
     --ring: 215 90% 54%;
 
     --status-scheduled: 218 11% 55%;
