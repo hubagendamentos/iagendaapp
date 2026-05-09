@@ -473,7 +473,7 @@ const PlanoContasModal = ({ open, onClose, onSave, planoContas, allPlanos }: { o
           </div>
           <div className="flex gap-2 justify-end pt-2">
             <Button variant="outline" onClick={onClose}>Cancelar</Button>
-            <Button disabled={!nome.trim()} onClick={() => { onSave({ id: planoContas?.id, nome: nome.trim(), tipo, categoriaPaiId, ativo }); onClose(); }}>Salvar</Button>
+            <Button disabled={!nome.trim()} onClick={() => { onSave({ id: planoContas?.id, nome: nome.trim(), tipo, tipoFinanceiro: tipo === "receita" ? "entrada" : "saida", categoriaPaiId, ativo }); onClose(); }}>Salvar</Button>
           </div>
         </div>
       </DialogContent>
@@ -524,10 +524,10 @@ const Cadastros = () => {
 
   const savePlanoContas = (data: Omit<PlanoContasType, "id"> & { id?: string }) => {
     if (data.id) {
-      updatePlano(data.id, { nome: data.nome, tipo: data.tipo, categoriaPaiId: data.categoriaPaiId, ativo: data.ativo });
+      updatePlano(data.id, { nome: data.nome, tipo: data.tipo, tipoFinanceiro: data.tipoFinanceiro, categoriaPaiId: data.categoriaPaiId, ativo: data.ativo });
       toast.success("Plano de contas atualizado");
     } else {
-      addPlano({ nome: data.nome, tipo: data.tipo, categoriaPaiId: data.categoriaPaiId, ativo: data.ativo });
+      addPlano({ nome: data.nome, tipo: data.tipo, tipoFinanceiro: data.tipoFinanceiro, categoriaPaiId: data.categoriaPaiId, ativo: data.ativo });
       toast.success("Plano de contas adicionado");
     }
   };
