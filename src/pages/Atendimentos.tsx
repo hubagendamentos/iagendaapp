@@ -129,7 +129,7 @@ const Atendimentos = () => {
   };
 
   const handleEncerrar = (apt: Appointment, data: {
-    pagamentos: Array<{ valor: number; formaPagamento: any; planoContasId: string }>;
+    pagamentos: Array<{ valor: number; formaPagamento: any; planoContasId: string; contaFinanceiraId: string }>;
     totalComDesconto?: number;
   }) => {
     const profName = professionals.find((p) => p.id === apt.professionalId)?.name || "Profissional";
@@ -150,12 +150,16 @@ const Atendimentos = () => {
         tipo: "entrada",
         origem: "agenda",
         atendimentoId: apt.id,
+        appointmentId: apt.id,
         paciente: apt.patientName,
         profissional: profName,
         profissionalId: apt.professionalId,
         valor: p.valor,
         formaPagamento: p.formaPagamento,
         planoContas: p.planoContasId,
+        contaFinanceiraId: p.contaFinanceiraId,
+        competencia: now.slice(0, 7),
+        usuarioNome: user?.name || "Sistema",
         dataHora: now,
       });
     });

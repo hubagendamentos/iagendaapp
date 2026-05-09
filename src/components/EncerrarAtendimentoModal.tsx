@@ -12,6 +12,7 @@ import type { Appointment } from "@/components/AppointmentModal";
 import type { FormaPagamento } from "@/contexts/CaixaContext";
 import { CreditCard, Wallet, Trash2, CheckCircle2 } from "lucide-react";
 import { usePlanoContas } from "@/contexts/PlanoContasContext";
+import { useFinancialAccounts } from "@/contexts/FinancialAccountsContext";
 import { format } from "date-fns";
 import { toast } from "sonner";
 
@@ -28,6 +29,7 @@ interface PagamentoRealizado {
   valor: number;
   formaPagamento: FormaPagamento;
   planoContasId: string;
+  contaFinanceiraId: string;
 }
 
 interface PagamentoLinha {
@@ -35,6 +37,7 @@ interface PagamentoLinha {
   valor: string;
   formaPagamento: FormaPagamento | "";
   planoContasId: string;
+  contaFinanceiraId: string;
 }
 
 interface Props {
@@ -48,6 +51,16 @@ interface Props {
 export function EncerrarAtendimentoModal({ open, onOpenChange, appointment, profissionalNome, onConfirm }: Props) {
   const { getPlanosReceita } = usePlanoContas();
   const planosReceita = getPlanosReceita();
+  const { accounts } = useFinancialAccounts();
+  const contasAtivas = accounts.filter((a) => a.ativo);
+
+  const LAST_CONTA_KEY = "lastContaFinanceiraId";
+  const getDefaultContaId = () => {
+    const last = typeof window !== "undefined" ? localStorage.getItem(LAST_CONTA_KEY) : null;
+    if (last && contasAtivas.some((c) => c.id === last)) return last;
+    const principal = contasAtivas.find((c) => c.nome.toLowerCase().includes("principal"));
+    return principal?.id ?? contasAtivas[0]?.id ?? "";
+  };
 
   const valorTotal = appointment.price ?? 0;
   const valorJaPago = appointment.valor_pago ?? 0;
@@ -64,7 +77,16 @@ export function EncerrarAtendimentoModal({ open, onOpenChange, appointment, prof
     valor: "",
     formaPagamento: "",
     planoContasId: "",
+    contaFinanceiraId: "",
   });
+
+  // Inicializa conta padrão ao abrir
+  useEffect(() => {
+    if (open) {
+      setLinhaAtual((prev) => ({ ...prev, contaFinanceiraId: prev.contaFinanceiraId || getDefaultContaId() }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   const totalJaConfirmado = useMemo(
     () => pagamentosConfirmados.reduce((s, p) => s + p.valor, 0),
@@ -85,7 +107,8 @@ export function EncerrarAtendimentoModal({ open, onOpenChange, appointment, prof
   const linhaPreenchida =
     parseFloat(linhaAtual.valor) > 0 &&
     linhaAtual.formaPagamento !== "" &&
-    linhaAtual.planoContasId !== "";
+    linhaAtual.planoContasId !== "" &&
+    linhaAtual.contaFinanceiraId !== "";
 
   const removerPagamento = (index: number) => {
     setPagamentosConfirmados((prev) => prev.filter((_, i) => i !== index));
@@ -96,7 +119,7 @@ export function EncerrarAtendimentoModal({ open, onOpenChange, appointment, prof
   // ============================================================
   const handleLancarRecebimento = () => {
     if (!linhaPreenchida) {
-      toast.error("Preencha valor, forma e plano de contas.");
+      toast.error("Preencha conta, valor, forma e plano de contas.");
       return;
     }
 
@@ -115,8 +138,14 @@ export function EncerrarAtendimentoModal({ open, onOpenChange, appointment, prof
         valor: valorLinha,
         formaPagamento: linhaAtual.formaPagamento as FormaPagamento,
         planoContasId: linhaAtual.planoContasId,
+        contaFinanceiraId: linhaAtual.contaFinanceiraId,
       },
     ];
+
+    // Persistir última conta utilizada
+    if (typeof window !== "undefined" && linhaAtual.contaFinanceiraId) {
+      localStorage.setItem(LAST_CONTA_KEY, linhaAtual.contaFinanceiraId);
+    }
 
     const totalNovo = novosPagamentos.reduce((s, p) => s + p.valor, 0);
 
@@ -135,6 +164,7 @@ export function EncerrarAtendimentoModal({ open, onOpenChange, appointment, prof
       valor: (totalComDesconto - totalNovo).toFixed(2),
       formaPagamento: "",
       planoContasId: "",
+      contaFinanceiraId: linhaAtual.contaFinanceiraId,
     });
     toast.info(`Restante: ${currency(totalComDesconto - totalNovo)}`);
   };
@@ -146,6 +176,7 @@ export function EncerrarAtendimentoModal({ open, onOpenChange, appointment, prof
       valor: "",
       formaPagamento: "",
       planoContasId: "",
+      contaFinanceiraId: getDefaultContaId(),
     });
     setDesconto("0");
   };
@@ -264,39 +295,51 @@ export function EncerrarAtendimentoModal({ open, onOpenChange, appointment, prof
                 ? `Novo recebimento (falta ${currency(restanteApos)})`
                 : "Forma de pagamento"}
             </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-5 gap-2">
-              <div>
-                <Input
-                  type="number"
-                  step="0.01"
-                  min="0.01"
-                  placeholder="0,00"
-                  value={linhaAtual.valor}
-                  onChange={(e) => setLinhaAtual((prev) => ({ ...prev, valor: e.target.value }))}
-                  className="h-9 text-sm"
-                />
-              </div>
-              <div className="sm:col-span-2">
-                <Select value={linhaAtual.formaPagamento} onValueChange={(v) => setLinhaAtual((prev) => ({ ...prev, formaPagamento: v as FormaPagamento }))}>
-                  <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Forma de pagamento" /></SelectTrigger>
-                  <SelectContent>
-                    {formasPagamento.map((f) => (
-                      <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="sm:col-span-2">
-                <Select value={linhaAtual.planoContasId} onValueChange={(v) => setLinhaAtual((prev) => ({ ...prev, planoContasId: v }))}>
-                  <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Plano de contas" /></SelectTrigger>
-                  <SelectContent>
-                    {planosReceita.map((p) => (
-                      <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <Select value={linhaAtual.contaFinanceiraId} onValueChange={(v) => setLinhaAtual((prev) => ({ ...prev, contaFinanceiraId: v }))}>
+                <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Conta Financeira" /></SelectTrigger>
+                <SelectContent>
+                  {contasAtivas.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={linhaAtual.formaPagamento} onValueChange={(v) => setLinhaAtual((prev) => ({ ...prev, formaPagamento: v as FormaPagamento }))}>
+                <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Forma de pagamento" /></SelectTrigger>
+                <SelectContent>
+                  {formasPagamento.map((f) => (
+                    <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={linhaAtual.planoContasId} onValueChange={(v) => setLinhaAtual((prev) => ({ ...prev, planoContasId: v }))}>
+                <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Plano de contas" /></SelectTrigger>
+                <SelectContent>
+                  {planosReceita.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2">
+              <Input
+                type="number"
+                step="0.01"
+                min="0.01"
+                placeholder="Valor"
+                value={linhaAtual.valor}
+                onChange={(e) => setLinhaAtual((prev) => ({ ...prev, valor: e.target.value }))}
+                className="h-9 text-sm"
+              />
+            </div>
+            {linhaAtual.contaFinanceiraId && (
+              <p className="text-xs text-muted-foreground mt-2">
+                Valor será lançado em:{" "}
+                <span className="font-medium text-foreground">
+                  {contasAtivas.find((c) => c.id === linhaAtual.contaFinanceiraId)?.nome}
+                </span>
+              </p>
+            )}
           </div>
 
           {/* Resumo */}
