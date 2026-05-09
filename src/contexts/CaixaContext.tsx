@@ -36,6 +36,7 @@ export interface LancamentoCaixa {
   status: StatusLancamento;
   appointmentId?: string;
   transferenciaId?: string;
+  afetaResultado?: boolean;
   usuarioId?: string;
   usuarioNome?: string;
   criadoEm?: string;
@@ -81,6 +82,7 @@ export const CaixaProvider = ({ children }: { children: ReactNode }) => {
         ...lancamento,
         id: crypto.randomUUID(),
         status: lancamento.status ?? "confirmado",
+        afetaResultado: lancamento.afetaResultado ?? (lancamento.origem !== "transferencia"),
         criadoEm: lancamento.criadoEm ?? new Date().toISOString(),
       };
       setLancamentos((prev) => [...prev, novo]);
@@ -128,6 +130,7 @@ export const CaixaProvider = ({ children }: { children: ReactNode }) => {
         descricao: descricao ?? "Transferência entre contas",
         status: "confirmado" as StatusLancamento,
         transferenciaId,
+        afetaResultado: false,
         usuarioNome,
         criadoEm: new Date().toISOString(),
       };
