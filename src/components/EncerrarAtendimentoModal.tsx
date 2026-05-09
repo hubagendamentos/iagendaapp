@@ -18,9 +18,10 @@ import { toast } from "sonner";
 const formasPagamento: { value: FormaPagamento; label: string }[] = [
   { value: "dinheiro", label: "Dinheiro" },
   { value: "pix", label: "PIX" },
-  { value: "cartao", label: "Cartão" },
+  { value: "credito", label: "Cartão Crédito" },
+  { value: "debito", label: "Cartão Débito" },
+  { value: "boleto", label: "Boleto" },
   { value: "convenio", label: "Convênio" },
-  { value: "outros", label: "Outros" },
 ];
 
 interface PagamentoRealizado {
