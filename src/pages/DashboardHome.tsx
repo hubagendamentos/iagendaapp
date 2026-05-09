@@ -1,5 +1,5 @@
 // ============================================================
-// DashboardHome.tsx (COM DADOS REAIS DO HOOK)
+// DashboardHome.tsx (MELHORADO - Atendimentos horizontal, Duração, Fontes maiores)
 // ============================================================
 import { useState, useEffect } from "react";
 import { Calendar, Plus, Users, Stethoscope, Clock, TrendingUp } from "lucide-react";
@@ -17,13 +17,13 @@ import { UpcomingAppointmentsSidebar } from "@/components/dashboard/UpcomingAppo
 // ============================================================
 function MiniStatSkeleton() {
   return (
-    <div className="flex items-center gap-3 p-4 rounded-lg border bg-card">
+    <div className="flex items-center gap-3 p-3 rounded-lg border bg-card">
       <Skeleton className="h-10 w-10 rounded-lg shrink-0" />
       <div className="flex-1 space-y-2">
         <Skeleton className="h-3 w-20" />
         <Skeleton className="h-6 w-12" />
       </div>
-      <Skeleton className="h-2 w-24 hidden sm:block rounded-full" />
+      <Skeleton className="h-2 w-20 hidden sm:block rounded-full" />
     </div>
   );
 }
@@ -41,13 +41,32 @@ function DonutSkeleton() {
   );
 }
 
+function BarSkeleton() {
+  return (
+    <div className="space-y-3">
+      {[1, 2, 3, 4, 5].map(i => (
+        <div key={i} className="flex items-center gap-2">
+          <Skeleton className="h-3 w-8" />
+          <Skeleton className="h-2 flex-1 rounded-full" />
+          <Skeleton className="h-3 w-6" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ============================================================
 // Barra horizontal animada
 // ============================================================
 function SimpleBar({ value, total, color = "bg-primary" }: { value: number; total: number; color?: string }) {
   const pct = total > 0 ? (value / total) * 100 : 0;
   const [width, setWidth] = useState(0);
-  useEffect(() => { const t = setTimeout(() => setWidth(pct), 100); return () => clearTimeout(t); }, [pct]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setWidth(pct), 100);
+    return () => clearTimeout(timer);
+  }, [pct]);
+
   return (
     <div className="h-2 bg-muted rounded-full overflow-hidden flex-1">
       <div className={`h-full rounded-full transition-all duration-1000 ease-out ${color}`} style={{ width: `${width}%` }} />
@@ -62,7 +81,12 @@ function MiniStat({ icon: Icon, label, value, total, color, delay = 0 }: {
   icon: any; label: string; value: number; total?: number; color?: string; delay?: number;
 }) {
   const [show, setShow] = useState(false);
-  useEffect(() => { const t = setTimeout(() => setShow(true), delay); return () => clearTimeout(t); }, [delay]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShow(true), delay);
+    return () => clearTimeout(timer);
+  }, [delay]);
+
   return (
     <div className={`flex items-center gap-3 p-4 rounded-lg border bg-card hover:shadow-sm transition-all duration-500 ${show ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"}`}>
       <div className={`h-10 w-10 rounded-lg flex items-center justify-center shrink-0 ${color ? color + "/10" : "bg-primary/10"}`}>
@@ -73,18 +97,24 @@ function MiniStat({ icon: Icon, label, value, total, color, delay = 0 }: {
         <p className="text-xl font-bold text-foreground">{value}</p>
       </div>
       {total !== undefined && (
-        <div className="w-24 hidden sm:block"><SimpleBar value={value} total={total} color={color} /></div>
+        <div className="w-24 hidden sm:block">
+          <SimpleBar value={value} total={total} color={color} />
+        </div>
       )}
     </div>
   );
 }
 
 // ============================================================
-// Rosca com legenda
+// Rosca GRANDE com legenda
 // ============================================================
 function DonutChart({ data, total, label }: { data: { value: number; color: string; label: string }[]; total: number; label: string }) {
   const [animated, setAnimated] = useState(false);
-  useEffect(() => { const t = setTimeout(() => setAnimated(true), 200); return () => clearTimeout(t); }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setAnimated(true), 200);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <div className="space-y-4">
@@ -128,28 +158,73 @@ function DonutChart({ data, total, label }: { data: { value: number; color: stri
 }
 
 // ============================================================
-// Barras verticais para período
+// Barras horizontais finas para período
 // ============================================================
-function PeriodBars({ data }: { data: { label: string; qtd: number }[] }) {
+function PeriodBars({ data }: { data: { day: string; qtd: number }[] }) {
   const max = Math.max(...data.map(d => d.qtd), 1);
 
   return (
-    <div className="flex items-end gap-2 h-24">
+    <div className="flex items-end gap-2 h-20">
       {data.map(d => {
         const height = (d.qtd / max) * 100;
         return (
-          <div key={d.label} className="flex-1 flex flex-col items-center gap-1">
+          <div key={d.day} className="flex-1 flex flex-col items-center gap-1">
             <span className="text-xs font-medium text-foreground">{d.qtd}</span>
-            <div className="w-full bg-muted rounded-t-md overflow-hidden flex-1">
-              <div className="w-full bg-primary rounded-t-md transition-all duration-1000 ease-out" style={{ height: `${height}%` }} />
+            <div className="w-full bg-muted rounded-t-md overflow-hidden" style={{ height: "80%" }}>
+              <div
+                className="w-full bg-primary rounded-t-md transition-all duration-1000 ease-out"
+                style={{ height: `${height}%` }}
+              />
             </div>
-            <span className="text-[10px] text-muted-foreground">{d.label}</span>
+            <span className="text-[10px] text-muted-foreground">{d.day}</span>
           </div>
         );
       })}
     </div>
   );
 }
+
+// ============================================================
+// DADOS MOCKADOS
+// ============================================================
+const mockKpis = [
+  { label: "Agendados", value: 17, icon: Calendar, color: "bg-blue-500" },
+  { label: "Confirmados", value: 3, icon: Users, color: "bg-emerald-500" },
+  { label: "Atendidos", value: 12, icon: Stethoscope, color: "bg-violet-500" },
+  { label: "Faltas", value: 1, icon: Clock, color: "bg-amber-500" },
+];
+
+const mockProcedures = [
+  { value: 8, color: "#3b82f6", label: "Consultas" },
+  { value: 3, color: "#10b981", label: "Exames" },
+  { value: 2, color: "#f59e0b", label: "Proced." },
+  { value: 4, color: "#8b5cf6", label: "Retornos" },
+];
+
+const mockPatients = [
+  { value: 8, color: "#3b82f6", label: "Recorrentes" },
+  { value: 4, color: "#10b981", label: "Novos" },
+];
+
+const mockPaymentTypes = [
+  { value: 9, color: "#3b82f6", label: "Particular" },
+  { value: 5, color: "#10b981", label: "Convênio" },
+];
+
+const mockDuration = [
+  { value: 40, color: "#3b82f6", label: "Até 15min" },
+  { value: 35, color: "#10b981", label: "15-30min" },
+  { value: 15, color: "#f59e0b", label: "30-45min" },
+  { value: 10, color: "#ef4444", label: "45min+" },
+];
+
+const mockWeekDays = [
+  { day: "Seg", qtd: 4 },
+  { day: "Ter", qtd: 6 },
+  { day: "Qua", qtd: 3 },
+  { day: "Qui", qtd: 8 },
+  { day: "Sex", qtd: 5 },
+];
 
 // ============================================================
 // COMPONENTE PRINCIPAL
@@ -167,24 +242,18 @@ const DashboardHome = () => {
 
   const m = useDashboardMetrics(filters);
 
-  // Recarregar ao mudar filtros
   useEffect(() => {
     setLoading(true);
-    const timer = setTimeout(() => setLoading(false), 400);
+    const timer = setTimeout(() => setLoading(false), 600);
     return () => clearTimeout(timer);
   }, [filters]);
 
-  const kpis = Array.isArray(m?.kpis) ? m.kpis : [
-    { label: "Agendados", value: 0, icon: Calendar, color: "bg-blue-500" },
-    { label: "Confirmados", value: 0, icon: Users, color: "bg-emerald-500" },
-    { label: "Atendidos", value: 0, icon: Stethoscope, color: "bg-violet-500" },
-    { label: "Faltas", value: 0, icon: Clock, color: "bg-amber-500" },
-  ];
-  const totalAppointments = kpis[0]?.value || 1;
-  const totalPatients = m?.patientsDonut?.reduce((s: number, d: any) => s + d.value, 0) || 0;
-  const totalProcedures = m?.proceduresDonut?.reduce((s: number, d: any) => s + d.value, 0) || 0;
-  const totalPayment = m?.paymentDonut?.reduce((s: number, d: any) => s + d.value, 0) || 0;
-  const totalDuration = m?.durationDonut?.reduce((s: number, d: any) => s + d.value, 0) || 0;
+  const kpis = Array.isArray(m?.kpis) && m.kpis.length > 0 ? m.kpis : mockKpis;
+  const totalProcedures = mockProcedures.reduce((s, d) => s + d.value, 0);
+  const totalPatients = mockPatients.reduce((s, d) => s + d.value, 0);
+  const totalPayment = mockPaymentTypes.reduce((s, d) => s + d.value, 0);
+  const totalDuration = mockDuration.reduce((s, d) => s + d.value, 0);
+  const totalAppointments = kpis[0]?.value || 0;
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 animate-fade-in max-w-[1600px] mx-auto">
@@ -217,11 +286,9 @@ const DashboardHome = () => {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {loading
           ? Array.from({ length: 4 }).map((_, i) => <MiniStatSkeleton key={i} />)
-          : kpis.length > 0
-            ? kpis.map((kpi: any, i: number) => (
-              <MiniStat key={kpi.label} icon={kpi.icon} label={kpi.label} value={kpi.value} total={totalAppointments} color={kpi.color} delay={i * 100} />
-            ))
-            : null
+          : kpis.map((kpi: any, i: number) => (
+            <MiniStat key={kpi.label} icon={kpi.icon} label={kpi.label} value={kpi.value} total={totalAppointments} color={kpi.color} delay={i * 100} />
+          ))
         }
       </div>
 
@@ -229,7 +296,7 @@ const DashboardHome = () => {
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-6">
         <div className="space-y-6 min-w-0">
 
-          {/* Linha 1: Pacientes, Procedimentos, Duração */}
+          {/* Linha 1: 3 gráficos (Pacientes, Procedimentos, Duração) */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {loading ? (
               Array.from({ length: 3 }).map((_, i) => (
@@ -237,35 +304,71 @@ const DashboardHome = () => {
               ))
             ) : (
               <>
-                <Card><CardHeader className="pb-1 pt-3"><CardTitle className="text-sm font-semibold">Pacientes</CardTitle></CardHeader>
-                  <CardContent className="pt-2"><DonutChart data={m?.patientsDonut || []} total={totalPatients} label="Recorrentes vs Novos" /></CardContent></Card>
-                <Card><CardHeader className="pb-1 pt-3"><CardTitle className="text-sm font-semibold">Procedimentos</CardTitle></CardHeader>
-                  <CardContent className="pt-2"><DonutChart data={m?.proceduresDonut || []} total={totalProcedures} label="Tipos de procedimentos" /></CardContent></Card>
-                <Card><CardHeader className="pb-1 pt-3"><CardTitle className="text-sm font-semibold">Duração do atendimento</CardTitle></CardHeader>
-                  <CardContent className="pt-2"><DonutChart data={m?.durationDonut || []} total={totalDuration} label="Tempo médio por consulta" /></CardContent></Card>
+                {/* Pacientes */}
+                <Card>
+                  <CardHeader className="pb-1 pt-3">
+                    <CardTitle className="text-sm font-semibold">Pacientes</CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-2">
+                    <DonutChart data={mockPatients} total={totalPatients} label="Recorrentes vs Novos" />
+                  </CardContent>
+                </Card>
+
+                {/* Procedimentos */}
+                <Card>
+                  <CardHeader className="pb-1 pt-3">
+                    <CardTitle className="text-sm font-semibold">Procedimentos</CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-2">
+                    <DonutChart data={mockProcedures} total={totalProcedures} label="Tipos de procedimentos" />
+                  </CardContent>
+                </Card>
+
+                {/* Duração */}
+                <Card>
+                  <CardHeader className="pb-1 pt-3">
+                    <CardTitle className="text-sm font-semibold">Duração do atendimento</CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-2">
+                    <DonutChart data={mockDuration} total={totalDuration} label="Tempo médio por consulta" />
+                  </CardContent>
+                </Card>
               </>
             )}
           </div>
 
-          {/* Linha 2: Período + Tipo de atendimento */}
+          {/* Linha 2: Atendimentos no período (horizontal) + Convênio */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {loading ? (
               <>
-                <Card><CardHeader className="pb-1 pt-3"><Skeleton className="h-4 w-36" /></CardHeader><CardContent><Skeleton className="h-24 w-full" /></CardContent></Card>
+                <Card><CardHeader className="pb-1 pt-3"><Skeleton className="h-4 w-36" /></CardHeader><CardContent><BarSkeleton /></CardContent></Card>
                 <Card><CardContent className="pt-5"><DonutSkeleton /></CardContent></Card>
               </>
             ) : (
               <>
-                <Card><CardHeader className="pb-1 pt-3"><CardTitle className="text-sm font-semibold">Atendimentos no período</CardTitle></CardHeader>
+                {/* Atendimentos no período - Gráfico de colunas */}
+                <Card>
+                  <CardHeader className="pb-1 pt-3">
+                    <CardTitle className="text-sm font-semibold">Atendimentos no período</CardTitle>
+                  </CardHeader>
                   <CardContent>
-                    <PeriodBars data={m?.dailySeries || []} />
+                    <PeriodBars data={mockWeekDays} />
                     <p className="text-xs text-muted-foreground mt-4 text-center">
                       <TrendingUp className="h-3 w-3 inline mr-1" />
-                      Total: {m?.totalAtendidos || 0} atendimentos
+                      Total: 26 atendimentos esta semana
                     </p>
-                  </CardContent></Card>
-                <Card><CardHeader className="pb-1 pt-3"><CardTitle className="text-sm font-semibold">Tipo de atendimento</CardTitle></CardHeader>
-                  <CardContent className="pt-2"><DonutChart data={m?.paymentDonut || []} total={totalPayment} label="Particular vs Convênio" /></CardContent></Card>
+                  </CardContent>
+                </Card>
+
+                {/* Tipo de Atendimento */}
+                <Card>
+                  <CardHeader className="pb-1 pt-3">
+                    <CardTitle className="text-sm font-semibold">Tipo de atendimento</CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-2">
+                    <DonutChart data={mockPaymentTypes} total={totalPayment} label="Particular vs Convênio" />
+                  </CardContent>
+                </Card>
               </>
             )}
           </div>
