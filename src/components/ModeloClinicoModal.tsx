@@ -67,6 +67,7 @@ export function ModeloClinicoModal({ open, onClose, onSave, template }: Props) {
       especialidade,
       campos,
       clinicId: "c1",
+      printConfig: template?.printConfig ?? defaultPrintConfig,
     });
     onClose();
   };
