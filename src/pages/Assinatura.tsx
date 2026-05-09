@@ -1,5 +1,5 @@
 import { BadgeCheck, CreditCard, AlertTriangle, ArrowRight, Check } from "lucide-react";
-import { useSubscription, PLANS, PlanType } from "@/contexts/SubscriptionContext";
+import { useSubscription, PLANS, type PlanType, type Plan } from "@/contexts/SubscriptionContext";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
@@ -87,10 +87,9 @@ const Assinatura = () => {
             </div>
           </div>
           
-          <Progress 
-            value={hasOverage ? 100 : usagePercentage} 
-            className={`h-3 bg-secondary`}
-            indicatorClassName={`${
+          <Progress
+            value={hasOverage ? 100 : usagePercentage}
+            className={`h-3 bg-secondary [&>div]:${
               isAtLimit ? "bg-destructive" : isNearLimit || hasOverage ? "bg-amber-500" : "bg-emerald-500"
             }`}
           />

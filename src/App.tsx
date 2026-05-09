@@ -11,6 +11,8 @@ import { TimelineProvider } from "@/contexts/TimelineContext";
 import { CaixaProvider } from "@/contexts/CaixaContext";
 import { PlanoContasProvider } from "@/contexts/PlanoContasContext";
 import { ReceitasProvider } from "@/contexts/ReceitasContext";
+import { FinancialAccountsProvider } from "@/contexts/FinancialAccountsContext";
+import { Navigate } from "react-router-dom";
 import Login from "./pages/Login.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import DashboardHome from "./pages/DashboardHome.tsx";
@@ -24,7 +26,9 @@ import BuscaFichaPaciente from "./pages/BuscaFichaPaciente.tsx";
 import Atendimentos from "./pages/Atendimentos.tsx";
 import Assinatura from "./pages/Assinatura.tsx";
 import Usuarios from "./pages/Usuarios.tsx";
-import Caixa from "./pages/Caixa.tsx";
+import FluxoCaixa from "./pages/financeiro/FluxoCaixa.tsx";
+import Lancamentos from "./pages/financeiro/Lancamentos.tsx";
+import ContasFinanceiras from "./pages/financeiro/ContasFinanceiras.tsx";
 import FichaAtendimentoPage from "./pages/FichaAtendimentoPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
@@ -39,6 +43,7 @@ const App = () => (
             <AppointmentsProvider>
             <CaixaProvider>
             <PlanoContasProvider>
+            <FinancialAccountsProvider>
             <ReceitasProvider>
               <TooltipProvider>
                 <Toaster />
@@ -59,13 +64,17 @@ const App = () => (
                       <Route path="configuracoes" element={<Configuracoes />} />
                       <Route path="assinatura" element={<Assinatura />} />
                       <Route path="usuarios" element={<Usuarios />} />
-                      <Route path="financeiro/caixa" element={<Caixa />} />
+                      <Route path="financeiro/caixa" element={<Navigate to="/dashboard/financeiro/fluxo" replace />} />
+                      <Route path="financeiro/fluxo" element={<FluxoCaixa />} />
+                      <Route path="financeiro/lancamentos" element={<Lancamentos />} />
+                      <Route path="financeiro/contas" element={<ContasFinanceiras />} />
                     </Route>
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </BrowserRouter>
               </TooltipProvider>
             </ReceitasProvider>
+            </FinancialAccountsProvider>
             </PlanoContasProvider>
             </CaixaProvider>
             </AppointmentsProvider>

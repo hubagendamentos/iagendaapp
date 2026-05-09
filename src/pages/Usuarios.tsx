@@ -99,7 +99,7 @@ export default function Usuarios() {
     const confirmDelete = window.confirm("Tem certeza que deseja excluir este usuário?");
     if (!confirmDelete) return;
 
-    setUsersList((prev) => prev.filter((u) => u.id !== editing.id));
+    setUsersList(usersList.filter((u) => u.id !== editing.id));
 
     setEditing(null);
     setModalOpen(false);

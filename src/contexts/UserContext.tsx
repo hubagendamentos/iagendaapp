@@ -41,6 +41,8 @@ export type UserPermissions = {
 
 export type UserRole = "admin" | "staff" | "professional";
 
+export type UserType = "clinic" | "professional";
+
 export type User = {
   id: string;
   name: string;
