@@ -148,7 +148,7 @@ const Atendimentos = () => {
     data.pagamentos.forEach((p) => {
       addLancamento({
         tipo: "entrada",
-        origem: "Atendimento",
+        origem: "agenda",
         atendimentoId: apt.id,
         paciente: apt.patientName,
         profissional: profName,
