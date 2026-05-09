@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { format } from "date-fns";
-import { useCaixa, type FormaPagamento } from "@/contexts/CaixaContext";
+import { useCaixa } from "@/contexts/CaixaContext";
+import { FORMA_PAGAMENTO_LABELS, type FormaPagamento } from "@/types/financeiro";
 import { usePlanoContas } from "@/contexts/PlanoContasContext";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -8,13 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Calendar as CalendarIcon, Wallet, CreditCard, User, BookOpen } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 
-const formaLabels: Record<FormaPagamento, string> = {
-  dinheiro: "Dinheiro",
-  pix: "PIX",
-  cartao: "Cartão",
-  convenio: "Convênio",
-  outros: "Outros",
-};
+const formaLabels = FORMA_PAGAMENTO_LABELS;
 
 const professionals = [
   { id: "p1", name: "Dr. João Silva" },
