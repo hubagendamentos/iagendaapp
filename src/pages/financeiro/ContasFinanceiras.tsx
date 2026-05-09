@@ -32,7 +32,7 @@ export default function ContasFinanceiras() {
       <PageHeader
         title="Contas Financeiras"
         subtitle="Caixas, bancos e carteiras onde o dinheiro entra e sai."
-        action={
+        actions={
           <Button onClick={() => { setEditing(null); setModal(true); }}>
             <Plus className="h-4 w-4 mr-2" /> Nova Conta
           </Button>
