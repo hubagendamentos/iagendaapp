@@ -26,7 +26,6 @@ import BuscaFichaPaciente from "./pages/BuscaFichaPaciente.tsx";
 import Atendimentos from "./pages/Atendimentos.tsx";
 import Assinatura from "./pages/Assinatura.tsx";
 import Usuarios from "./pages/Usuarios.tsx";
-import Caixa from "./pages/Caixa.tsx";
 import FluxoCaixa from "./pages/financeiro/FluxoCaixa.tsx";
 import Lancamentos from "./pages/financeiro/Lancamentos.tsx";
 import ContasFinanceiras from "./pages/financeiro/ContasFinanceiras.tsx";
@@ -65,7 +64,7 @@ const App = () => (
                       <Route path="configuracoes" element={<Configuracoes />} />
                       <Route path="assinatura" element={<Assinatura />} />
                       <Route path="usuarios" element={<Usuarios />} />
-                      <Route path="financeiro/caixa" element={<Caixa />} />
+                      <Route path="financeiro/caixa" element={<Navigate to="/dashboard/financeiro/fluxo" replace />} />
                       <Route path="financeiro/fluxo" element={<FluxoCaixa />} />
                       <Route path="financeiro/lancamentos" element={<Lancamentos />} />
                       <Route path="financeiro/contas" element={<ContasFinanceiras />} />
