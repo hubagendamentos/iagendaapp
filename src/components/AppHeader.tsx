@@ -43,9 +43,9 @@ const menuStructure: { label: string; items: MenuItem[] }[] = [
                 icon: DollarSign,
                 permission: "financeiro",
                 children: [
-                    { title: "Caixa", url: "/dashboard/financeiro/caixa", icon: Wallet },
-                    { title: "Contas a receber", url: "/dashboard/financeiro/receber", icon: Receipt },
-                    { title: "Contas a pagar", url: "/dashboard/financeiro/pagar", icon: HandCoins },
+                    { title: "Fluxo de Caixa", url: "/dashboard/financeiro/fluxo", icon: Wallet },
+                    { title: "Lançamentos", url: "/dashboard/financeiro/lancamentos", icon: Receipt },
+                    { title: "Contas Financeiras", url: "/dashboard/financeiro/contas", icon: HandCoins },
                 ],
             },
             {
