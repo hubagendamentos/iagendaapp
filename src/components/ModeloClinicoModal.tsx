@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Plus, Trash2, GripVertical } from "lucide-react";
-import { type TemplateClinico, type CampoTemplate, type CampoTipo } from "@/contexts/ReceitasContext";
+import { type TemplateClinico, type CampoTemplate, type CampoTipo, defaultPrintConfig } from "@/contexts/ReceitasContext";
 
 const tiposCampo: { value: CampoTipo; label: string }[] = [
   { value: "text", label: "Texto curto" },
