@@ -44,7 +44,6 @@ const menuStructure: { label: string; items: MenuItem[] }[] = [
                 permission: "financeiro",
                 children: [
                     { title: "Fluxo de Caixa", url: "/dashboard/financeiro/fluxo", icon: Wallet },
-                    { title: "Lançamentos", url: "/dashboard/financeiro/lancamentos", icon: Receipt },
                     { title: "Contas Financeiras", url: "/dashboard/financeiro/contas", icon: HandCoins },
                 ],
             },
@@ -186,7 +185,7 @@ export function AppHeader() {
                 >
                     <LogoMark className="h-7 w-7" />
                     <span className="hidden lg:inline">
-                      Mais <span className="text-[#19C37D]">Clínica</span>
+                        Mais <span className="text-[#19C37D]">Clínica</span>
                     </span>
                 </button>
 

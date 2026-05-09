@@ -1,5 +1,5 @@
 // ============================================================
-// EncerrarAtendimentoModal.tsx (FINAL - sem pagamento parcial)
+// EncerrarAtendimentoModal.tsx (FINAL - contas na mesma linha)
 // ============================================================
 import { useState, useMemo, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -80,7 +80,6 @@ export function EncerrarAtendimentoModal({ open, onOpenChange, appointment, prof
     contaFinanceiraId: "",
   });
 
-  // Inicializa conta padrão ao abrir
   useEffect(() => {
     if (open) {
       setLinhaAtual((prev) => ({ ...prev, contaFinanceiraId: prev.contaFinanceiraId || getDefaultContaId() }));
@@ -95,7 +94,6 @@ export function EncerrarAtendimentoModal({ open, onOpenChange, appointment, prof
 
   const restanteApos = totalComDesconto - totalJaConfirmado;
 
-  // Atualiza sugestão de valor
   useEffect(() => {
     if (pagamentosConfirmados.length === 0 && restanteApos > 0) {
       setLinhaAtual((prev) => ({ ...prev, valor: restanteApos.toFixed(2) }));
@@ -114,9 +112,6 @@ export function EncerrarAtendimentoModal({ open, onOpenChange, appointment, prof
     setPagamentosConfirmados((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // ============================================================
-  // LANÇAR RECEBIMENTO (acumula pagamentos)
-  // ============================================================
   const handleLancarRecebimento = () => {
     if (!linhaPreenchida) {
       toast.error("Preencha conta, valor, forma e plano de contas.");
@@ -131,7 +126,6 @@ export function EncerrarAtendimentoModal({ open, onOpenChange, appointment, prof
       return;
     }
 
-    // Adiciona à lista de confirmados
     const novosPagamentos: PagamentoRealizado[] = [
       ...pagamentosConfirmados,
       {
@@ -142,7 +136,6 @@ export function EncerrarAtendimentoModal({ open, onOpenChange, appointment, prof
       },
     ];
 
-    // Persistir última conta utilizada
     if (typeof window !== "undefined" && linhaAtual.contaFinanceiraId) {
       localStorage.setItem(LAST_CONTA_KEY, linhaAtual.contaFinanceiraId);
     }
@@ -150,14 +143,12 @@ export function EncerrarAtendimentoModal({ open, onOpenChange, appointment, prof
     const totalNovo = novosPagamentos.reduce((s, p) => s + p.valor, 0);
 
     if (Math.abs(totalComDesconto - totalNovo) <= 0.01) {
-      // VALOR COMPLETO → finaliza
       onConfirm({ pagamentos: novosPagamentos, totalComDesconto });
       limparEstado();
       onOpenChange(false);
       return;
     }
 
-    // Ainda falta → acumula
     setPagamentosConfirmados(novosPagamentos);
     setLinhaAtual({
       id: crypto.randomUUID(),
@@ -166,7 +157,6 @@ export function EncerrarAtendimentoModal({ open, onOpenChange, appointment, prof
       planoContasId: "",
       contaFinanceiraId: linhaAtual.contaFinanceiraId,
     });
-    toast.info(`Restante: ${currency(totalComDesconto - totalNovo)}`);
   };
 
   const limparEstado = () => {
@@ -188,7 +178,7 @@ export function EncerrarAtendimentoModal({ open, onOpenChange, appointment, prof
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-3xl max-h-[92vh] overflow-y-auto p-0">
+      <DialogContent className="sm:max-w-4xl max-h-[92vh] overflow-y-auto p-0">
         {/* Header */}
         <div className="px-5 py-3 border-b flex items-center gap-2">
           <Wallet className="h-5 w-5 text-primary" />
@@ -277,6 +267,7 @@ export function EncerrarAtendimentoModal({ open, onOpenChange, appointment, prof
                     <div className="flex items-center gap-2">
                       <span className="font-medium">{currency(p.valor)}</span>
                       <span className="text-muted-foreground">• {formasPagamento.find(f => f.value === p.formaPagamento)?.label}</span>
+                      <span className="text-muted-foreground">• {contasAtivas.find(c => c.id === p.contaFinanceiraId)?.nome || "—"}</span>
                       <span className="text-muted-foreground">• {planosReceita.find(pl => pl.id === p.planoContasId)?.nome || "—"}</span>
                     </div>
                     <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => removerPagamento(idx)}>
@@ -288,58 +279,75 @@ export function EncerrarAtendimentoModal({ open, onOpenChange, appointment, prof
             </div>
           )}
 
-          {/* Linha de pagamento atual */}
+          {/* Linha de pagamento atual - TUDO NA MESMA LINHA */}
           <div>
             <h4 className="text-sm font-semibold mb-1.5">
               {pagamentosConfirmados.length > 0
                 ? `Novo recebimento (falta ${currency(restanteApos)})`
                 : "Forma de pagamento"}
             </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              <Select value={linhaAtual.contaFinanceiraId} onValueChange={(v) => setLinhaAtual((prev) => ({ ...prev, contaFinanceiraId: v }))}>
-                <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Conta Financeira" /></SelectTrigger>
-                <SelectContent>
-                  {contasAtivas.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={linhaAtual.formaPagamento} onValueChange={(v) => setLinhaAtual((prev) => ({ ...prev, formaPagamento: v as FormaPagamento }))}>
-                <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Forma de pagamento" /></SelectTrigger>
-                <SelectContent>
-                  {formasPagamento.map((f) => (
-                    <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={linhaAtual.planoContasId} onValueChange={(v) => setLinhaAtual((prev) => ({ ...prev, planoContasId: v }))}>
-                <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Plano de contas" /></SelectTrigger>
-                <SelectContent>
-                  {planosReceita.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="flex items-center gap-2">
+              <div className="flex-1 grid grid-cols-2 sm:grid-cols-5 gap-2">
+                <div>
+                  <Label className="text-[10px] text-muted-foreground mb-0.5 block">Conta</Label>
+                  <Select value={linhaAtual.contaFinanceiraId} onValueChange={(v) => setLinhaAtual((prev) => ({ ...prev, contaFinanceiraId: v }))}>
+                    <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Conta" /></SelectTrigger>
+                    <SelectContent>
+                      {contasAtivas.map((c) => (
+                        <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-[10px] text-muted-foreground mb-0.5 block">Forma</Label>
+                  <Select value={linhaAtual.formaPagamento} onValueChange={(v) => setLinhaAtual((prev) => ({ ...prev, formaPagamento: v as FormaPagamento }))}>
+                    <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Forma" /></SelectTrigger>
+                    <SelectContent>
+                      {formasPagamento.map((f) => (
+                        <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-[10px] text-muted-foreground mb-0.5 block">Plano</Label>
+                  <Select value={linhaAtual.planoContasId} onValueChange={(v) => setLinhaAtual((prev) => ({ ...prev, planoContasId: v }))}>
+                    <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Plano" /></SelectTrigger>
+                    <SelectContent>
+                      {planosReceita.map((p) => (
+                        <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-[10px] text-muted-foreground mb-0.5 block">Valor</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min="0.01"
+                    placeholder="0,00"
+                    value={linhaAtual.valor}
+                    onChange={(e) => setLinhaAtual((prev) => ({ ...prev, valor: e.target.value }))}
+                    className="h-9 text-sm"
+                  />
+                </div>
+                <div className="flex items-end">
+                  <Button
+                    onClick={handleLancarRecebimento}
+                    disabled={!linhaPreenchida}
+                    size="sm"
+                    className="h-9 w-full gap-1.5"
+                  >
+                    <CreditCard className="h-4 w-4" />
+                    {linhaPreenchida && Math.abs((parseFloat(linhaAtual.valor) || 0) - restanteApos) <= 0.01
+                      ? "Lançar"
+                      : "Adicionar"}
+                  </Button>
+                </div>
+              </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2">
-              <Input
-                type="number"
-                step="0.01"
-                min="0.01"
-                placeholder="Valor"
-                value={linhaAtual.valor}
-                onChange={(e) => setLinhaAtual((prev) => ({ ...prev, valor: e.target.value }))}
-                className="h-9 text-sm"
-              />
-            </div>
-            {linhaAtual.contaFinanceiraId && (
-              <p className="text-xs text-muted-foreground mt-2">
-                Valor será lançado em:{" "}
-                <span className="font-medium text-foreground">
-                  {contasAtivas.find((c) => c.id === linhaAtual.contaFinanceiraId)?.nome}
-                </span>
-              </p>
-            )}
           </div>
 
           {/* Resumo */}
@@ -359,20 +367,10 @@ export function EncerrarAtendimentoModal({ open, onOpenChange, appointment, prof
 
         {/* Footer */}
         <div className="px-5 py-3 border-t flex justify-between items-center">
-          <Button variant="ghost" size="sm" onClick={() => { limparEstado(); onOpenChange(false); }}>
+          <Button variant="destructive" size="sm" onClick={() => { limparEstado(); onOpenChange(false); }}>
             Cancelar
           </Button>
-          <Button
-            onClick={handleLancarRecebimento}
-            disabled={!linhaPreenchida}
-            size="sm"
-            className="gap-1.5"
-          >
-            <CreditCard className="h-4 w-4" />
-            {linhaPreenchida && Math.abs((parseFloat(linhaAtual.valor) || 0) - restanteApos) <= 0.01
-              ? "Lançar Recebimento"
-              : "Adicionar Pagamento"}
-          </Button>
+          <div />
         </div>
       </DialogContent>
     </Dialog>
